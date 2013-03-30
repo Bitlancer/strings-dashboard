@@ -16,6 +16,7 @@ class AppController extends Controller {
 	public $components = array(
 		'DebugKit.Toolbar',
 		'Session',
+		'Cookie',
 		'Auth' => array(
 			'authError' => 'Please login',
 			'authenticate' => array(
@@ -30,4 +31,10 @@ class AppController extends Controller {
 		)
 	);
 
+	public function beforeFilter(){
+
+		//Set default cookie options
+    	$this->Cookie->key = '>qfAHms1U1c{}0wC6SWZjur#!31TaB58LJQqathasGb$@11~_+!@#HKis~#^';
+    	$this->Cookie->httpOnly = true;
+	}
 }

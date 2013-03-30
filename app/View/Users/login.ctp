@@ -1,16 +1,16 @@
-  <form id="login" method="post" action="/login">
+<form id="login" method="post" action="/login">
     <h1>Strings</h1>
     <ul id="notice">
-      <li class="error"><?php echo $this->Session->flash(); ?></li>
-	  <li class="error"><?php echo $this->Session->flash('auth'); ?></li>
+      <?php echo $this->Session->flash('flash', array('element' => 'flash/default')); ?>
+	  <?php echo $this->Session->flash('auth',array('element' => 'flash/default')); ?>
     </ul>
     <div data-id="login">
-	  <input type="text" name="data[Organization][short_name]" placeholder="organization" />
-      <input type="text" name="data[User][name]" placeholder="username" />
+	  <input type="text" name="data[Organization][short_name]" placeholder="organization" value="<?php echo $organizationShortName; ?>" />
+      <input type="text" name="data[User][name]" placeholder="username" value="<?php echo $userName; ?>" />
       <input type="password" name="data[User][password]" placeholder="password" />
       <span class="buttons">
         <a class="cta submit">login</a>
-        <input id="remember-me" type="checkbox" checked=checked />
+        <input id="remember-me" name="data[User][remember_me]" type="checkbox" <?php if($userRememberMe) { echo "checked=checked"; } ?> />
         <label for="remember-me">remember me</label>
       </span>
     </div>
@@ -31,4 +31,3 @@
       <a data-id="register">register</a><a data-id="password">forgot password</a>
     </span>
   </form>
-

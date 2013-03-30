@@ -20,6 +20,7 @@ class UsersController extends AppController {
 	public function login() {
 
 		$this->layout = 'login';
+		$this->set('title_for_layout', 'Login');
 
 		$userId = $this->Auth->user('id');
 
@@ -36,12 +37,48 @@ class UsersController extends AppController {
         	);
 
     		if ($this->Auth->login()) {
+
+				if($this->request->data['User']['remember_me'] == 'on'){
+					$rememberMeData = array(
+						'organization' => $this->request->data['Organization']['short_name'],
+						'name' => $this->request->data['User']['name'],
+					);
+					$this->Cookie->write('User', $rememberMeData, false, '1 year');
+				}
+				else {
+					$this->Cookie->delete('User');
+				}
+
         		return $this->redirect($this->Auth->redirectUrl());
     		}
 			else
 				$this->Session->setFlash(__('Username or password is incorrect'), 'default', array(), 'auth');
 		}
 
+		$userName = "";
+		$userRememberMe = false;
+		$organizationShortName = "";
+
+		if($this->Cookie->read('User')){
+            $organizationShortName = $this->Cookie->read('User.organization');
+            $userName = $this->Cookie->read('User.name');
+            $userRememberMe = 'on';
+        }
+
+		if(isset($this->request->data['User']['name']))
+			$userName = $this->request->data['User']['name'];
+
+		if(isset($this->request->data['User']['remember_me']))
+			$userRememberMe = $this->request->data['User']['remember_me'];
+
+		if(isset($this->request->data['Organization']['short_name']))
+			$organizationShortName = $this->request->data['Organization']['short_name'];
+
+		$this->set(array(
+			'userName' => $userName,
+			'userRememberMe' => $userRememberMe,
+			'organizationShortName' => $organizationShortName
+		)); 
 	}
 
 	public function logout() {
