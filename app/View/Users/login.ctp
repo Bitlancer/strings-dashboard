@@ -1,13 +1,11 @@
   <form id="login" method="post" action="/login">
     <h1>Strings</h1>
-	<div style="font-weight:bold;">
-	  <?php
-	    echo $this->Session->flash();
-	    echo $this->Session->flash('auth');
-	  ?>
-	</div>
+    <ul id="notice">
+      <li class="error"><?php echo $this->Session->flash(); ?></li>
+	  <li class="error"><?php echo $this->Session->flash('auth'); ?></li>
+    </ul>
     <div data-id="login">
-      <input type="text" name="data[Organization][short_name]" placeholder="organization" />
+	  <input type="text" name="data[Organization][short_name]" placeholder="organization" />
       <input type="text" name="data[User][name]" placeholder="username" />
       <input type="password" name="data[User][password]" placeholder="password" />
       <span class="buttons">
@@ -33,3 +31,4 @@
       <a data-id="register">register</a><a data-id="password">forgot password</a>
     </span>
   </form>
+

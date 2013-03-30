@@ -9,9 +9,15 @@ var strings = {
       strings.ui.tables();
       strings.events.forms();
       strings.events.clicks();
+      strings.events.keypress();
       strings.ui.actionmenu();
     },
-    include : function() {}
+    include : function() {
+      $('body > header').load('assets/html/header.html');
+      $('body > nav').load('assets/html/nav.html', function(response, status, xhr){
+        if (status == "success" && typeof config && $('body > nav > span#'+config.name).length) $('body > nav > span#'+config.name).addClass('active');
+      });
+    }
   },
   
   ui : {
@@ -47,12 +53,17 @@ var strings = {
         width: obj.attr('data-width') || '360',
         dialogClass:'strings-modal',
         open: function() {
-          console.log(modal);
+          if(!$('body').hasClass('blur')) $('body').addClass('blur');
+          if($('.ui-dialog .autocomplete').length) $('.ui-dialog input.maininput').blur().parents('.ui-dialog-content').css('overflow','visible');
+        },
+        close: function() {
+          if($('body').hasClass('blur')) $('body').removeClass('blur');
+          if($('.ui-dialog .autocomplete').length) $('.ui-dialog input.maininput').parents('.ui-dialog-content').css('overflow','auto');
         }
       };
       modal.dialog(opt).dialog('open');
       modal.find('.cta:not(".cancel,.primary")').bind('click', function() {
-        modal.dialog('destroy');
+        modal.dialog('close');
       });
     },
     tables : function() {
@@ -65,6 +76,7 @@ var strings = {
           "sDom": '<"top"f>rt<"bottom"p><"clear">',
           "fnInitComplete": function(oSettings) {
             var parent = $(this).parents('.dataTables_wrapper');
+            if($(this).attr('data-cta')) parent.find('.top').prepend($(this).attr('data-cta'))
             if($(this).attr('data-title')) parent.find('.top').prepend('<h2>'+$(this).attr('data-title')+'</h2>');
             parent.find('.dataTables_filter input').attr('placeholder','Search');
           }
@@ -82,13 +94,29 @@ var strings = {
       $('.tooltip').tooltip({ position: { my: "left+2 top+14", at: "left top+14" } });
       // modal windows
       $('.modal').click(function(){strings.ui.modal($(this))});
+      // form ctas
+      $('form .cta.submit').click(function(){ $(this).closest('form').submit() });
+      //$('form .cta.submit').live('click',function(){ $(this).closest('form').submit() });
+    },
+    keypress : function() {
+      $(':input').keypress(function (e) {
+        if (e.which == 13) {
+          e.preventDefault();
+          $(this).closest('form').submit();
+        }
+      });
     },
     forms : function() {
       // count type validation
       $('.cta.disabled').each(function() {
-        $(this).parents('form').find(':password').keyup(function() {
+        $(this).parents('form').find(':password').last().keyup(function() {
           if($(this).val().length > 5){
             $(this).parents('form').find('.disabled').toggleClass('disabled not-disabled');
+            if($(this).parents('form').find(':password').length > 1) {
+              var p1 = $(this).parents('form').find(':password').first().val();
+              var p2 = $(this).parents('form').find(':password').last().val();
+              if(p1 !== p2) $(this).parents('form').find('.not-disabled').toggleClass('not-disabled disabled');
+            }
           } else {
             $(this).parents('form').find('.not-disabled').toggleClass('not-disabled disabled');
           }
@@ -96,15 +124,37 @@ var strings = {
       });
       // auto-complete
       $('.autocomplete').not('.example > .autocomplete').each(function() {
-        $(this).textext({
-          plugins : 'ajax autocomplete prompt tags',
-          prompt : $(this).attr('data-prompt'),
-          ajax : {
-              url : $(this).attr('data-src'),
-              dataType : 'json',
-              cacheResults : true
-          }
-        });
+        var json = $(this).attr('data-src') || null;
+        var placeholder = $(this).attr('data-placeholder') || 'Enter a tag...';
+        var width = $(this).attr('data-width') || '500px';
+        var options = {
+          json_url: json,
+          width: width,
+          cache: false,
+          height: "10",
+          newel: true,
+          addontab: true,
+          addoncomma: true,
+          firstselected: false,
+          filter_case: false,
+          filter_selected: false,
+          filter_begin: false,
+          filter_hide: true,
+          complete_text: placeholder,
+          select_all_text:  null,
+          maxshownitems: 30,
+          maxitems: 150,
+          oncreate: null,
+          onselect: null,
+          onremove: null,
+          attachto: null,
+          delay: 200,
+          input_tabindex: 0,
+          input_min_size: 1,
+          input_name: "",
+          bricket: true
+        }
+        $(this).fcbkcomplete(options);
       });
     }
   }

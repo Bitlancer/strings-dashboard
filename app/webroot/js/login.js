@@ -1,5 +1,19 @@
 var account = {
   
+  click : function() {
+    // cta submit buttons
+    $('form .cta.submit').click(function(){ $(this).closest('form').submit() });
+  },
+
+  keypress : function() {
+    $(':input').keypress(function (e) {
+      if (e.which == 13) {
+        e.preventDefault();
+        $(this).closest('form').submit();
+      }
+    });
+  },
+  
   tabs : function() {
     $('#tabs a, .cta[data-id]').live('click',function() {
       $('form div[data-id]').hide();
@@ -15,25 +29,11 @@ var account = {
     if(h < w) $('body').attr('class','portrait');
     if(h > w) $('body').attr('class','landscape');
   },
-
-  click : function() {
-    // cta submit buttons
-    $('form .cta.submit').click(function(){ $(this).closest('form').submit() });
-  },
-
-  keypress : function() {
-	$(':input').keypress(function (e) {
-  	  if (e.which == 13) {
-        e.preventDefault();
-        $(this).closest('form').submit();
-      }
-    });
-  },
   
   init : function() {
     account.tabs();
-	account.click();
-	account.keypress();
+    account.keypress();
+    account.click();
     if($('.loading').length){
       var preload;
       preload = setInterval(function() {
