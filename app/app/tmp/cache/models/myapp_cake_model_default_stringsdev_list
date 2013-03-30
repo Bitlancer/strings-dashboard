@@ -1,0 +1,2 @@
+1364583643
+a:19:{i:0;s:6:"config";i:1;s:6:"device";i:2;s:11:"device_meta";i:3;s:11:"device_type";i:4;s:5:"hiera";i:5;s:6:"module";i:6;s:11:"module_meta";i:7;s:12:"organization";i:8;s:8:"provider";i:9;s:6:"region";i:10;s:7:"service";i:11;s:14:"service_region";i:12;s:4:"sudo";i:13;s:14:"sudo_attribute";i:14;s:3:"tag";i:15;s:8:"tag_sudo";i:16;s:8:"tag_user";i:17;s:6:"target";i:18;s:4:"user";}

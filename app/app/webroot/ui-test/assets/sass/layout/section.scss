@@ -1,0 +1,64 @@
+body > section {
+  max-width: 1200px;
+  min-width: 600px;
+  padding: 90px 60px 30px 300px;
+  position: relative;
+  > div {
+    margin-top: 20px;
+    position: relative;
+    &.columns > div {
+      &:first-of-type {
+        float: left;
+        width: 65%;
+      }
+      &:last-of-type {
+        float: left;
+        padding-left: 3%;
+        width: 32%;
+        > .cta { margin-top: 10px }
+      }
+      h2 .cta {
+        float: right;  
+      }
+    }
+  }
+  .details {
+    background: #fbfbfb;
+    border: 1px dashed #ddd;
+    padding: 10px;
+    p {
+      margin: 0;
+      > strong {
+        display: inline-block;
+        margin-right: 2%;
+        min-width: 30%;
+      }
+    }  
+  }
+  .info {
+    background: #fbfbfb;
+    border: 1px solid #eee;
+    margin: 10px 0;  
+    padding: 5px;
+  }
+  ul {
+    &#activity {
+      li {
+        border-left: 3px solid #e5e5e5;
+        font-size: 85%;
+        line-height: 1.3;
+        list-style: none;
+        margin: 0 0 10px;
+        padding-left: 7px;
+        &:last-of-type { margin: 0 }
+        small { 
+          display: block;
+          font-size: 90%;
+          font-weight: 700;
+          margin: 5px 0 0;
+          padding-bottom: 3px;
+        }  
+      }
+    }  
+  }
+}

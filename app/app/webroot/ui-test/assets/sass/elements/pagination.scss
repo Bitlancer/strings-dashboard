@@ -1,0 +1,50 @@
+section ul#pagination {
+  color: #777;
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  position: relative;
+  > li, > span, > a {
+    border: 1px solid darken($white,5%);
+    display: block;
+    float: left;
+    height: 20px;
+    line-height: 20px;
+    margin-right: 3px;
+    width: 20px;
+    text-align: center;
+  }
+  > a {
+    border: 1px solid transparent;
+    color: #999;
+    cursor: pointer;
+    font-size: 20px;
+    margin-top: -2px;
+    &#prev {
+      &:after {
+        content: '\2039';  
+      }
+    }
+    &#next {
+      &:after {
+        content: '\203A';  
+      }
+    }
+  }
+  > li {
+    cursor: pointer;
+    a {
+      color: inherit;  
+    }
+    &.active {
+      background: $blue_gray;
+      border: 1px solid darken($blue_gray,15%);
+      color: darken($blue_gray,30%);
+      cursor: default;
+    }  
+  }
+  > span {
+    border: 1px solid transparent;  
+  }
+}
