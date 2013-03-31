@@ -1,2 +1,2 @@
-Strings-Dashbaord
+Strings-Dashboard
 ==================
