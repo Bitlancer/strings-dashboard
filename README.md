@@ -1,2 +1,4 @@
-Strings-Dashbaord
-==================
+strings-dashboard
+=================
+
+Bitlancer Strings Dashboard
