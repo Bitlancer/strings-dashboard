@@ -8,5 +8,5 @@
   <a href="#">Formations</a>
 </span>
 <span id="user-management">
-  <a href="#">User Management</a>
+  <a href="/users">User Management</a>
 </span>

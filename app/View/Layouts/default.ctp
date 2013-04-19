@@ -20,17 +20,17 @@
 <body class="loading">
   <header><?php echo $this->element('layouts/header'); ?></header>
   <nav><?php echo $this->element('layouts/nav'); ?></nav>
-  <section id="content">
-	<?php echo $this->fetch('content'); ?>
-    <?php echo $this->element('sql_dump'); ?>
-  </section> <!-- /content -->
+  <!-- Content -->
+    <?php echo $this->fetch('content'); ?>
+  <!-- /Content -->
 <!-- Javascript -->
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
-<script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
+<script src="//ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
+<script src="/js/jquery.fcbkcomplete.js"></script>
 <script type="text/javascript" src="/js/app.js"></script>
 <!--[if lt IE 9]>
-<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
 </body>
 </html>

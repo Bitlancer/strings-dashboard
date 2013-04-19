@@ -2,6 +2,28 @@
 
 class UsersController extends AppController {
 
+	public function home() {
+
+		$userTableColumns = array(
+			'Name' => array(
+				'model' => 'User',
+				'column' => 'name'
+			)
+		);
+
+		$userTableCTAEnabled = false;
+
+		if($this->request->isAjax()){
+            $this->autoRender = false;
+          	echo $this->DataTables->output('GET',$userTableColumns);
+        }
+        else {
+            $this->set(array(
+            	'userTableColumns' => array_keys($userTableColumns),
+                'userTableCTAEnabled' => $this->Auth->User('can_create_user')
+            ));
+        }
+	}
 
 	public function create() {
 

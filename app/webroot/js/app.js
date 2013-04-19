@@ -74,6 +74,8 @@ var strings = {
           "iDisplayLength": parseInt($(this).attr('data-length')) || 10,
           "oLanguage": { "sSearch": "" },
           "sDom": '<"top"f>rt<"bottom"p><"clear">',
+          "bServerSide": ($(this).attr("data-src") === undefined ? false : true),
+          "sAjaxSource": ($(this).attr("data-src") === undefined ? null : $(this).attr("data-src")),
           "fnInitComplete": function(oSettings) {
             var parent = $(this).parents('.dataTables_wrapper');
             if($(this).attr('data-cta')) parent.find('.top').prepend($(this).attr('data-cta'))
@@ -93,7 +95,7 @@ var strings = {
       // tooltips
       $('.tooltip').tooltip({ position: { my: "left+2 top+14", at: "left top+14" } });
       // modal windows
-      $('.modal').click(function(){strings.ui.modal($(this))});
+      $('.modal').live('click',function(){strings.ui.modal($(this))});
       // form ctas
       $('form .cta.submit').click(function(){ $(this).closest('form').submit() });
       //$('form .cta.submit').live('click',function(){ $(this).closest('form').submit() });

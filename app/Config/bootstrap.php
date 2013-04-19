@@ -142,6 +142,8 @@ Cache::config('default', array('engine' => 'File'));
  * CakePlugin::load('DebugKit'); //Loads a single plugin named DebugKit
  *
  */
+CakePlugin::load('DebugKit');
+CakePlugin::load('DataTables');
 
 
 /**
@@ -179,9 +181,3 @@ CakeLog::config('error', array(
 	'types' => array('warning', 'error', 'critical', 'alert', 'emergency'),
 	'file' => 'error',
 ));
-
-
-/**
- * Load DebugKit Plugin
- */
- CakePlugin::load('DebugKit');
