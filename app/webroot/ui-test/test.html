@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Strings - Test Page | Bitlancer</title>
+  <link id="style" rel="stylesheet" type="text/css" href="/strings/assets/css/app.css">
+  <script type="text/javascript">
+    //<![CDATA[
+    var config = {
+      name : 'dashboard'
+    };
+    //]]>
+  </script>
+</head>
+<body class="loading">
+  <header></header>
+  <nav></nav>
+  <!-- Content -->
+  <section>
+    <h1>Test Page</h1>
+    <div class="columns">
+      <div>
+        <h2>Server Details
+        <ul class="action-menu">
+          <li>Actions</li>
+          <span>
+            <!-- a href="javascript:strings.interface.messages('success','Success!','Lorem ipsum dolar amet')">Trigger Alert</a -->
+            <li>Edit</li>
+            <li>Create</li>
+            <a class="modal" data-src="#destroy" data-title="Please confirm">Destroy</a>
+          </span>
+        </ul>
+        </h2>
+        <div class="details">
+          <p><strong>Server Status</strong>Active</p>
+          <p><strong>System Image</strong>Ubuntu 12.10</p>
+          <p><strong>Size</strong>512 MB RAM, 20 GB Disk</p>
+          <p><strong>Region</strong>Dallas (DFW)</p>
+          <p><strong>Server Type</strong>Next Generation Server</p>
+        </div>
+        <h2>Blank Table</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Table Title</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="blank">
+                <h3>You are not monitoring this server</h3>Set up checks for greater visibility on uptime, performance, etc.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <h2>Clean Table</h2>
+        <div>
+        </div>
+        <table class="clean">
+          <thead>
+            <tr>
+              <th>Column Title</th>
+              <th>Column Title</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lorem ipsum dolar sit amet</td>
+              <td>Lorem ipsum dolar</td>
+            </tr>
+            <tr>
+              <td>Do dolar di amet si</td>
+              <td>Lorem ipsum dolar</td>
+            </tr>
+            <tr>
+              <td>Do dolar di amet si</td>
+              <td>Lorem ipsum dolar</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <div>
+        <h2>Sidebar title</h2>
+        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+        <p class="info">This is an information block</p>
+        <a class="arrow">This is a hyperlink</a>
+        <h2>Sidebar title two</h2>
+        <p>Some filler text to explain things.</p>
+        <a class="cta" href="#">Link to action</a>
+        <h2>Sidebar list example</h2>
+        <ul>
+          <li>List item one</li>
+          <li>List item two</li>
+          <li>List item three</li>
+        </ul>
+    </div>
+    <hr class="clear">
+  </section>
+  <div style="display:none">
+    <div id="destroy">
+      <form>
+        <fieldset>
+          <legend>Enter your password</legend>
+          <input type="password" placeholder="password" />
+        </fieldset>
+        <div class="submit">
+          <a class="cta cancel disabled">Destroy</a>
+          <a class="cta">Cancel</a>
+        </div>
+      </form>          
+    </div>
+  </div>
+<!-- Javascript -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/strings/assets/js/app.js"></script>
+<!--[if lt IE 9]>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+</body>
+</html>

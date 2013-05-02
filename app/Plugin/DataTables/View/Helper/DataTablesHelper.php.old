@@ -1,0 +1,148 @@
+<?php
+
+App::uses('AppHelper', 'View/Helper');
+
+class DataTablesHelper extends AppHelper {
+
+    public function output($params){
+
+	$output = "";
+
+	$columns = $params['aColumns'];
+
+	//Generate HTML table
+	$id = $params['id'];
+	$output .= "<table class=\"display\" id=\"${id}\">";
+	$output .= "<thead>";
+	$output .= "<tr>";
+
+	foreach($columns as $name => $col_options){
+		$output .= "<th>${name}</th>";
+	}
+
+	$output .= "</tr>";
+	$output .= "</thead>";
+	$output .= "<tbody></tbody>";
+	$output .= "</table>";
+
+	//Generate JS
+	$output .= "<script>";
+	$output .= "$(document).ready(function() {";
+	$output .= "$(\"#${id}\").dataTable(";
+
+	//Global datatable options
+	$datatable_options = array();
+
+		/* bServerSide */
+		if(array_key_exists('bServerSide',$params) && $params['bServerSide'] !== false){
+
+			$datatable_options['bServerSide'] = json_encode(true);
+
+			$ss_params = $params['bServerSide'];
+			
+			/* sAjaxSource */
+			//Server-side data source parameters
+			$src = "";
+			if(is_array($ss_params['sAjaxSource'])){
+				$src_params = $ss_params['sAjaxSource'];
+				if(array_key_exists('controller',$src_params))
+					$src = "/" . $src_params['controller'];
+				else 
+					$src = "/" . $this->params['controller'];
+
+				$src .= "/" . $src_params['action'];
+			}
+			else {
+				$src = $ss_params['sAjaxSource'];	
+			}
+			$datatable_options['sAjaxSource'] = json_encode($src);
+
+			/* sServerMethod */	
+			//Server-side method params	
+			$method = "GET";
+			if(!array_key_exists('sServerMethod',$ss_params) || 
+				$ss_params['sServerMethod'] == 'POST') {
+				$method = "POST";
+			}
+			$datatable_options['sServerMethod'] = json_encode($method);
+		}
+
+		/* oSearch */
+		if(array_key_exists('sSearch',$params) &&  $params['sSearch'] !== false){
+			$datatable_options['oSearch'] = json_encode(array('sSearch' => $params['sSearch']));
+		}
+
+	//Column Definitions (aoColumnDefs)
+        $column_defs = array();
+
+		/* bSortable */
+		$unsortable_columns = array();
+		$x = 0;
+		foreach($columns as $name => $col_options){
+			if(array_key_exists('sortable',$col_options) && $col_options['sortable'] === false){
+				array_push($unsortable_columns,$x);
+			}
+			$x++;
+		}
+		if(count($unsortable_columns) > 0){
+			array_push($column_defs,array('bSortable' => false,'aTargets' => $unsortable_columns));
+		}
+
+		/* bSearchable */
+		$unsearchable_columns = array();
+                $x = 0;
+                foreach($columns as $name => $col_options){
+                        if(array_key_exists('searchable',$col_options) && $col_options['searchable'] === false){
+                                array_push($unsearchable_columns,$x);
+                        }
+                        $x++;
+                }
+                if(count($unsearchable_columns) > 0){
+                        array_push($column_defs,array('bSearchable' => false,'aTargets' => $unsearchable_columns));
+                }
+
+
+		/* sWidth */
+                $column_widths = array();
+                $x = 0;
+                foreach($columns as $name => $col_options){
+                        if(array_key_exists('width',$col_options)){
+				$col_width = $col_options['width'];
+				$column_widths[$col_width][] = $x;
+                        }
+                        $x++;
+                }
+                if(count($column_widths) > 0){
+			foreach($column_widths as $width => $targets)
+				array_push($column_defs,array('sWidth' => $width, 'aTargets' => $targets));
+                }
+
+		$datatable_options['aoColumnDefs'] = json_encode($column_defs);
+
+	/* Callback functions */
+
+		if(array_key_exists('fnRowCallback',$params)){
+                	$datatable_options['fnRowCallback'] = $params['fnRowCallback'];
+        	}
+
+
+	//Append datatable options to $output
+
+	$output .= "{";
+	$options = array();
+	foreach($datatable_options as $option_name => $option_val){
+		$options[] = "\"" . $option_name . "\":" . $option_val;
+	}
+	$output .= implode(",",$options);
+	$output .= "}";
+
+
+	$output .= ")";
+	$output .= "});";
+	$output .= "</script>";
+
+	echo $output;
+	
+    }
+
+}

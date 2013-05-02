@@ -1,0 +1,33 @@
+<form id="login" method="post" action="/login">
+    <h1>Strings</h1>
+    <ul id="notice">
+      <?php echo $this->Session->flash('flash', array('element' => 'flash/default')); ?>
+	  <?php echo $this->Session->flash('auth',array('element' => 'flash/default')); ?>
+    </ul>
+    <div data-id="login">
+	  <input type="text" name="data[Organization][short_name]" placeholder="organization" value="<?php echo $organizationShortName; ?>" />
+      <input type="text" name="data[User][name]" placeholder="username" value="<?php echo $userName; ?>" />
+      <input type="password" name="data[User][password]" placeholder="password" />
+      <span class="buttons">
+        <a class="cta submit">login</a>
+        <input id="remember-me" name="data[User][remember_me]" type="checkbox" <?php if($userRememberMe) { echo "checked=checked"; } ?> />
+        <label for="remember-me">remember me</label>
+      </span>
+    </div>
+    <div data-id="register">
+      <p>Strings is in private beta. Enter your email &amp; we'll shoot you a message when we're live.</p>
+      <input type="email" placeholder="email address" />
+      <span class="buttons">
+        <a class="cta">register</a><a class="cta" data-id="login">cancel</a>
+      </span>
+    </div>
+    <div data-id="password">
+      <input type="email" placeholder="email address" />
+      <span class="buttons">
+        <a class="cta">reset password</a><a class="cta" data-id="login">cancel</a>
+      </span>
+    </div>
+    <span id="tabs">
+      <a data-id="register">register</a><a data-id="password">forgot password</a>
+    </span>
+  </form>
