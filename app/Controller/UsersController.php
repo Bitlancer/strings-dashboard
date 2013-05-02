@@ -50,8 +50,6 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
-			file_put_contents('/tmp/debug.log',print_r($this->request->data,true));
-
 			//Verify passwords match
 			if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
 				$this->Session->setFlash(__('Passwords do not match'),'default',array(),'error');

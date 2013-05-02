@@ -2,6 +2,7 @@
 App::uses('Component', 'Controller');
 class DataTablesComponent extends Component
 {
+
 	/**
 	 * Constructor
 	 */
