@@ -1,9 +1,6 @@
 <form id="login" method="post" action="/login">
     <h1>Strings</h1>
-    <ul id="notice">
-      <?php echo $this->Session->flash('flash', array('element' => 'flash/default')); ?>
-	  <?php echo $this->Session->flash('auth',array('element' => 'flash/default')); ?>
-    </ul>
+    <?php echo $this->element('notices'); ?>
     <div data-id="login">
 	  <input type="text" name="data[Organization][short_name]" placeholder="organization" value="<?php echo $organizationShortName; ?>" />
       <input type="text" name="data[User][name]" placeholder="username" value="<?php echo $userName; ?>" />

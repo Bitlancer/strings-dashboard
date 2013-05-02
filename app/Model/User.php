@@ -12,6 +12,18 @@ class User extends AppModel {
 		'Organization'
 	);
 
+	public $hasAndBelongsToMany = array(
+		'Team' => array(
+			'className' => 'Team',
+			'joinTable' => 'user_x_team',
+			'foreignKey' => 'user_id',
+			'associationForeignKey' => 'team_id',
+			'conditions' => array(
+				'Team.is_disabled' => 0
+			)
+		)
+	);
+
 	public $validate = array(
         'organization_id' => array(
             'requiredOnCreate' => array(

@@ -1,9 +1,12 @@
 <?php
 
-class Module extends AppModel
-{
+class Application extends AppModel {
 
-	public $useTable = 'module';
+	public $useTable = 'application';
+
+	public $belongsTo = array(
+		'Organization'
+	);
 
 	public $validate = array(
         'organization_id' => array(
@@ -21,10 +24,10 @@ class Module extends AppModel
                 'rule' => 'numeric',
                 'message' => 'Organization id must be an integer'
             ),
-            'validForeignKey' => array(
-                'rule' => array('isValidForeignKey'),
-                'message' => 'The organization id you supplied does not exist'
-            )
+			'validForeignKey' => array(
+				'rule' => array('isValidForeignKey'),
+				'message' => 'The organization id you supplied does not exist'
+			)
         ),
         'name' => array(
             'requiredOnCreate' => array(
@@ -37,20 +40,22 @@ class Module extends AppModel
                 'rule' => 'notEmpty',
                 'message' => 'Name cannot be empty'
             ),
-			'checkMultiKeyUniqueness' => array(
-                'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
-                'message' => 'A module with this name is already defined'
-            )
-        ),
-		'is_active' => array(
-            'notEmpty' => array(
-                'rule' => 'notEmpty',
-				'message' => 'is_active cannot be empty'
+            'validName' => array(
+                'rule' => array('custom','/[A-Za-z0-9-_\. @]{3,}/'),
+                'message' => 'Name is limited to letters, numbers and punctuation and must be at least 3 characters long'
             ),
-            'isBoolean' => array(
-                'rule' => 'boolean',
-                'message' => 'Invalid value for is_active'
-            )
+			'checkMultiKeyUniqueness' => array(
+				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
+				'message' => 'An application with this name has already been defined.'
+			)
         )
-	);
+    );
+
+    public function beforeSave($options = array()) {
+
+		if(isset($this->data['Team']['name']))
+            $this->data['Team']['name'] = ucwords(strtolower($this->data['Team']['name']));
+
+        return true;
+    }
 }

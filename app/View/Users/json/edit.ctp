@@ -1,5 +1,7 @@
 <div id="edit-user">
-  <form method="POST" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
+  <ul id="notice">
+  </ul>
+  <form class="ajax" method="POST" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
 	<input type="hidden" name="data[Organization][id]" value="<?php echo $user['Organization']['id']; ?>" />
     <fieldset>
       <legend>Name</legend>

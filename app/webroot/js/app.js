@@ -90,7 +90,7 @@ var strings = {
           "sPaginationType": "full_numbers",
           "aLengthMenu": [[2, 10, 25, 50, 100, 200, -1], [2, 10, 25, 50, 100, 200, "All"]],
           "iDisplayLength": parseInt($(this).attr('data-length')) || 10,
-          "oLanguage": { "sSearch": "" },
+          "oLanguage": { "sSearch": "","sEmptyTable":"No data available" },
           "sDom": '<"top"f>rt<"bottom"p><"clear">',
           "bServerSide": ($(this).attr("data-src") === undefined ? false : true),
           "sAjaxSource": ($(this).attr("data-src") === undefined ? null : $(this).attr("data-src")),
@@ -126,6 +126,33 @@ var strings = {
       });
     },
     forms : function() {
+	  $('form.ajax').each(function() {
+		$(this).submit(function(e) {
+		  e.preventDefault();
+		  $.ajax({
+		    type: (($(this).attr('method') === undefined || $(this).attr('method').toLowerCase() == 'post') ? 'post' : 'post'),
+			url: $(this).attr('action'),
+			data: $(this).serialize(),
+			success: function(data, textStatus){
+			  if(data.redirectUri !== undefined){
+			    window.location.href = data.redirectUri;
+			  }
+			  else {
+			  	var messageElement = '<li>' + data.message + '</li>';
+			    var messageClass = "success";
+			    if(data.isError){
+			      messageClass = "error";
+			    }
+			    $("#notice").empty();
+			    $(messageElement).appendTo("#notice").addClass(messageClass);
+			  }
+		    }
+		  })
+		  .error(function(jqXHR,textStatus){
+		    console.log(textStatus);
+		  });
+		});
+	  });
       // count type validation
       $('.cta.disabled').each(function() {
         $(this).parents('form').find(':password').last().keyup(function() {

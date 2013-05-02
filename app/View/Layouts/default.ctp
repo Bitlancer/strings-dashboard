@@ -13,8 +13,8 @@
   ?>
 </head>
 <body class="loading">
-  <header><?php echo $this->element('layouts/header'); ?></header>
-  <nav><?php echo $this->element('layouts/nav'); ?></nav>
+  <header><?php echo $this->element('Layouts/header'); ?></header>
+  <nav><?php echo $this->element('Layouts/nav'); ?></nav>
   <section> <!-- Content -->
     <?php echo $this->fetch('content'); ?>
   </section> <!-- /Content -->
@@ -27,5 +27,6 @@
 <!--[if lt IE 9]>
 <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+<?php echo $this->element('sql_dump');?>
 </body>
 </html>

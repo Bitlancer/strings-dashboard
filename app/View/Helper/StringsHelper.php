@@ -73,7 +73,7 @@ class StringsHelper extends AppHelper
 		else {
 			$tableDataSrc = $tableData;
 		}
-		
+	
 		//Expand ctaClasses into css list
 		$ctaClasses = implode(' ',$ctaClasses);
 		

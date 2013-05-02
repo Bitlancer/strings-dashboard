@@ -100,7 +100,7 @@ body {
   body > header {
     top: 0; }
   body.loading {
-    background: #f8f8f8 url("../img/loading.gif") center no-repeat; }
+    background: #f8f8f8 url("/img/loading.gif") center no-repeat; }
     body.loading > section {
       display: none; }
     body.loading > nav {
@@ -152,7 +152,7 @@ body {
       margin-bottom: 10px; }
 
 body > header {
-  background: #222222 url("../img/dark_stripes.png");
+  background: #222222 url("/img/dark_stripes.png");
   border-bottom: 1px solid #111;
   height: 50px;
   left: 0;
@@ -183,7 +183,7 @@ body > header {
     margin-top: 10px; }
 
 body > nav {
-  background: #f0f0f0 url("../img/stripe.png") center -5px no-repeat;
+  background: #f0f0f0 url("/img/stripe.png") center -5px no-repeat;
   height: 100%;
   padding-top: 5px;
   position: fixed;
@@ -237,8 +237,8 @@ body > nav {
       background-size: auto 20px; }
     body > nav > span#formations > a:before {
       background-image: url("/img/cloud.png"); }
-	body > nav > span#applications > a:before {
-      background-image: url("/img/application.png"); }	
+    body > nav > span#applications > a:before {
+      background-image: url("/img/application.png"); }
     body > nav > span#user-management > a:before {
       background-image: url("/img/user.png"); }
     body > nav > span.active {
@@ -372,7 +372,7 @@ table {
         table tbody tr td[data-status=default]:before {
           background-color: #ccc; }
         table tbody tr td[data-status].activity:before {
-          background-image: url("../img/status.png");
+          background-image: url("/img/status.png");
           background-size: 7px auto;
           background-position: 0;
           -webkit-animation: activity 2s infinite linear;
@@ -381,11 +381,11 @@ table {
           animation: activity 2s infinite linear; }
         table tbody tr td:last-of-type {
           border: 0; }
-        table tbody tr td.blank {
+        table tbody tr td.blank, table tbody tr td .dataTables_empty {
           font-size: 90%;
           padding: 20px;
           text-align: center; }
-          table tbody tr td.blank h3 {
+          table tbody tr td.blank h3, table tbody tr td .dataTables_empty h3 {
             font-weight: 600;
             font-size: 17px;
             margin-bottom: 5px; }
@@ -427,6 +427,8 @@ table {
       -moz-transform: scaleY(0.75);
       -o-transform: scaleY(0.75);
       transform: scaleY(0.75); }
+    table th span.disabled, table td span.disabled {
+      color: #999; }
 
 .dataTables_wrapper {
   position: relative; }
@@ -523,7 +525,7 @@ ul#messages > li {
     color: inherit;
     text-decoration: underline; }
   ul#messages > li > a.close {
-    background: url("../img/close.png") 2px 2px no-repeat;
+    background: url("/img/close.png") 2px 2px no-repeat;
     background-size: 10px 10px;
     display: block;
     height: 15px;
@@ -563,6 +565,20 @@ ul#messages > li {
     font-weight: 600;
     line-height: 1.5;
     text-transform: capitalize; }
+
+ul#notice li {
+  font-size: 89%;
+  list-style: none;
+  margin-bottom: 10px;
+  padding: 5px; }
+  ul#notice li.error {
+    background: #e26b6b;
+    border: 1px solid #c12727;
+    color: white; }
+  ul#notice li.success {
+    background: #73c950;
+    border: 1px solid #45892a;
+    color: white; }
 
 body .strings-modal {
   border: 0;
@@ -824,7 +840,7 @@ ul.action-menu {
     height: 20px;
     padding: 0 5px; }
     .cta.refresh:before {
-      background: url("../img/refresh.png") center 2px no-repeat;
+      background: url("/img/refresh.png") center 2px no-repeat;
       background-size: 13px 15px;
       content: ' ';
       display: inline-block;
@@ -992,7 +1008,7 @@ ul.holder li.bit-box a.closebutton {
   width: 7px;
   height: 7px;
   font-size: 1px;
-  background: url("../img/ac-close.gif"); }
+  background: url("/img/ac-close.gif"); }
 
 ul.holder li.bit-box a.closebutton:hover {
   background-position: 7px; }
@@ -1141,19 +1157,6 @@ body#account {
         font-size: 80%; }
       body#account form#login div > .buttons .cta {
         margin-right: 5px; }
-    body#account form#login ul#notice li {
-      font-size: 89%;
-      list-style: none;
-      margin-bottom: 10px;
-      padding: 5px; }
-      body#account form#login ul#notice li.error {
-        background: #e26b6b;
-        border: 1px solid #c12727;
-        color: #6c1515; }
-      body#account form#login ul#notice li.success {
-        background: #73c950;
-        border: 1px solid #45892a;
-        color: #1e3b12; }
     body#account form#login #tabs {
       background-color: rgba(0, 0, 0, 0.05);
       background-image: -moz-linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.1));

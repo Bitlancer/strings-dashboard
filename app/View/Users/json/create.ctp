@@ -1,5 +1,7 @@
 <div id="create-user">
-  <form method="POST" action="<?php echo $_SERVER['REQUEST_URI']; ?>" >
+  <ul id="notice">
+  </ul>
+  <form class="ajax" method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>" >
 	<fieldset>
       <legend>Account</legend>
       <input type="text" placeholder="username" name="data[User][name]" />

@@ -20,10 +20,9 @@ class UsersController extends AppController {
 			$findParameters = array(
 				'fields' => array(
 					'User.id','User.organization_id','User.name','User.full_name',
-					'User.first_name','User.last_name'
+					'User.first_name','User.last_name','User.is_disabled'
 				),
                 'conditions' => array(
-					'is_disabled =' => 0,
                     'organization_id =' => $this->Auth->user('organization_id')
                 )
             );
@@ -50,26 +49,46 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
+			$this->autoRender = false;
+
+			$isError = false;
+			$message = "";
+
 			//Verify passwords match
 			if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
-				$this->Session->setFlash(__('Passwords do not match'),'default',array(),'error');
-				$this->redirect(array('action' => 'index'));
+				$isError = true;
+				$message = __('Passwords do not match.');
 			}
 			else
+			{
 				unset($this->request->data['User']['confirm_password']);
 
-			//Set organization
-        	$this->request->data['User']['organization_id'] = $this->Auth->User('organization_id');
+				//Set organization
+        		$this->request->data['User']['organization_id'] = $this->Auth->User('organization_id');
 
-			if($this->User->save($this->request->data)){
-				$this->Session->setFlash(__('Successfully created new user.'),'default', array(), 'success');
+				if($this->User->save($this->request->data)){
+					$message = __('Successfully created new user.');
+				}
+				else {
+					$isError = true;
+					$message = __('Failed to create user. ' . $this->User->validationErrorsAsString());
+				}
+			}
+
+			if($isError){
+				$response = array(
+					'isError' => $isError,
+					'message' => $message
+				);
 			}
 			else {
-				$message = 'Failed to update user. ' . $this->User->validationErrorsAsString();
-                $this->Session->setFlash(__($message), 'default', array(), 'error');
+				$this->Session->setFlash($message,'default',array(),'success');
+				$response = array(
+					'redirectUri' => $this->referer(array('action' => 'index'))
+				);
 			}
 
-			$this->redirect(array('action' => 'index'));
+			echo json_encode($response);
 		}
 	}
 
@@ -96,23 +115,44 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
+			$this->autoRender = false;
+
+			$isError = false;
+			$message = "";
+
+			//Have to set organization_id so multi-column validation can occur
+			$this->request->data['User']['organization_id'] = $user['Organization']['id'];
+
 			$validFields = array('first_name','last_name','email','phone');
 			$this->User->id = $id;
 			if($this->User->save($this->request->data,true,$validFields)){
-				$this->Session->setFlash(__('Successfully updated user.'),'default', array(), 'success');
+				$message = __('Successfully updated user.');
 			}
 			else {
-				$message = 'Failed to update user. ' . $this->User->validationErrorsAsString();
-				$this->Session->setFlash(__($message), 'default', array(), 'error');
-				$user = $this->request->data;
+				$isError = true;
+				$message = __('Failed to update user. ' . $this->User->validationErrorsAsString());
 			}
 
-			$this->redirect(array('action' => 'index'));
-		}
+			if($isError){
+				$response = array(
+					'isError' => $isError,
+					'message' => $message
+				);
+			}
+			else {
+				$this->Session->setFlash($message,'default',array(),'success');
+				$response = array(
+					'redirectUri' => $this->referer(array('action' => 'index'))
+				);
+			}
 
-		$this->set(array(
-			'user' => $user
-		));
+			echo json_encode($response);
+		}
+		else {
+			$this->set(array(
+				'user' => $user
+			));
+		}
 	}
 
 	/**
@@ -130,42 +170,51 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
+			$this->autoRender = false;
+
+			$isError = false;
+			$message = "";
+
 			//Verify passwords match
             if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
-                $this->Session->setFlash(__('Passwords do not match'),'default',array(),'error');
-                $this->redirect(array('action' => 'index'));
-            }
-            else
-                unset($this->request->data['User']['confirm_password']);
-
-			//Save user
-            $validFields = array('password','first_name','last_name','email','phone');
-            $this->User->id = $id;
-            if($this->User->save($this->request->data,true,$validFields)){
-                $this->Session->setFlash(__('Successfully updated your information.'),'default', array(), 'success');
-
-				//Update Auth session data
-				/*
-				$user = $this->User->find('first',array(
-					'conditions' => array(
-						'User.id' => $id
-					)
-				));
-				$this->Auth->login(array_merge($this->Auth->user(),$user['User']));
-				*/
+				$isError = true;
+                $message = __('Passwords do not match.');
             }
             else {
-                $message = 'Failed to update your information. ' . $this->User->validationErrorsAsString();
-                $this->Session->setFlash(__($message), 'default', array(), 'error');
-                $user = $this->request->data;
+
+                unset($this->request->data['User']['confirm_password']);
+
+				//Save user
+            	$validFields = array('password','first_name','last_name','email','phone');
+            	$this->User->id = $id;
+            	if($this->User->save($this->request->data,true,$validFields)){
+                	$message = __('Successfully updated your information.');
+            	}
+            	else {
+					$isError = true;
+                	$message = __('Failed to update your information. ' . $this->User->validationErrorsAsString());
+            	}
+			}
+
+			if($isError){
+                $response = array(
+                    'isError' => $isError,
+                    'message' => $message
+                );
             }
-
-            $this->redirect(array('action' => 'index'));
+            else {
+                $this->Session->setFlash($message,'default',array(),'success');
+                $response = array(
+                    'redirectUri' => $this->referer(array('action' => 'index'))
+                );
+            }
+            echo json_encode($response);
         }
-
-		$this->set(array(
-            'user' => $user
-        ));	
+		else {
+			$this->set(array(
+            	'user' => $user
+        	));
+		}	
 	}
 
 	public function reset_password($id=null){
@@ -188,24 +237,43 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
+			$this->autoRender = false;
+
+			$isError = false;
+			$message = "";
+
 			//Verify passwords match
             if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
-                $this->Session->setFlash(__('Passwords do not match'),'default',array(),'error');
-                $this->redirect(array('action' => 'index'));
+				$isError = true;
+                $message = __('Passwords do not match.');
             }
-            else
+            else {
+
                 unset($this->request->data['User']['confirm_password']);
 
-			$this->User->id = $id;
-			if($this->User->save($this->request->data,true,array('password'))){
-				$this->Session->setFlash(__('Updated user password'),'default',array(),'success');
-				$this->redirect(array('action' => 'index'));
+				$this->User->id = $id;
+				if($this->User->save($this->request->data,true,array('password'))){
+					$message = __('Updated user password.');
+				}
+				else {
+					$isError = true;
+					$message = __('Failed to update user password. ' . $this->User->validationErrorsAsString());
+				}
 			}
-			else {
-				$message = 'Failed to update user password. ' . $this->User->validationErrorsAsString();
-                $this->Session->setFlash(__($message), 'default', array(), 'error');
-				$this->redirect(array('action' => 'index'));
-			}
+
+			if($isError){
+                $response = array(
+                    'isError' => $isError,
+                    'message' => $message
+                );
+            }
+            else {
+                $this->Session->setFlash($message,'default',array(),'success');
+                $response = array(
+                    'redirectUri' => $this->referer(array('action' => 'index'))
+                );
+            }
+            echo json_encode($response);	
 		}
 	}
 
@@ -223,7 +291,7 @@ class UsersController extends AppController {
         }
 
 		if($user['User']['is_disabled']){
-            $this->Session->setFlash(__('This user is already disabled.'),'default',array(),'error');
+            $this->Session->setFlash(__('This user is already disabled.'),'default',array(),'warning');
             $this->redirect(array('action' => 'index'));
         }
 
@@ -236,7 +304,7 @@ class UsersController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			}
 			else {
-				$message = 'Unable to disable user. ' . $this->User->validationErrorsAsString();
+				$message = __('Unable to disable user. ' . $this->User->validationErrorsAsString());
 				$this->Session->setFlash(__($message), 'default', array(), 'error');
 				$this->redirect(array('action' => 'index'));
 			}
@@ -245,8 +313,45 @@ class UsersController extends AppController {
 		$this->set(array(
 			'user' => $user
 		));
-		
 	}
+
+	public function enable($id=null){
+
+        $user = $this->User->find('first',array(
+            'conditions' => array(
+                'User.id' => $id
+            )
+        ));
+
+        if(empty($user)){
+            $this->Session->setFlash(__('This user does not exist.'),'default',array(),'error');
+            $this->redirect(array('action' => 'index'));
+        }
+
+        if(!$user['User']['is_disabled']){
+            $this->Session->setFlash(__('This user is already enabled.'),'default',array(),'warning');
+            $this->redirect(array('action' => 'index'));
+        }
+
+        if($this->request->is('post')){
+
+            $this->User->id = $id;
+            $this->User->set('is_disabled',0);
+            if($this->User->save()){
+                $this->Session->setFlash(__('This user has been re-enabled.'),'default',array(),'success');
+                $this->redirect(array('action' => 'index'));
+            }
+            else {
+                $message = __('Unable to re-enable user. ' . $this->User->validationErrorsAsString());
+                $this->Session->setFlash(__($message), 'default', array(), 'error');
+                $this->redirect(array('action' => 'index'));
+            }
+        }
+
+        $this->set(array(
+            'user' => $user
+        ));
+    }
 
 	public function login() {
 
