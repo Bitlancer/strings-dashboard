@@ -1,21 +1,9 @@
 <?php
 
-class Application extends AppModel {
+class Module extends AppModel
+{
 
-	public $useTable = 'application';
-
-	public $belongsTo = array(
-		'Organization'
-	);
-
-	public $hasAndBelongsToMany = array(
-        'Formation' => array(
-            'className' => 'Formation',
-            'joinTable' => 'application_formation',
-            'foreignKey' => 'application_id',
-            'associationForeignKey' => 'formation_id'
-        )
-    );
+	public $useTable = 'module';
 
 	public $validate = array(
         'organization_id' => array(
@@ -33,10 +21,10 @@ class Application extends AppModel {
                 'rule' => 'numeric',
                 'message' => 'Organization id must be an integer'
             ),
-			'validForeignKey' => array(
-				'rule' => array('isValidForeignKey'),
-				'message' => 'The organization you supplied does not exist'
-			)
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => 'The organization id you supplied does not exist'
+            )
         ),
         'name' => array(
             'requiredOnCreate' => array(
@@ -49,19 +37,20 @@ class Application extends AppModel {
                 'rule' => 'notEmpty',
                 'message' => 'Name cannot be empty'
             ),
-            'validName' => array(
-                'rule' => array('custom','/[A-Za-z0-9-_\. @]{3,}/'),
-                'message' => 'Name is limited to letters, numbers and punctuation and must be at least 3 characters long'
-            ),
 			'checkMultiKeyUniqueness' => array(
-				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
-				'message' => 'This name is already taken'
-			)
+                'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
+                'message' => 'A module with this name is already defined'
+            )
+        ),
+		'is_active' => array(
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+				'message' => 'is_active cannot be empty'
+            ),
+            'isBoolean' => array(
+                'rule' => 'boolean',
+                'message' => 'Invalid value for is_active'
+            )
         )
-    );
-
-    public function beforeSave($options = array()) {
-
-        return true;
-    }
+	);
 }

@@ -368,6 +368,7 @@ class UsersController extends AppController {
 			//Add additional conditions to login query
 			$this->Auth->authenticate['Form']['scope'] = array(
 				'User.is_disabled' => '0',
+				'Organization.is_disabled' => '0',
             	'Organization.short_name' => $this->request->data['Organization']['short_name']
         	);
 

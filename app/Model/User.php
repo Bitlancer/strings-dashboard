@@ -15,7 +15,7 @@ class User extends AppModel {
 	public $hasAndBelongsToMany = array(
 		'Team' => array(
 			'className' => 'Team',
-			'joinTable' => 'user_x_team',
+			'joinTable' => 'user_team',
 			'foreignKey' => 'user_id',
 			'associationForeignKey' => 'team_id',
 			'conditions' => array(
@@ -136,15 +136,15 @@ class User extends AppModel {
 			)
 		),
 		'is_disabled' => array(
-			'notEmpty' => array(
+            'notEmpty' => array(
                 'rule' => 'notEmpty',
                 'message' => 'is_disabled cannot be empty'
             ),
-            'validValue' => array(
-                'rule' => array('inList',array(0,1,'0','1')),
-                'message' => 'is_disabled must be 0 or 1' 
+            'isBoolean' => array(
+                'rule' => 'boolean',
+                'message' => 'Invalid value for is_disabled'
             )
-		)
+        )
     );
 
     public function beforeSave($options = array()) {

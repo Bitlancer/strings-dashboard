@@ -37,14 +37,14 @@ class Organization extends AppModel {
 				'message' => 'This name is already registered with another account'
 			)
 		),
-		'is_active' => array(
+		'is_disabled' => array(
 			'notEmpty' => array(
 				'rule' => 'notEmpty',
-				'message' => 'is_active cannot be empty'
+				'message' => 'is_disabled cannot be empty'
 			),
 			'isBoolean' => array(
 				'rule' => 'boolean',
-				'message' => 'Invalid value for is_active'
+				'message' => 'Invalid value for is_disabled'
 			)
 		)
     );

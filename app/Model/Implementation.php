@@ -1,24 +1,13 @@
 <?php
 
-class Team extends AppModel {
+class Implementation extends AppModel {
 
-	public $useTable = 'team';
+	public $useTable = 'implementation';
 
 	public $belongsTo = array(
-		'Organization'
+		'Organization',
+		'Provider'
 	);
-
-	public $hasAndBelongsToMany = array(
-        'User' => array(
-            'className' => 'User',
-            'joinTable' => 'user_team',
-            'foreignKey' => 'team_id',
-            'associationForeignKey' => 'user_id',
-            'conditions' => array(
-                'User.is_disabled' => 0
-            )
-        )
-    );
 
 	public $validate = array(
         'organization_id' => array(
@@ -38,9 +27,29 @@ class Team extends AppModel {
             ),
 			'validForeignKey' => array(
 				'rule' => array('isValidForeignKey'),
-				'message' => 'The organization id you supplied does not exist'
+				'message' => 'The organization you supplied does not exist'
 			)
         ),
+		'provider_id' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => 'Provider id is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => 'Provider id cannot be empty'
+            ),
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => 'Provider id must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => 'The provider you supplied does not exist'
+            )
+        ),	
         'name' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
@@ -58,18 +67,8 @@ class Team extends AppModel {
             ),
 			'checkMultiKeyUniqueness' => array(
 				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
-				'message' => 'A team with this name already exists within your organization.'
+				'message' => 'This name is already taken'
 			)
-        ),
-		'is_disabled' => array(
-            'notEmpty' => array(
-                'rule' => 'notEmpty',
-                'message' => 'is_disabled cannot be empty'
-            ),
-            'isBoolean' => array(
-                'rule' => 'boolean',
-                'message' => 'Invalid value for is_disabled'
-            )
         )
     );
 

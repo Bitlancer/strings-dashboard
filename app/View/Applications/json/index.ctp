@@ -2,9 +2,17 @@
 
 	$actionMenuItems = array(
         array(
-            'text' => '',
-            'action' => ''
+            'text' => 'Edit Application',
+            'action' => 'edit'
         ),
+		array(
+			'text' => 'Edit Formations',
+			'action' => 'edit_formations'
+		),
+		array(
+            'text' => 'Delete',
+            'action' => 'delete'
+        )
     );
 
     echo $this->DataTables->output($dataTable,function($view,$outputRow,$rawRow) use($actionMenuItems,$isAdmin){
