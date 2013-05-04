@@ -2,39 +2,47 @@
 
 	$enabledUserActionMenuItems = array(
         array(
+			'type' => 'modal',
             'text' => 'Edit User',
-            'action' => 'edit'
+			'source' => '/Users/edit/%__id__%.json',
         ),
         array(
+			'type' => 'modal',
             'text' => 'Reset Password',
-            'action' => 'reset_password'
+			'source' => '/Users/reset_password/%__id__%.json'
         ),
         array(
+			'type' => 'modal',
             'text' => 'Disable User',
-            'action' => 'disable'
+			'source' => '/Users/disable/%__id__%.json'
         )
     );
 
 	$disabledUserActionMenuItems = array(
 		array(
+			'type' => 'modal',
 			'text' => 'Re-enable User',
-			'action' => 'enable'
+			'source' => '/Users/enable/%__id__%.json'
 		)
 	);
 
-	echo $this->DataTables->output($dataTable,function($view,$outputRow,$rawRow) use($enabledUserActionMenuItems,$disabledUserActionMenuItems,$isAdmin){
+	echo $this->DataTables->output($dataTable,
+		function($view,$outputRow,$rawRow) use($enabledUserActionMenuItems,$disabledUserActionMenuItems,$isAdmin){
 
 		if($rawRow['User']['is_disabled'])
 			$actionMenuItems = $disabledUserActionMenuItems;
 		else
 			$actionMenuItems = $enabledUserActionMenuItems;
 
-		$actionMenu = $view->Strings->createActionMenu(120,'Actions');
-        foreach($actionMenuItems as $item){
-            $source = "/Users/" . $item['action'] . "/" . $rawRow['User']['id'] . ".json";
-            $actionMenu .= $view->Strings->actionMenuItem($item['text'],$source,$isAdmin);
-        }
-        $actionMenu .= $view->Strings->closeActionMenu();
+		//Construct menu item from template
+		$userActionMenuItems = array();
+		foreach($actionMenuItems as $item){
+			$item['source'] = str_replace('%__id__%',$rawRow['User']['id'],$item['source']);
+			$item['enabled'] = $isAdmin;
+			$userActionMenuItems[] = $item;
+		}
+
+		$actionMenu = $view->StringsActionMenu->actionMenu('Actions',$userActionMenuItems,120);
 
 		//If user is disabled, set disabled class on each column
 		if($rawRow['User']['is_disabled']){

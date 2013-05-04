@@ -381,11 +381,11 @@ table {
           animation: activity 2s infinite linear; }
         table tbody tr td:last-of-type {
           border: 0; }
-        table tbody tr td.blank, table tbody tr td .dataTables_empty {
+        table tbody tr td.blank {
           font-size: 90%;
           padding: 20px;
           text-align: center; }
-          table tbody tr td.blank h3, table tbody tr td .dataTables_empty h3 {
+          table tbody tr td.blank h3 {
             font-weight: 600;
             font-size: 17px;
             margin-bottom: 5px; }
@@ -479,6 +479,14 @@ table {
         cursor: default; }
     .dataTables_wrapper .dataTables_paginate .first.paginate_button, .dataTables_wrapper .dataTables_paginate .last.paginate_button {
       display: none; }
+  .dataTables_wrapper .dataTables_empty {
+    font-size: 90%;
+    padding: 20px;
+    text-align: center; }
+    .dataTables_wrapper .dataTables_empty h3 {
+      font-weight: 600;
+      font-size: 17px;
+      margin-bottom: 5px; }
 
 @-webkit-keyframes activity {
   0% {

@@ -8,9 +8,34 @@ class StringsHelper extends AppHelper
 	/**
 	 * Generate an action menu
 	 *
-	 *
 	 */
-	public static function createActionMenu($menuWidth,$menuTitle){
+	public static function actionMenu($title,$items,$width=120){
+
+		$src = self::createActionMenu($title,$width);
+		foreach($items as $item){
+			if(!isset($item['type']))
+				throw new \InvalidArgumentException('Key type is not defined');
+			switch($item['type']){
+				case 'modal':
+					$src .= self::actionMenuModalItem($item['text'],$item['source'],$item['enabled']);
+					break;
+				case 'link':
+					$src .= self::actionMenuLinkItem($item['text'],$item['destination'],$item['enabled']);
+					break;
+				default:
+					throw new \InvalidArgumentException('Unrecognized action menu item type');
+			}
+		}
+
+		$src .= self::closeActionMenu();
+
+		return $src;
+	}
+
+	/**
+	 * Generate an action menu
+	 */
+	public static function createActionMenu($title,$width=120){
 
 		$src = "<ul class=\"action-menu\" data-width=\"$menuWidth\">";
 		$src .= "<li>$menuTitle</li>";
@@ -27,7 +52,7 @@ class StringsHelper extends AppHelper
 		return $src;
 	}
 
-	public static function actionMenuItem($text,$source,$enabled=true){
+	public static function actionMenuModalItem($text,$source,$enabled=true){
 
 		$class ="modal";
 		if(!$enabled)
@@ -36,7 +61,13 @@ class StringsHelper extends AppHelper
 		$src = "<a class=\"$class\" data-src=\"$source\" data-title=\"$text\">$text</a>";
 	
 		return $src;
-	}	
+	}
+
+	public static function actionMenuLinkItem($text,$destination,$target='_self'){
+		
+		$src = "<a href=\"$destination\" target=\"$target\">$text</a>";
+		return $src;
+	}
 	
 	/**
 	 * Generates a Strings specific Datatable

@@ -3,7 +3,7 @@
 class ApplicationsController extends AppController
 {
 	/**
-     * Home screen containing list of users and create user CTA
+     * Home screen containing list of applications and create application CTA
      */
     public function index() {
 
@@ -22,7 +22,7 @@ class ApplicationsController extends AppController
                     'Application.id','Application.name'
                 ),
                 'conditions' => array(
-                    'organization_id =' => $this->Auth->user('organization_id')
+                    'Application.organization_id' => $this->Auth->user('organization_id')
                 )
             );
 
@@ -33,7 +33,7 @@ class ApplicationsController extends AppController
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
         }
-        else{
+        else {
             $this->set(array(
                 'applicationTableColumns' => array_keys($applicationTableColumns),
             ));

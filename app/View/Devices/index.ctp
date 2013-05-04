@@ -2,7 +2,7 @@
 
 $this->extend('/Common/standard');
 
-$this->assign('title', 'Applications');
+$this->assign('title', 'Devices');
 
 //Set sidebar content
 $this->start('sidebar');
@@ -13,13 +13,13 @@ $this->end();
 
 //Main content
 echo $this->StringsTable->datatable(
-	'applications',						//Table ID
-	'Current applications',				//Table title
-	$applicationTableColumns,			//Column headings
+	'devices',							//Table ID
+	'Current devices',					//Table title
+	$deviceTableColumns,				//Column headings
 	$_SERVER['REQUEST_URI'] . ".json",	//URI for pulling data
 	15,									//Page length
-	'Create application',				//CTA button txt
-	'Create Application',				//CTA title
-	'/Applications/create.json',		//CTA src
+	'Create device',					//CTA button txt
+	'Create Device',					//CTA title
+	'/Devices/create.json',				//CTA src
 	true								//CTA enabled
 );

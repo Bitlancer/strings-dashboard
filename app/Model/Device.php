@@ -7,7 +7,12 @@ class Device extends AppModel {
 	public $belongsTo = array(
 		'Organization',
 		'Implementation',
-		'Formation'
+		'Formation',
+		'Role'
+	);
+
+	public $hasMany = array(
+		'DeviceAttribute'
 	);
 
 	public $validate = array(
@@ -50,7 +55,47 @@ class Device extends AppModel {
                 'rule' => array('isValidForeignKey'),
                 'message' => 'The implementation you supplied does not exist'
             )
-        ),	
+        ),
+		'formation_id' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => 'Formation id is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => 'Formation id cannot be empty'
+            ),
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => 'Formation id must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => 'The formation you supplied does not exist'
+            )
+        ),
+		'role_id' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => 'Role id is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => 'Role id cannot be empty'
+            ),
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => 'Role id must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => 'The role you supplied does not exist'
+            )
+        ),
 		'name' => array(
 			'requiredOnCreate' => array(
                 'rule' => 'notEmpty',

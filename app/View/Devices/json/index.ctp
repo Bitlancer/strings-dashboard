@@ -3,18 +3,13 @@
 	$actionMenuItemsTemplate = array(
         array(
             'type' => 'modal',
-            'text' => 'Edit Application',
-            'source' => '/Applications/edit/%__id__%.json',
+            'text' => 'Detailed View',
+            'source' => '/Device/detailed_view/%__id__%.json',
         ),
         array(
-            'type' => 'modal',
-            'text' => 'Edit Formations',
-            'source' => '/Application/edit_formations/%__id__%.json'
-        ),
-        array(
-            'type' => 'modal',
-            'text' => 'Delete',
-            'source' => '/Applications/delete/%__id__%.json'
+            'type' => 'link',
+            'text' => 'View Formation',
+            'source' => '/Formations/view/%__formation_id__%.json'
         )
     );
 
@@ -24,12 +19,13 @@
         //Construct menu item from template
         $actionMenuItems = array();
         foreach($actionMenuItemsTemplate as $item){
-            $item['source'] = str_replace('%__id__%',$rawRow['Application']['id'],$item['source']);
+            $item['source'] = str_replace('%__id__%',$rawRow['User']['id'],$item['source']);
+			$item['source'] = str_replace('%__formation_id__%',$rawRow['Formation']['id'],$items['source']);
             $item['enabled'] = $isAdmin;
             $userActionMenuItems[] = $item;
         }
 
-        $actionMenu = $view->StringsActionMenu->actionMenu('Actions',$userActionMenuItems,120);
+        $actionMenu = $view->StringsActionMenu->actionMenu('Actions',$actionMenuItems,120);
 
         //Append action menu to last column
         $outputRow[count($outputRow)-1] .= $actionMenu;

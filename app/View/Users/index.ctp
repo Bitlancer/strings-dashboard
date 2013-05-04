@@ -12,7 +12,7 @@ echo $this->element('activity_log',array(
 $this->end();
 
 //Main content
-echo $this->Strings->buildStringsDatatable(
+echo $this->StringsTable->datatable(
 	'users',					//Table ID
 	'Current users',			//Table title
 	$userTableColumns,			//Column headings

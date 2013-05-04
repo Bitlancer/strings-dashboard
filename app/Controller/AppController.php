@@ -15,7 +15,7 @@ class AppController extends Controller {
 
 	//Controller Components
 	public $components = array(
-		//'DebugKit.Toolbar',
+		'DebugKit.Toolbar',
 		'Session',
 		'Cookie',
 		'Auth' => array(
@@ -36,7 +36,8 @@ class AppController extends Controller {
 
 	//View Helpers
 	public $helpers = array(
-		'Strings',
+		'Strings.StringsTable',
+		'Strings.StringsActionMenu',
 		'DataTables.DataTables'
 	);
 
