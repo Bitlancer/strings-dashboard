@@ -20,7 +20,7 @@
         $actionMenuItems = array();
         foreach($actionMenuItemsTemplate as $item){
             $item['source'] = str_replace('%__id__%',$rawRow['Formation']['id'],$item['source']);
-            $item['enabled'] = $isAdmin;
+            $item['disabled'] = !$isAdmin;
             $actionMenuItems[] = $item;
         }
 

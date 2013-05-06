@@ -36,6 +36,7 @@ class AppController extends Controller {
 
 	//View Helpers
 	public $helpers = array(
+		'Strings.Strings',
 		'Strings.StringsTable',
 		'Strings.StringsActionMenu',
 		'DataTables.DataTables',

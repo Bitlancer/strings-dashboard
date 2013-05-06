@@ -22,14 +22,12 @@ class StringsActionMenuHelper extends StringsAppHelper {
                 throw new \InvalidArgumentException('Key type is not defined');
             switch($item['type']){
                 case 'modal':
-					$item = array_merge(array('width' => 360,'enabled' => true),$item);
-                    $src .= $this->Strings->modalLink($item['text'],$item['source'],$item['width'],$item['enabled']);
+					$item = array_merge(array('width' => 360,'disabled' => false),$item);
+                    $src .= $this->Strings->modalLink($item['text'],$item['source'],$item['width'],$item['disabled']);
                     break;
                 case 'link':
-					if(isset($item['target']))
-                    	$src .= $this->linkItem($item['text'],$item['destination'],$item['enabled'],$item['target']);
-					else
-						$src .= $this->linkItem($item['text'],$item['destination'],$item['enabled']); 
+					$item = array_merge(array('target' => '_parent','disabled'=> false),$item);
+                   	$src .= $this->Strings->link($item['text'],$item['destination'],$item['target'],$item['disabled']);
                     break;
                 default:
                     throw new \InvalidArgumentException('Unrecognized action menu item type');
@@ -57,12 +55,6 @@ class StringsActionMenuHelper extends StringsAppHelper {
         $src = "</span>";
         $src .= "</ul>";
 
-        return $src;
-    }
-
-    public function linkItem($text,$destination,$target='_self'){
-   
-        $src = "<a href=\"$destination\" target=\"$target\">$text</a>";
         return $src;
     }
 }

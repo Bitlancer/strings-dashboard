@@ -25,7 +25,7 @@ class StringsTableHelper extends StringsAppHelper {
      * @param string $ctaSrc Call-to-action data-src attribute value
      * @param string HTML table
      */
-    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaTxt,$ctaTitle,$ctaSrc,$ctaWidth,$ctaEnabled){
+    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaTxt,$ctaTitle,$ctaSrc,$ctaWidth,$ctaDisabled){
 
         //Default CTA classes
         $ctaClasses = array(
@@ -33,10 +33,10 @@ class StringsTableHelper extends StringsAppHelper {
             'cta'
         );
 
-        if($ctaEnabled)
-            $ctaClasses[] = 'modal';
-        else
+        if($ctaDisabled)
             $ctaClasses[] = 'disabled';
+        else
+            $ctaClasses[] = 'modal';
 
         //Determine data source
         $tableDataSrc = "";

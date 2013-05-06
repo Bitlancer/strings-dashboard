@@ -7,10 +7,9 @@
             'source' => '/Applications/edit/%__id__%.json',
         ),
         array(
-            'type' => 'modal',
+            'type' => 'link',
             'text' => 'Edit Formations',
-            'source' => '/Applications/edit_formations/%__id__%.json',
-			'width' => '600'
+            'destination' => '/Applications/edit_formations/%__id__%',
         ),
 		array(
 			'type' => 'modal',
@@ -30,8 +29,11 @@
         //Construct menu item from template
         $actionMenuItems = array();
         foreach($actionMenuItemsTemplate as $item){
-            $item['source'] = str_replace('%__id__%',$rawRow['Application']['id'],$item['source']);
-            $item['enabled'] = $isAdmin;
+			if($item['type'] == 'modal')
+            	$item['source'] = str_replace('%__id__%',$rawRow['Application']['id'],$item['source']);
+			else
+				$item['destination'] = str_replace('%__id__%',$rawRow['Application']['id'],$item['destination']);
+            $item['disabled'] = !$isAdmin;
             $actionMenuItems[] = $item;
         }
 

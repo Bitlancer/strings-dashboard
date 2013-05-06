@@ -24,6 +24,9 @@ if(!isset($ctaSrc))
 if(!isset($ctaWidth))
 	$ctaWidth = 360;
 
+if(!isset($ctaDisabled))
+	$ctaDisabled = false;
+
 echo $this->StringsTable->datatable(
     $model,			                    //Table ID
     $tableTitle, 				        //Table title
@@ -34,5 +37,5 @@ echo $this->StringsTable->datatable(
     $ctaTitle,					        //CTA title
     $ctaSrc,					        //CTA src
 	$ctaWidth,							//CTA width - used for modal width
-    $ctaEnabled                         //CTA enabled
+    $ctaDisabled                        //CTA Disabled
 );

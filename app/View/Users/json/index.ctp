@@ -38,7 +38,7 @@
 		$userActionMenuItems = array();
 		foreach($actionMenuItems as $item){
 			$item['source'] = str_replace('%__id__%',$rawRow['User']['id'],$item['source']);
-			$item['enabled'] = $isAdmin;
+			$item['disabled'] = !$isAdmin;
 			$userActionMenuItems[] = $item;
 		}
 

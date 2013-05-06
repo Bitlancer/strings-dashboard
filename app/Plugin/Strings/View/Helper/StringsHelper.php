@@ -9,10 +9,10 @@ class StringsHelper extends StringsAppHelper {
         $this->view = $view;
     }
 
-	public function modalLink($text,$source,$width=360,$enabled=true,$addClasses=array()){
+	public function modalLink($text,$source,$width=360,$disabled=false,$addClasses=array()){
 
         $class ="modal";
-        if(!$enabled)
+        if($disabled)
             $class = "disabled";
 
 		$class .= " " . implode(' ',$addClasses);
@@ -26,6 +26,24 @@ class StringsHelper extends StringsAppHelper {
 
         $src = "<a " . self::buildElementAttributes($modalAttrs) . ">$text</a>";
    
+        return $src;
+    }
+
+	public function link($text,$destination,$target="_parent",$disabled=false){
+
+        if($disabled){
+            $attributes = array(
+                'class' => 'disabled'
+            );
+        }
+        else {
+            $attributes = array(
+                'href' => $destination,
+                'target' => $target
+            );
+        }
+
+        $src ="<a " . self::buildElementAttributes($attributes) . ">$text</a>";
         return $src;
     }
 }
