@@ -20,11 +20,12 @@ class StringsTableHelper extends StringsAppHelper {
      * @param mixed $tableData If string, data-src attribute value else two dimensional array containing table data
      * @param string $ctaTxt Call-to-action button text
      * @param string $ctaTitle Call-to-action data-title attribute
+     * @param strings $ctaWidth Call-to-action data-width attribute - used for modal width
      * @param string[] $ctaClasses Call-to-action css classes
      * @param string $ctaSrc Call-to-action data-src attribute value
      * @param string HTML table
      */
-    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaTxt,$ctaTitle,$ctaSrc,$ctaEnabled){
+    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaTxt,$ctaTitle,$ctaSrc,$ctaWidth,$ctaEnabled){
 
         //Default CTA classes
         $ctaClasses = array(
@@ -54,6 +55,7 @@ class StringsTableHelper extends StringsAppHelper {
         $ctaAttributes = array(
             'data-src' => $ctaSrc,
             'data-title' => $ctaTitle,
+			'data-width' => $ctaWidth,
             'class' => $ctaClasses
         );
         $ctaElement = "<a " . self::buildElementAttributes($ctaAttributes,"'") . ">$ctaTxt</a>";

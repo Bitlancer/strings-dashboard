@@ -9,7 +9,8 @@
         array(
             'type' => 'modal',
             'text' => 'Edit Formations',
-            'source' => '/Applications/edit_formations/%__id__%.json'
+            'source' => '/Applications/edit_formations/%__id__%.json',
+			'width' => '600'
         ),
 		array(
 			'type' => 'modal',

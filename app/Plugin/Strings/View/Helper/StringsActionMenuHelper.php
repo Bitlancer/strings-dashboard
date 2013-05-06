@@ -22,7 +22,8 @@ class StringsActionMenuHelper extends StringsAppHelper {
                 throw new \InvalidArgumentException('Key type is not defined');
             switch($item['type']){
                 case 'modal':
-                    $src .= $this->modalItem($item['text'],$item['source'],$item['enabled']);
+					$item = array_merge(array('width' => 360,'enabled' => true),$item);
+                    $src .= $this->Strings->modalLink($item['text'],$item['source'],$item['width'],$item['enabled']);
                     break;
                 case 'link':
 					if(isset($item['target']))
@@ -57,10 +58,6 @@ class StringsActionMenuHelper extends StringsAppHelper {
         $src .= "</ul>";
 
         return $src;
-    }
-
-    public function modalItem($text,$source,$enabled=true){
-		return $this->Strings->modalLink($text,$source,$enabled);
     }
 
     public function linkItem($text,$destination,$target='_self'){

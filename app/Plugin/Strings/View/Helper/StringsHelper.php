@@ -9,18 +9,19 @@ class StringsHelper extends StringsAppHelper {
         $this->view = $view;
     }
 
-	public function modalLink($text,$source,$enabled=true,$addClasses=array()){
+	public function modalLink($text,$source,$width=360,$enabled=true,$addClasses=array()){
 
         $class ="modal";
         if(!$enabled)
             $class = "disabled";
 
-		$class .= implode(' ',$addClasses);
+		$class .= " " . implode(' ',$addClasses);
 
 		$modalAttrs = array(
 			'class' => $class,
 			'data-src' => $source,
-			'data-title' => $text
+			'data-title' => $text,
+			'data-width' => $width
 		);
 
         $src = "<a " . self::buildElementAttributes($modalAttrs) . ">$text</a>";
