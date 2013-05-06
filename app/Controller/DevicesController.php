@@ -7,6 +7,12 @@ class DevicesController extends AppController
      */
     public function index() {
 
+		//Verify this organization has setup one or more infrastructure providers
+		$isInfraProviderConfigured = $this->Device->Implementation->hasOrganizationConfiguredServiceProvider($this->Auth->user('organization_id'),'infrastructure');
+		if(!$isInfraProviderConfigured){
+			$this->Session->setFlash(__('Please setup an infrastructure provider <a href="#">here</a>.'),'default',array(),'error');
+		}
+
         $deviceTableColumns = array(
             'Name' => array(
                 'model' => 'Device',
@@ -44,6 +50,7 @@ class DevicesController extends AppController
         else {
             $this->set(array(
                 'deviceTableColumns' => array_keys($deviceTableColumns),
+				'isInfraProviderConfigured' => $isInfraProviderConfigured
             ));
         }
     }

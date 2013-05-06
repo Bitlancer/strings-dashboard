@@ -176,8 +176,17 @@ CakeLog::config('debug', array(
 	'types' => array('notice', 'info', 'debug'),
 	'file' => 'debug',
 ));
+
 CakeLog::config('error', array(
 	'engine' => 'FileLog',
 	'types' => array('warning', 'error', 'critical', 'alert', 'emergency'),
 	'file' => 'error',
 ));
+
+/**
+ * Application Wide Constants
+ */
+//Default date format
+define('DEFAULT_DATE_FORMAT','F j, Y, g:i a');
+//Default number of rows that are displayed in each table
+define('DEFAULT_TABLE_PAGE_LENGTH','15');

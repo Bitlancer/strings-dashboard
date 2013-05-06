@@ -1,6 +1,6 @@
 <?php
 
-	$actionMenuItemsTemplate = array(
+    $actionMenuItemsTemplate = array(
         array(
             'type' => 'modal',
             'text' => 'Edit Application',
@@ -9,13 +9,13 @@
         array(
             'type' => 'modal',
             'text' => 'Edit Formations',
-            'source' => '/Applications/edit_formations/%__id__%.json'
+            'source' => '/Application/edit_formations/%__id__%.json'
         ),
-		array(
-			'type' => 'modal',
-			'text' => 'Edit Permissions',
-			'source' => '/Applications/edit_permissions/%__id__%.json'
-		),
+        array(
+            'type' => 'modal',
+            'text' => 'Edit Permissions',
+            'source' => '/Application/edit_permissions/%__id__%.json'
+        ),
         array(
             'type' => 'modal',
             'text' => 'Delete',
@@ -26,6 +26,7 @@
     echo $this->DataTables->output($dataTable,
         function($view,$outputRow,$rawRow) use($actionMenuItemsTemplate,$isAdmin){
 
+		/*
         //Construct menu item from template
         $actionMenuItems = array();
         foreach($actionMenuItemsTemplate as $item){
@@ -34,13 +35,14 @@
             $actionMenuItems[] = $item;
         }
 
-        $actionMenu = $view->StringsActionMenu->actionMenu('Actions',$actionMenuItems,120);
+        //$actionMenu = $view->StringsActionMenu->actionMenu('Actions',$actionMenuItems,120);
 
-		//Info link on name column
-        $outputRow[0] = $view->Strings->modalLink($outputRow[0],"/Applications/view/" . $rawRow['Application']['id'] . ".json");		
+        //Info link on name column
+        //$outputRow[0] = $view->Strings->modalLink($outputRow[0],"/Applications/view/" . $rawRow['Application']['id'] . ".json");
 
         //Append action menu to last column
-        $outputRow[count($outputRow)-1] .= $actionMenu;
+        //$outputRow[count($outputRow)-1] .= $actionMenu;
+		*/
 
         return $outputRow;
     });

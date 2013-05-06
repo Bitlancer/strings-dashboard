@@ -2,7 +2,7 @@
 
 $this->extend('/Common/standard');
 
-$this->assign('title', 'Devices');
+$this->assign('title', 'Formations');
 
 //Set sidebar content
 $this->start('sidebar');
@@ -13,7 +13,8 @@ $this->end();
 
 //Main content
 echo $this->element('Datatables/default',array(
-    'model' => 'device',
-    'tableColumns' => $deviceTableColumns,
-    'ctaEnabled' => $isInfraProviderConfigured
+    'model' => 'formation',
+    'tableColumns' => $formationTableColumns,
+    'ctaEnabled' => true
 ));
+

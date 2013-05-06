@@ -75,6 +75,7 @@ var strings = {
       };
       modal.dialog(opt).dialog('open').load(obj.attr('data-src'), function() {
           $(this).dialog("option", "position", ['center', 'center'] );
+          strings.ui.tables();
           strings.events.forms();
           modal.find('.cta:not(".cancel,.primary")').bind('click', function() {
             modal.dialog('close');
@@ -85,7 +86,7 @@ var strings = {
       //},5000);
     },
     tables : function() {
-      $('table[data-type="datatable"]').not('.example table').each(function() {
+      $('table[data-type="datatable"]').not('.example table').not('.loaded').each(function() {
         $(this).dataTable({
           "sPaginationType": "full_numbers",
           "aLengthMenu": [[2, 10, 25, 50, 100, 200, -1], [2, 10, 25, 50, 100, 200, "All"]],
@@ -101,6 +102,7 @@ var strings = {
             parent.find('.dataTables_filter input').attr('placeholder','Search');
           }
         });
+		$(this).addClass('loaded');
       });
       //$('.dataTables_length').remove();
     }

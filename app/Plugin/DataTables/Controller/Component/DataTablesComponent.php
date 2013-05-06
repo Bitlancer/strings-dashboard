@@ -22,7 +22,12 @@ class DataTablesComponent extends Component
 	/**
 	 * Get a DataTables request object
 	 */
-	public function getDataTable($columns,$additionalFindParameters=array()){
+	public function getDataTable($columns,$additionalFindParameters=array(),$model=false){
+
+		if($model === false)
+			$model = $this->model;
+		else
+			$model = $model;
 
 		//Set request based on method
         if($this->request->isPost())
@@ -35,15 +40,15 @@ class DataTablesComponent extends Component
 		$findParameters = array_merge_recursive($dataTablesRequest->getFindParameters(),$additionalFindParameters);
 
         //Get data
-        $data = $this->model->find('all',$findParameters);
+        $data = $model->find('all',$findParameters);
 
         //Get filtered count
         unset($findParameters['limit']);
         unset($findParameters['offset']);
-        $filteredCount = $this->model->find('count',$findParameters);
+        $filteredCount = $model->find('count',$findParameters);
 
         //Get unfiltered count
-        $unfilteredCount = $this->model->find('count',$additionalFindParameters);
+        $unfilteredCount = $model->find('count',$additionalFindParameters);
 
         return new DataTable($dataTablesRequest,$data,$unfilteredCount,$filteredCount);
 	}
@@ -164,7 +169,10 @@ class DataTable
 		foreach($this->data as $row){
 			$flattenedResult = array();
 			foreach($columns as $column){
-				$flattenedResult[] = $row[$column['model']][$column['column']];	
+				if(!isset($row[$column['model']]) || !isset($row[$column['model']][$column['column']]))
+					$flattenedResult[] = null;
+				else
+					$flattenedResult[] = $row[$column['model']][$column['column']];
 			}
 			$flattenedResults[] = $flattenedResult;
 		}

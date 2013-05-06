@@ -12,14 +12,8 @@ echo $this->element('activity_log',array(
 $this->end();
 
 //Main content
-echo $this->StringsTable->datatable(
-	'users',					//Table ID
-	'Current users',			//Table title
-	$userTableColumns,			//Column headings
-	$_SERVER['REQUEST_URI'] . ".json",	//URI for pulling data
-	15,							//Page length
-	'Create user',				//CTA button txt
-	'Create User',				//CTA title
-	'/Users/create.json',		//CTA src
-	$userTableCTAEnabled		//CTA enabled
-);
+echo $this->element('Datatables/default',array(
+	'model' => 'user',
+	'tableColumns' => $userTableColumns,
+	'ctaEnabled' => $userTableCTAEnabled
+));

@@ -632,6 +632,16 @@ body .strings-modal {
           background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#4ba5e8), to(#1773b6));
           background-image: -webkit-linear-gradient(#4ba5e8, #1773b6);
           background-image: -o-linear-gradient(#4ba5e8, #1773b6); }
+  body .strings-modal .details {
+    background: #fbfbfb;
+    border: 1px dashed #ddd;
+    padding: 10px; }
+    body .strings-modal .details p {
+      margin: 0; }
+      body .strings-modal .details p > strong {
+        display: inline-block;
+        margin-right: 2%;
+        min-width: 30%; }
 body .ui-widget-overlay {
   background: rgba(0, 0, 0, 0.1);
   opacity: 1; }

@@ -8,6 +8,10 @@ class Formation extends AppModel {
 		'Organization'
 	);
 
+	public $hasMany = array(
+		'Device'
+	);
+
 	public $hasAndBelongsToMany = array(
         'Application' => array(
             'className' => 'Application',

@@ -16,7 +16,6 @@
     <fieldset>
       <legend>Details</legend>
       <input type="email" placeholder="email address" name="data[User][email]" />
-      <input type="text" placeholder="phone number (xxx-xxx-xxxx)" name="data[User][phone]" />
     </fieldset>
     <div class="submit">
       <a class="cta primary submit">Confirm</a>

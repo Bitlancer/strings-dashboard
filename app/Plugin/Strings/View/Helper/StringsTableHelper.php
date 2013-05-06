@@ -4,6 +4,8 @@ App::uses('StringsAppHelper', 'Strings.View/Helper');
 
 class StringsTableHelper extends StringsAppHelper {
 
+   public $helpers = array('Strings.Strings');
+
    public function __construct(View $view, $settings = array()) {
         parent::__construct($view, $settings);
         $this->view = $view;
@@ -22,7 +24,7 @@ class StringsTableHelper extends StringsAppHelper {
      * @param string $ctaSrc Call-to-action data-src attribute value
      * @param string HTML table
      */
-    public static function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaTxt,$ctaTitle,$ctaSrc,$ctaEnabled){
+    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaTxt,$ctaTitle,$ctaSrc,$ctaEnabled){
 
         //Default CTA classes
         $ctaClasses = array(
@@ -65,8 +67,19 @@ class StringsTableHelper extends StringsAppHelper {
             'data-cta' => $ctaElement
         );
 
-        return self::table($tableColumns,$tableValues,$tableAttributes);
+        return $this->table($tableColumns,$tableValues,$tableAttributes);
     }
+
+	public function infoTable($fields){
+
+		//Convert key=>value $fields into array(label,value)
+		$tableValues = array();
+		foreach($fields as $key => $value){
+			$tableValues[] = array("<strong>$key</strong>",$value);
+		}
+
+		return $this->table(array(),$tableValues,array('class' => 'details'));
+	}
 
 	/**
       * Generate an HTML table
@@ -78,12 +91,12 @@ class StringsTableHelper extends StringsAppHelper {
       * @param string[] $tdAttributes Key-value array of attributes to add to each td element
       * @return string The HTML source for the table
       */
-     public static function table ($tableColumns,$tableValues,$tableAttributes=array(),$thAttributes=array(),$tdAttributes=array()){
+     public function table($tableColumns,$tableValues,$tableAttributes=array(),$thAttributes=array(),$tdAttributes=array()){
 
         $tdAltClass="alt";
 
-        $tableAttributes = self::toKeyValueString($tableAttributes);
-        $thAttributes = self::toKeyValueString($thAttributes);
+        $tableAttributes = $this->toKeyValueString($tableAttributes);
+        $thAttributes = $this->toKeyValueString($thAttributes);
 
         //Extract css so we can set alt on every other row
         $tdClass = "";
@@ -91,7 +104,7 @@ class StringsTableHelper extends StringsAppHelper {
             $tdClass .= " " . $tdAttributes['class'];
             unset($tdAttributes['class']);
         }
-        $tdAttributes = self::toKeyValueString($tdAttributes);
+        $tdAttributes = $this->toKeyValueString($tdAttributes);
 
         $tableSrc = "<table $tableAttributes>";
         $tableSrc .= "<thead>";

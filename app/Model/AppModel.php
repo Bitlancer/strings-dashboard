@@ -4,10 +4,15 @@ App::uses('Model', 'Model');
 
 class AppModel extends Model {
 
+	public $actsAs = array(
+		'Containable',
+		'Linkable'
+	); 
+
 	/**
 	 * Validate relationship (foreign_key) between this model and belongsTo model
  	 */
-	function isValidForeignKey($data) {
+	public function isValidForeignKey($data) {
     	foreach ($data as $key => $value) {
         	foreach ($this->belongsTo as $alias => $assoc) {
             	if ($assoc['foreignKey'] == $key) {
@@ -22,7 +27,7 @@ class AppModel extends Model {
 	/**
 	 * Validate multikey unique constraint
 	 */
-	function checkMultiKeyUniqueness($data, $fields){
+	public function checkMultiKeyUniqueness($data, $fields){
 	
 		// check if the param contains multiple columns or a single one
 		if (!is_array($fields))

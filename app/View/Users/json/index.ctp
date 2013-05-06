@@ -50,6 +50,9 @@
 				$outputRow[$x] = "<span class=\"disabled\">" . $outputRow[$x] . "</span>";
 		}
 
+		//Info link on name column
+		$outputRow[0] = $view->Strings->modalLink($outputRow[0],"/Users/view/" . $rawRow['User']['id'] . ".json");
+
 		//Append action menu to last column
 		$outputRow[count($outputRow)-1] .= $actionMenu;
 

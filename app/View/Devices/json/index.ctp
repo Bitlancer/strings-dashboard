@@ -22,7 +22,7 @@
             $item['source'] = str_replace('%__id__%',$rawRow['User']['id'],$item['source']);
 			$item['source'] = str_replace('%__formation_id__%',$rawRow['Formation']['id'],$items['source']);
             $item['enabled'] = $isAdmin;
-            $userActionMenuItems[] = $item;
+            $actionMenuItems[] = $item;
         }
 
         $actionMenu = $view->StringsActionMenu->actionMenu('Actions',$actionMenuItems,120);

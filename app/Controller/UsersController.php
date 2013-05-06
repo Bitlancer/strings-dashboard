@@ -22,9 +22,9 @@ class UsersController extends AppController {
 					'User.id','User.organization_id','User.name','User.full_name',
 					'User.first_name','User.last_name','User.is_disabled'
 				),
-                'conditions' => array(
-                    'organization_id =' => $this->Auth->user('organization_id')
-                )
+				'conditions' => array(
+					'User.organization_id' => $this->Auth->user('organization_id')
+				)
             );
 
 			$dataTable = $this->DataTables->getDataTable($userTableColumns,$findParameters);
@@ -42,6 +42,25 @@ class UsersController extends AppController {
         }
 	}
 
+	public function view($id=null){
+
+		$user = $this->User->find('first',array(
+            'conditions' => array(
+                'User.id' => $id,
+				'User.organization_id' => $this->Auth->user('organization_id')
+            )
+        ));
+
+        if(empty($user)){
+            $this->Session->setFlash(__('This user does not exist.'),'default',array(),'error');
+            $this->redirect(array('action' => 'index'));
+        }
+
+		$this->set(array(
+			'user' => $user
+		));
+	}
+
 	/**
 	 * Create a new user
 	 */
@@ -57,7 +76,7 @@ class UsersController extends AppController {
 			//Verify passwords match
 			if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
 				$isError = true;
-				$message = __('Passwords do not match.');
+				$message = 'Passwords do not match.';
 			}
 			else
 			{
@@ -67,22 +86,22 @@ class UsersController extends AppController {
         		$this->request->data['User']['organization_id'] = $this->Auth->User('organization_id');
 
 				if($this->User->save($this->request->data)){
-					$message = __('Successfully created new user.');
+					$message = 'Created new user ' . $this->request->data['User']['name'] . '.';
 				}
 				else {
 					$isError = true;
-					$message = __('Failed to create user. ' . $this->User->validationErrorsAsString());
+					$message = $this->User->validationErrorsAsString();
 				}
 			}
 
 			if($isError){
 				$response = array(
 					'isError' => $isError,
-					'message' => $message
+					'message' => __('Failed: ' . $message)
 				);
 			}
 			else {
-				$this->Session->setFlash($message,'default',array(),'success');
+				$this->Session->setFlash(__($message),'default',array(),'success');
 				$response = array(
 					'redirectUri' => $this->referer(array('action' => 'index'))
 				);
@@ -99,7 +118,8 @@ class UsersController extends AppController {
 
 		$user = $this->User->find('first',array(
 			'conditions' => array(
-				'User.id' => $id
+				'User.id' => $id,
+				'User.organization_id' => $this->Auth->user('organization_id')
 			)
 		));
 
@@ -123,24 +143,24 @@ class UsersController extends AppController {
 			//Have to set organization_id so multi-column validation can occur
 			$this->request->data['User']['organization_id'] = $user['Organization']['id'];
 
-			$validFields = array('first_name','last_name','email','phone');
+			$validFields = array('first_name','last_name','email');
 			$this->User->id = $id;
 			if($this->User->save($this->request->data,true,$validFields)){
-				$message = __('Successfully updated user.');
+				$message = 'Updated user ' . $user['User']['name'] . '.';
 			}
 			else {
 				$isError = true;
-				$message = __('Failed to update user. ' . $this->User->validationErrorsAsString());
+				$message = $this->User->validationErrorsAsString();
 			}
 
 			if($isError){
 				$response = array(
 					'isError' => $isError,
-					'message' => $message
+					'message' => __('Failed: ' . $message)
 				);
 			}
 			else {
-				$this->Session->setFlash($message,'default',array(),'success');
+				$this->Session->setFlash(__($message),'default',array(),'success');
 				$response = array(
 					'redirectUri' => $this->referer(array('action' => 'index'))
 				);
@@ -178,32 +198,32 @@ class UsersController extends AppController {
 			//Verify passwords match
             if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
 				$isError = true;
-                $message = __('Passwords do not match.');
+                $message = 'Passwords do not match.';
             }
             else {
 
                 unset($this->request->data['User']['confirm_password']);
 
 				//Save user
-            	$validFields = array('password','first_name','last_name','email','phone');
+            	$validFields = array('password','first_name','last_name','email');
             	$this->User->id = $id;
             	if($this->User->save($this->request->data,true,$validFields)){
-                	$message = __('Successfully updated your information.');
+                	$message = 'Updated your information.';
             	}
             	else {
 					$isError = true;
-                	$message = __('Failed to update your information. ' . $this->User->validationErrorsAsString());
+                	$message = $this->User->validationErrorsAsString();
             	}
 			}
 
 			if($isError){
                 $response = array(
                     'isError' => $isError,
-                    'message' => $message
+                    'message' => __('Failed: ' . $message)
                 );
             }
             else {
-                $this->Session->setFlash($message,'default',array(),'success');
+                $this->Session->setFlash(__($message),'default',array(),'success');
                 $response = array(
                     'redirectUri' => $this->referer(array('action' => 'index'))
                 );
@@ -221,7 +241,8 @@ class UsersController extends AppController {
 
 		$user = $this->User->find('first',array(
             'conditions' => array(
-                'User.id' => $id
+                'User.id' => $id,
+				'User.organization_id' => $this->Auth->user('organization_id')
             )
         ));
 
@@ -245,7 +266,7 @@ class UsersController extends AppController {
 			//Verify passwords match
             if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
 				$isError = true;
-                $message = __('Passwords do not match.');
+                $message = 'Passwords do not match.';
             }
             else {
 
@@ -253,22 +274,22 @@ class UsersController extends AppController {
 
 				$this->User->id = $id;
 				if($this->User->save($this->request->data,true,array('password'))){
-					$message = __('Updated user password.');
+					$message = 'Updated user password.';
 				}
 				else {
 					$isError = true;
-					$message = __('Failed to update user password. ' . $this->User->validationErrorsAsString());
+					$message = $this->User->validationErrorsAsString();
 				}
 			}
 
 			if($isError){
                 $response = array(
                     'isError' => $isError,
-                    'message' => $message
+                    'message' => __('Failed: ' . $message)
                 );
             }
             else {
-                $this->Session->setFlash($message,'default',array(),'success');
+                $this->Session->setFlash(__($message),'default',array(),'success');
                 $response = array(
                     'redirectUri' => $this->referer(array('action' => 'index'))
                 );
@@ -281,7 +302,8 @@ class UsersController extends AppController {
 
 		$user = $this->User->find('first',array(
             'conditions' => array(
-                'User.id' => $id
+                'User.id' => $id,
+				'User.organization_id' => $this->Auth->user('organization_id')
             )
         ));
 
@@ -304,7 +326,7 @@ class UsersController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			}
 			else {
-				$message = __('Unable to disable user. ' . $this->User->validationErrorsAsString());
+				$message = $this->User->validationErrorsAsString();
 				$this->Session->setFlash(__($message), 'default', array(), 'error');
 				$this->redirect(array('action' => 'index'));
 			}
@@ -319,7 +341,8 @@ class UsersController extends AppController {
 
         $user = $this->User->find('first',array(
             'conditions' => array(
-                'User.id' => $id
+                'User.id' => $id,
+				'User.organization_id' => $this->Auth->user('organization_id')
             )
         ));
 
@@ -334,7 +357,6 @@ class UsersController extends AppController {
         }
 
         if($this->request->is('post')){
-
             $this->User->id = $id;
             $this->User->set('is_disabled',0);
             if($this->User->save()){

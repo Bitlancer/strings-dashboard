@@ -71,9 +71,43 @@ class Implementation extends AppModel {
 			)
         )
     );
+	
+	public function hasOrganizationConfiguredServiceProvider($organizationId,$service){
 
-    public function beforeSave($options = array()) {
+		$count = $this->find('count',array(
+            'recursive' => -1,
+            'joins' => array(
+                array(
+                    'table' => 'provider',
+                    'alias' => 'Provider',
+                    'type' => 'inner',
+                    'foreignKey' => false,
+                    'conditions' => array('Provider.id = Implementation.provider_id')
+                ),
+                array(
+                    'table' => 'service_provider',
+                    'type' => 'inner',
+                    'foreignKey' => false,
+                    'conditions' => array('Provider.id = service_provider.provider_id')
+                ),
+                array(
+                    'table' => 'service',
+                    'alias' => 'Service',
+                    'type' => 'inner',
+                    'foreignKey' => false,
+                    'conditions' => array('service_provider.service_id = Service.id')
+                )
+            ),
+            'conditions' => array(
+                'Implementation.organization_id' => $organizationId,
+                'Service.name' => $service
+            )
+        ));
 
-        return true;
-    }
+		if($count > 0)
+			return true;
+		else
+			return false;
+	}
+
 }

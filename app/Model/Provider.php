@@ -70,7 +70,7 @@ class Provider extends AppModel {
                 'message' => 'Name is limited to letters, numbers and punctuation and must be at least 3 characters long'
             ),
 			'isUnique' => array(
-				'rule' => 'isUnique'
+				'rule' => 'isUnique',
 				'message' => 'This name is already taken'
 			)
         )

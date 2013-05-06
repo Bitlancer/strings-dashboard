@@ -28,7 +28,7 @@ class AppController extends Controller {
 					)
 				)
 			),
-			
+			'authorize' => array('Controller')
 		),
 		'RequestHandler',
 		'DataTables.DataTables'
@@ -38,8 +38,13 @@ class AppController extends Controller {
 	public $helpers = array(
 		'Strings.StringsTable',
 		'Strings.StringsActionMenu',
-		'DataTables.DataTables'
+		'DataTables.DataTables',
+		'Time'
 	);
+
+	public function isAuthorized(){
+		return true;
+	}
 
 	public function beforeFilter(){
 
