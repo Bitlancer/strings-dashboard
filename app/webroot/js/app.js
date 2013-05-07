@@ -132,7 +132,7 @@ var strings = {
 		$(this).submit(function(e) {
 		  e.preventDefault();
 		  $.ajax({
-		    type: (($(this).attr('method') === undefined || $(this).attr('method').toLowerCase() == 'post') ? 'post' : 'post'),
+		    type: (($(this).attr('method') === undefined || $(this).attr('method').toLowerCase() == 'post') ? 'post' : 'get'),
 			url: $(this).attr('action'),
 			data: $(this).serialize(),
 			success: function(data, textStatus){
