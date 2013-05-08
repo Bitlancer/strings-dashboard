@@ -6,7 +6,8 @@ class AppModel extends Model {
 
 	public $actsAs = array(
 		'Containable',
-		'Linkable'
+		'Linkable',
+		'ExtendAssociations2'
 	); 
 
 	/**
@@ -53,9 +54,13 @@ class AppModel extends Model {
     public function validationErrorsAsString(){
 
         $message = "";
-        foreach($this->validationErrors as $error)
-            $message .= implode(". ",$error) . ". ";
-
+        foreach($this->validationErrors as $field => $fieldErrorMessages){
+			array_walk_recursive($fieldErrorMessages,function(&$element,$index) use($field) {
+				$element = str_replace('%f',$field,$element);
+				$element = ucfirst($element);
+			});
+            $message .= implode(". ",$fieldErrorMessages) . ". ";
+		}
         return $message;
     }
 }

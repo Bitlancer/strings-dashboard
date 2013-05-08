@@ -195,56 +195,98 @@ class ApplicationsController extends AppController
 
 	public function edit_formations($id=null){
 
-		$formationTableColumns = array(
-            'Name' => array(
-                'model' => 'Formation',
-                'column' => 'name'
+		$members = $this->Application->Formation->find('all',array(
+            'link' => array(
+                'Application'
+            ),
+            'fields' => array(
+                'Formation.id','Formation.name'
+            ),
+            'conditions' => array(
+                'Application.id' => $id,
+                'Application.organization_id' => $this->Auth->user('organization_id'),
             )
-        );
+        ));
 
 		$this->set(array(
-			'applicationId' => $id,
-			'formationTableColumns' => array_keys($formationTableColumns)
+			'id' => $id,
+			'members' => $members
 		));
 	}
 
-	public function edit_formations_data($id=null){
+	public function add_formation($id=null){
 
-		$formationTableColumns = array(
-            'Name' => array(
-                'model' => 'Formation',
-                'column' => 'name'
-            )
-        );	
+		$this->autoRender = false;
 
-        //Datatablesa
-        $findParameters = array(
-			'link' => array(
-				'Application'
-			),
+		$isError = false;
+		$message = "";
+		$memberId = 0;
+
+		$formationName = "";
+        if($this->request->is('post'))
+            $formationName = $this->request->data['name'];
+        else
+            $formationName = $this->request->query['name'];
+
+		$formation = $this->Application->Formation->find('first',array(
 			'fields' => array(
 				'Formation.id','Formation.name'
 			),
-            'conditions' => array(
-				'Application.id' => $id,
-                'Application.organization_id' => $this->Auth->user('organization_id'),
-            )
-        );
+			'conditions' => array(
+				'Formation.name' => $formationName,
+				'Formation.organization_id' => $this->Auth->user('organization_id')
+			)
+		));
 
-        $dataTable = $this->DataTables->getDataTable($formationTableColumns,$findParameters,$this->Application->Formation);
+		if(empty($formation)){
+			$isError = true;
+			$message = 'No such formation found';
+		}
+		else {
+			$formationId = $formation['Formation']['id'];
 
-        $this->set(array(
-        	'dataTable' => $dataTable,
-            'isAdmin' => $this->Auth->User('is_admin')
-        ));
+			//Check if this formation is already a member of this application
+			$count = $this->Application->Formation->find('count',array(
+				'link' => array(
+					'Application'
+				),
+				'conditions' => array(
+					'Application.id' => $id,
+					'Formation.id' => $formationId
+				)
+			));
+			if($count){
+				$isError = true;
+				$message = 'This formation is already a member of this application';	
+			}
+			else {
+				if(!$this->Application->habtmAdd('Formation', $id, array($formationId)))
+					$memberId = $formationId;
+				else {
+					$isError = true;
+					$message = 'Failed to add this formation to this application';
+				}
+			}
+		}
+
+		echo json_encode(array(
+    		'isError' => $isError,
+			'message' => $message,
+    		'id' => $memberId
+		));
 	}
 
-	public function add_formation($applicationId=null,$formationId=null){
+	public function remove_formation($id=null){
 
-	}
+		$this->autoRender = false;
 
-	public function remove_formation($applicationId=null,$formationId=null){
+		$formationId = 0;
+        if($this->request->is('post'))
+            $formationId = $this->request->data['id'];
+        else
+            $formationId = $this->request->query['id'];	
 
+		$this->Application->habtmDelete('Formation', $id, array($formationId));
 	}
 
 }

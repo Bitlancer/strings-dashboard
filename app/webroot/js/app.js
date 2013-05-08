@@ -118,6 +118,61 @@ var strings = {
       $('.modal').live('click',function(){strings.ui.modal($(this))});
       // form ctas
       $('form .cta.submit').live('click',function(){ $(this).closest('form').submit() });
+      //Assocation ctas
+      $('form.association .cta.add').live('click',function(e){
+        e.preventDefault();
+        var src = $(this);
+        var form = src.closest('form');
+        var input = form.find('input');
+        var name = input.val();
+        var notice = form.find("#notice");
+        notice.empty();
+        $.ajax({
+          type: "post",
+          url: form.attr('data-src-add'),
+          data: {
+            "name": name
+          },
+          success: function(data, textStatus){
+            if(!data.isError){
+              var tbody = form.find("table tbody");
+              $(tbody).find('td.blank').parent('tr').remove();
+              $(tbody).append("<tr><td>" + name + "<a class='action remove' data-id='" + data.id + "'>Remove</a>");
+              input.val("");
+            }
+            else {
+              notice.append("<li class='error'>" + data.message + "</li>");
+            }
+          }
+        })
+        .error(function(jqXHR,textStatus){
+          console.log(textStatus);
+        }); 
+      });
+      $('form.association .action.remove').live('click',function(e){
+        e.preventDefault();
+        var src = $(this);
+        var form = src.closest('form');
+        var notice = form.find("#notice");
+        notice.empty();
+        $.ajax({
+          type: "post",
+          url: form.attr('data-src-remove'),
+          data: {
+            "id": src.attr('data-id')
+          },
+          success: function(data, textStatus){
+            var tbody = src.closest('tbody');
+            src.closest('tr').remove();
+            if($(tbody).find('tr').length == 0){
+              $(tbody).append("<tr><td class='blank'>Add a member above</td></tr>");
+            }
+          }
+        })
+        .error(function(jqXHR,textStatus){
+          console.log(textStatus);
+        });
+      });
     },
     keypress : function() {
       $(':input').keypress(function (e) {
@@ -132,7 +187,7 @@ var strings = {
 		$(this).submit(function(e) {
 		  e.preventDefault();
 		  $.ajax({
-		    type: (($(this).attr('method') === undefined || $(this).attr('method').toLowerCase() == 'post') ? 'post' : 'post'),
+		    type: (($(this).attr('method') === undefined || $(this).attr('method').toLowerCase() == 'post') ? 'post' : 'get'),
 			url: $(this).attr('action'),
 			data: $(this).serialize(),
 			success: function(data, textStatus){

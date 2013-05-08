@@ -9,6 +9,22 @@ class StringsHelper extends StringsAppHelper {
         $this->view = $view;
     }
 
+	public function flattenData($rawRecord,$fields){
+
+		$flattenedRecords = array();
+
+		foreach($rawRecords as $rawRecord){
+
+			$flattenedRecord = array();
+			foreach($fields as $fieldName => $field){
+				$flattenedRecord[$fieldName] = $rawRecord[$field['model']][$field['column']];	
+			}
+			$flattenedRecords[] = $flattenedRecord;
+		}
+
+		return $flattenedRecords;
+	}
+
 	public function modalLink($text,$source,$disabled=false,$title=false,$width=360){
 
         $class ="modal";

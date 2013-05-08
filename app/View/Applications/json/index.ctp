@@ -7,9 +7,10 @@
             'source' => '/Applications/edit/%__id__%.json',
         ),
         array(
-            'type' => 'link',
+            'type' => 'modal',
             'text' => 'Edit Formations',
-            'destination' => '/Applications/edit_formations/%__id__%',
+            'source' => '/Applications/edit_formations/%__id__%.json',
+			'width' => '450'
         ),
 		array(
 			'type' => 'modal',

@@ -346,6 +346,10 @@ table {
         border: 0; }
       table tbody tr td {
         border-right: 1px solid #e3e3e3; }
+        table tbody tr td a.action {
+          color: #1e8fe2;
+          float: right;
+          font-size: 85%; }
         table tbody tr td ul.action-menu {
           float: right; }
           table tbody tr td ul.action-menu > span {

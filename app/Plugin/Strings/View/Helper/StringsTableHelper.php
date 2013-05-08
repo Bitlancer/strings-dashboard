@@ -11,6 +11,21 @@ class StringsTableHelper extends StringsAppHelper {
         $this->view = $view;
     }
 
+	public function infoTable($fields,$emptyTableMessage='No information available'){
+
+        //Convert key=>value $fields into array(label,value)
+        $tableValues = array();
+        foreach($fields as $key => $value){
+            $tableValues[] = array("<strong>$key</strong>",$value);
+        }
+
+        return $this->table(array(),$tableValues,array('class' => 'details'),array(),array(),$emptyTableMessage);
+    }
+
+    public function cleanTable($tableColumns,$tableValues,$emptyTableMessage='No data available'){
+        return $this->table($tableColumns,$tableValues,array('class' => 'clean'),array(),array(),$emptyTableMessage);
+    }
+
 	/**
      * Generates a Strings specific Datatable
      *
@@ -72,17 +87,6 @@ class StringsTableHelper extends StringsAppHelper {
         return $this->table($tableColumns,$tableValues,$tableAttributes);
     }
 
-	public function infoTable($fields){
-
-		//Convert key=>value $fields into array(label,value)
-		$tableValues = array();
-		foreach($fields as $key => $value){
-			$tableValues[] = array("<strong>$key</strong>",$value);
-		}
-
-		return $this->table(array(),$tableValues,array('class' => 'details'));
-	}
-
 	/**
       * Generate an HTML table
       *
@@ -93,7 +97,7 @@ class StringsTableHelper extends StringsAppHelper {
       * @param string[] $tdAttributes Key-value array of attributes to add to each td element
       * @return string The HTML source for the table
       */
-     public function table($tableColumns,$tableValues,$tableAttributes=array(),$thAttributes=array(),$tdAttributes=array()){
+     public function table($tableColumns,$tableValues,$tableAttributes=array(),$thAttributes=array(),$tdAttributes=array(),$emptyTableMessage='No data available'){
 
         $tdAltClass="alt";
 
@@ -116,6 +120,8 @@ class StringsTableHelper extends StringsAppHelper {
         $tableSrc .= "</tr>";
         $tableSrc .= "</thead>";
         $tableSrc .= "<tbody>";
+		if(empty($tableValues))
+			$tableSrc .= "<tr><td class=\"blank\">$emptyTableMessage</td></tr>";
         foreach($tableValues as $row){
             $tableSrc .= "<tr>";
             $altIndex = 0;

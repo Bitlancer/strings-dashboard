@@ -30,19 +30,19 @@ class User extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Organization id is required'
+                'message' => '%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Organization id cannot be empty'
+                'message' => '%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => 'Organization id must be an integer'
+                'message' => '%f must be an integer'
             ),
 			'validForeignKey' => array(
 				'rule' => array('isValidForeignKey'),
-				'message' => 'The organization id you supplied does not exist'
+				'message' => 'The organization you supplied does not exist'
 			)
         ),
         'name' => array(
@@ -110,19 +110,19 @@ class User extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Email is required'
+                'message' => '%f is required'
             ),  
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Email cannot be empty'
+                'message' => '%f cannot be empty'
             ),
 			'validEmail' => array(
 				'rule' => 'email',
-				'message' => 'The supplied email address is not valid'
+				'message' => '%f is not a valid email address'
 			),
 			'checkMultiKeyUniqueness' => array(
                 'rule' => array('checkMultiKeyUniqueness',array('email','organization_id')),
-                'message' => 'A user with this email address already exists within your organization'
+                'message' => 'This %f is already registered to another user'
             )
         ),
 		'is_admin' => array(
