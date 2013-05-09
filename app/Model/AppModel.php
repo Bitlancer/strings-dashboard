@@ -51,16 +51,21 @@ class AppModel extends Model {
      *
      * @return string The validation errors data structure converted to a string
      */
-    public function validationErrorsAsString(){
+    public function validationErrorsAsString($saveMany=false){
 
-        $message = "";
-        foreach($this->validationErrors as $field => $fieldErrorMessages){
-			array_walk_recursive($fieldErrorMessages,function(&$element,$index) use($field) {
-				$element = str_replace('%f',$field,$element);
-				$element = ucfirst($element);
-			});
-            $message .= implode(". ",$fieldErrorMessages) . ". ";
+		if($saveMany){
+			return print_r($this->validationErrors,true);
 		}
-        return $message;
+		else {
+			$message = "";
+        	foreach($this->validationErrors as $field => $fieldErrorMessages){
+				array_walk_recursive($fieldErrorMessages,function(&$element,$index) use($field) {
+					$element = str_replace('%f',$field,$element);
+					$element = ucfirst($element);
+				});
+            	$message .= implode(". ",$fieldErrorMessages) . ". ";
+			}
+        	return $message;
+		}
     }
 }

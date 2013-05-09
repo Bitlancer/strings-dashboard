@@ -5,7 +5,7 @@
 	$devicesControllers = array('devices');
 	$formationsControllers = array('formations');
 	$applicationsControllers = array('applications');
-	$usersControllers = array('users','teams');
+	$usersControllers = array('users','teams','sudoroles');
 ?>
 <span id="dashboard" class="<?php if(in_array($controller,$dashboardControllers)) { echo 'active'; }?>" >
   <a href="/">Dashboard</a>
@@ -24,5 +24,6 @@
   <span>
 	<a href="/users">Users</a>
     <a href="/teams">Teams</a>
+    <a href="/sudo">Sudo</a>
   </span>
 </span>

@@ -97,7 +97,7 @@ class UsersController extends AppController {
 			if($isError){
 				$response = array(
 					'isError' => $isError,
-					'message' => __('Failed: ' . $message)
+					'message' => __($message)
 				);
 			}
 			else {
@@ -156,7 +156,7 @@ class UsersController extends AppController {
 			if($isError){
 				$response = array(
 					'isError' => $isError,
-					'message' => __('Failed: ' . $message)
+					'message' => __($message)
 				);
 			}
 			else {
@@ -219,7 +219,7 @@ class UsersController extends AppController {
 			if($isError){
                 $response = array(
                     'isError' => $isError,
-                    'message' => __('Failed: ' . $message)
+                    'message' => __($message)
                 );
             }
             else {
@@ -285,7 +285,7 @@ class UsersController extends AppController {
 			if($isError){
                 $response = array(
                     'isError' => $isError,
-                    'message' => __('Failed: ' . $message)
+                    'message' => __($message)
                 );
             }
             else {

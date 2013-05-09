@@ -76,7 +76,7 @@ class ApplicationsController extends AppController
             //Set organization
             $this->request->data['Application']['organization_id'] = $this->Auth->User('organization_id');
 
-            if($this->Application->save($this->request->data)){
+            if($this->Application->save($this->request->data,true,array('organization_id','name'))){
             	$message = 'Created new application ' . $this->request->data['Application']['name'] . '.';
             }
             else {
@@ -87,7 +87,7 @@ class ApplicationsController extends AppController
             if($isError){
                 $response = array(
                     'isError' => $isError,
-                    'message' => __('Failed: ' . $message)
+                    'message' => __($message)
                 );
             }
             else {
@@ -141,7 +141,7 @@ class ApplicationsController extends AppController
             if($isError){
                 $response = array(
                     'isError' => $isError,
-                    'message' => __('Failed: ' . $message)
+                    'message' => __($message)
                 );
             }
             else {
@@ -264,14 +264,14 @@ class ApplicationsController extends AppController
 					$memberId = $formationId;
 				else {
 					$isError = true;
-					$message = 'Failed to add this formation to this application';
+					$message = 'Unable to add this formation to this application';
 				}
 			}
 		}
 
 		echo json_encode(array(
     		'isError' => $isError,
-			'message' => $message,
+			'message' => __($message),
     		'id' => $memberId
 		));
 	}
