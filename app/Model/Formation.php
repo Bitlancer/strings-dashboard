@@ -13,7 +13,8 @@ class Formation extends AppModel {
 	);
 
 	public $hasMany = array(
-		'Device'
+		'Device',
+		'TeamFormation'
 	);
 
 	public $hasAndBelongsToMany = array(
@@ -22,6 +23,12 @@ class Formation extends AppModel {
             'joinTable' => 'application_formation',
             'foreignKey' => 'formation_id',
             'associationForeignKey' => 'application_id'
+        ),
+		'Team' => array(
+            'className' => 'Team',
+            'joinTable' => 'team_application',
+            'foreignKey' => 'formation_id',
+            'associationForiegnKey' => 'team_id'
         )
     );
 

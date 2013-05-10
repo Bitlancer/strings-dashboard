@@ -12,9 +12,9 @@ class Role extends AppModel {
 		'Organization'
 	);
 
-	public $hasMany = array();
-
-	public $hasAndBelongsToMany = array();
+	public $hasMany = array(
+		'TeamRole'
+	);
 
 	public $validate = array(
         'organization_id' => array(

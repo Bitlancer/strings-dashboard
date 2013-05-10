@@ -4,7 +4,12 @@ class SudoAttribute extends AppModel {
 
 	public $useTable = 'sudo_attribute';
 
+	public $actsAs = array(
+		'OrganizationOwned'
+	);
+
 	public $belongsTo = array(
+		'Organization',
 		'SudoRole' => array(
 			'foreignKey' => 'sudo_id'
 		)

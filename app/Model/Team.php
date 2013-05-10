@@ -12,6 +12,13 @@ class Team extends AppModel {
 		'Organization'
 	);
 
+	public $hasMany = array(
+		'TeamDevice',
+		'TeamRole',
+		'TeamFormation',
+		'TeamApplication'
+	);
+
 	public $hasAndBelongsToMany = array(
         'User' => array(
             'className' => 'User',

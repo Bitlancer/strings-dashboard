@@ -12,6 +12,10 @@ class Application extends AppModel {
 		'Organization'
 	);
 
+	public $hasMany = array(
+		'TeamApplication'
+	);
+
 	public $hasAndBelongsToMany = array(
         'Formation' => array(
             'className' => 'Formation',
