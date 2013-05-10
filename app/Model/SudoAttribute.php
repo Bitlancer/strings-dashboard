@@ -20,19 +20,19 @@ class SudoAttribute extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => '%f must be an integer'
+                'message' => '%%f must be an integer'
             ),
 			'validForeignKey' => array(
 				'rule' => array('isValidForeignKey'),
-				'message' => '%f does not exist'
+				'message' => '%%f does not exist'
 			)
         ),
         'name' => array(
@@ -40,15 +40,15 @@ class SudoAttribute extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'validName' => array(
                 'rule' => array('inList',array('sudoCommand','sudoRunAs','sudoOption')),
-                'message' => '%f is limited to the set (sudoCommand,sudoRunAs,sudoOption)'
+                'message' => '%%f is limited to the set (sudoCommand,sudoRunAs,sudoOption)'
             ),
         ),
 		'value' => array(
@@ -56,11 +56,11 @@ class SudoAttribute extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
 		),
     );

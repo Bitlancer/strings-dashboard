@@ -5,6 +5,10 @@ class QueueJob extends AppModel
 
 	public $useTable = 'queued_job';
 
+	public $actsAs = array(
+		'OrganizatonOwned'
+	);
+
 	public $belongsTo = array(
         'Organization'
     );
@@ -19,19 +23,19 @@ class QueueJob extends AppModel
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => '%f must be an integer'
+                'message' => '%%f must be an integer'
             ),
             'validForeignKey' => array(
                 'rule' => array('isValidForeignKey'),
-                'message' => '%f does not exist'
+                'message' => '%%f does not exist'
             )
         ),
         'http_method' => array(
@@ -39,15 +43,15 @@ class QueueJob extends AppModel
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'validMethod' => array(
                 'rule' => array('inList',array('get','post','put','delete')),
-                'message' => '%f is an invalid HTTP method'
+                'message' => '%%f is an invalid HTTP method'
             )
         ),
 		'url' => array(
@@ -55,15 +59,15 @@ class QueueJob extends AppModel
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'validUrl' => array(
                 'rule' => 'url',
-                'message' => '%f is not a valid Url'
+                'message' => '%%f is not a valid Url'
             )
 		),
 		'timeout_secs' => array(
@@ -71,15 +75,15 @@ class QueueJob extends AppModel
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
 			'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => '%f must be an integer'
+                'message' => '%%f must be an integer'
             ),
 		),
 		'remaining_retries' => array(
@@ -87,15 +91,15 @@ class QueueJob extends AppModel
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => '%f must be an integer'
+                'message' => '%%f must be an integer'
             ),
 		),
 		'retry_delay_secs' => array(
@@ -103,15 +107,15 @@ class QueueJob extends AppModel
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => '%f must be an integer'
+                'message' => '%%f must be an integer'
             ),
 		),
 	);

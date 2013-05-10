@@ -19,19 +19,19 @@ class Service extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Name is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Name cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'validName' => array(
                 'rule' => array('custom','/[A-Za-z0-9-_\. @]{3,}/'),
-                'message' => 'Name is limited to letters, numbers and punctuation and must be at least 3 characters long'
+                'message' => '%%f is limited to letters, numbers and punctuation and must be at least 3 characters long'
             ),
 			'isUnique' => array(
 				'rule' => 'isUnique',
-				'message' => 'This name is already taken'
+				'message' => 'This %%f is already taken'
 			)
         )
     );

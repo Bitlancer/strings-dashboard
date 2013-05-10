@@ -1,5 +1,7 @@
 <?php
 
+App::uses('CakeSession', 'Model/Datasource');
+
 class OrganizationOwnedBehavior extends ModelBehavior
 {
 	public function setup(Model $Model, $settings = array()){
@@ -13,24 +15,49 @@ class OrganizationOwnedBehavior extends ModelBehavior
 		);
 	}
 
+	/*
 	public function setOwningOrganization(Model $Model,$organizationId){
 		
 		//$this->settings[$Model->alias]['owningOrganization'] = $organizationId;
 		$this->settings['owningOrganization'] = $organizationId;
 	}
+	*/
+
+	public function getOrganizationId(){
+
+		return CakeSession::read('Auth.User.organization_id');
+	}
 
 	public function beforeFind(Model $Model,$query){
 
-		if(!isset($query['conditions']))
-			$query['conditions'] = array();
+		if(!isset($query['conditions'])){
+			$query['conditions'] = array(
+				($Model->alias . '.organization_id') => $this->getOrganizationId()
+			);
+		}
+		else {
+			$conditions = $query['conditions'];
+			if(!isset($conditions['orgaization_id']) && 
+				!isset($conditions[$Model->alias . ".organization_id"])){
 
-		$query['conditions']['organization_id'] = $this->settings['owningOrganization'];
+				$query['conditions'] = array(
+					'AND' => array(
+						($Model->alias . '.organization_id') => $this->getOrganizationId(),
+						$conditions
+					)
+				);
+			}
+		}
 
 		return $query;
 	}
 
-	public function beforeSave(Model $Model){
+	public function beforeValidate(Model $Model){
+
+		if(!isset($Model->data[$Model->alias]['organization_id']) || !isset($Model->data['organization_id'])){
+			$Model->data[$Model->alias]['organization_id'] = $this->getOrganizationId();
+		}
+
 		return true;
 	}
-
 }

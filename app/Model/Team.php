@@ -4,6 +4,10 @@ class Team extends AppModel {
 
 	public $useTable = 'team';
 
+	public $actsAs = array(
+		'OrganizationOwned'
+	);
+
 	public $belongsTo = array(
 		'Organization'
 	);
@@ -26,19 +30,19 @@ class Team extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Organization id is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Organization id cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => 'Organization id must be an integer'
+                'message' => '%%f must be an integer'
             ),
 			'validForeignKey' => array(
 				'rule' => array('isValidForeignKey'),
-				'message' => 'The organization id you supplied does not exist'
+				'message' => '%%f does not exist'
 			)
         ),
         'name' => array(
@@ -46,35 +50,30 @@ class Team extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Name is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Name cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'validName' => array(
                 'rule' => array('custom','/[A-Za-z0-9-_\. @]{3,}/'),
-                'message' => 'Name is limited to letters, numbers and punctuation and must be at least 3 characters long'
+                'message' => '%%f is limited to letters, numbers and punctuation and must be at least 3 characters long'
             ),
 			'checkMultiKeyUniqueness' => array(
 				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
-				'message' => 'A team with this name already exists within your organization.'
+				'message' => 'This %%f is already taken'
 			)
         ),
 		'is_disabled' => array(
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'is_disabled cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isBoolean' => array(
                 'rule' => 'boolean',
-                'message' => 'Invalid value for is_disabled'
+                'message' => 'Invalid value for %%f'
             )
         )
     );
-
-    public function beforeSave($options = array()) {
-
-        return true;
-    }
 }

@@ -10,15 +10,15 @@ class Organization extends AppModel {
                 'rule' => 'notEmpty',
 				'on' => 'create',
 				'required' => true,
-				'message' => 'Organization name is required'
+				'message' => '%%f is required'
             ),
 			'notEmpty' => array(
 				'rule' => 'notEmpty',
-				'message' => 'Organization name cannot be empty'
+				'message' => '%%f cannot be empty'
 			),
 			'isUnique' => array(
 				'rule' => 'isUnique',
-				'message' => 'This name is already registered with another account'
+				'message' => 'This %%f is already registered with another account'
 			)
         ),
 		'short_name' => array(
@@ -26,25 +26,25 @@ class Organization extends AppModel {
 				'rule' => 'notEmpty',
 				'on' => 'create',
 				'required' => true,
-				'message' => 'Organization short name is required'
+				'message' => '%%f is required'
 			),
 			'notEmpty' => array(
 				'rule' => 'notEmpty',
-				'message' => 'Organization short name cannot be empty'
+				'message' => '%%f cannot be empty'
 			),
 			'isUnique' => array(
 				'rule' => 'isUnique',
-				'message' => 'This name is already registered with another account'
+				'message' => 'This %%f is already registered with another account'
 			)
 		),
 		'is_disabled' => array(
 			'notEmpty' => array(
 				'rule' => 'notEmpty',
-				'message' => 'is_disabled cannot be empty'
+				'message' => '%%f cannot be empty'
 			),
 			'isBoolean' => array(
 				'rule' => 'boolean',
-				'message' => 'Invalid value for is_disabled'
+				'message' => 'Invalid value for %%f'
 			)
 		)
     );

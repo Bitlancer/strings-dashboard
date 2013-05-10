@@ -4,6 +4,10 @@ class SudoRole extends AppModel {
 
 	public $useTable = 'sudo';
 
+	public $actsAs = array(
+		'OrganizationOwned'
+	);
+
 	public $belongsTo = array(
 		'Organization'
 	);

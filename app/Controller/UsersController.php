@@ -21,9 +21,6 @@ class UsersController extends AppController {
 				'fields' => array(
 					'User.id','User.organization_id','User.name','User.full_name',
 					'User.first_name','User.last_name','User.is_disabled'
-				),
-				'conditions' => array(
-					'User.organization_id' => $this->Auth->user('organization_id')
 				)
             );
 
@@ -46,8 +43,7 @@ class UsersController extends AppController {
 
 		$user = $this->User->find('first',array(
             'conditions' => array(
-                'User.id' => $id,
-				'User.organization_id' => $this->Auth->user('organization_id')
+                'User.id' => $id
             )
         ));
 
@@ -82,9 +78,6 @@ class UsersController extends AppController {
 			{
 				unset($this->request->data['User']['confirm_password']);
 
-				//Set organization
-        		$this->request->data['User']['organization_id'] = $this->Auth->User('organization_id');
-
 				if($this->User->save($this->request->data)){
 					$message = 'Created new user ' . $this->request->data['User']['name'] . '.';
 				}
@@ -118,8 +111,7 @@ class UsersController extends AppController {
 
 		$user = $this->User->find('first',array(
 			'conditions' => array(
-				'User.id' => $id,
-				'User.organization_id' => $this->Auth->user('organization_id')
+				'User.id' => $id
 			)
 		));
 
@@ -139,9 +131,6 @@ class UsersController extends AppController {
 
 			$isError = false;
 			$message = "";
-
-			//Have to set organization_id so multi-column validation can occur
-			$this->request->data['User']['organization_id'] = $user['Organization']['id'];
 
 			$validFields = array('first_name','last_name','email');
 			$this->User->id = $id;
@@ -241,8 +230,7 @@ class UsersController extends AppController {
 
 		$user = $this->User->find('first',array(
             'conditions' => array(
-                'User.id' => $id,
-				'User.organization_id' => $this->Auth->user('organization_id')
+                'User.id' => $id
             )
         ));
 
@@ -302,8 +290,7 @@ class UsersController extends AppController {
 
 		$user = $this->User->find('first',array(
             'conditions' => array(
-                'User.id' => $id,
-				'User.organization_id' => $this->Auth->user('organization_id')
+                'User.id' => $id
             )
         ));
 
@@ -341,8 +328,7 @@ class UsersController extends AppController {
 
         $user = $this->User->find('first',array(
             'conditions' => array(
-                'User.id' => $id,
-				'User.organization_id' => $this->Auth->user('organization_id')
+                'User.id' => $id
             )
         ));
 
@@ -387,6 +373,9 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
+			//Detach OrganizationOwned behavior
+			$this->User->Behaviors->unload('OrganizationOwned');	
+
 			//Add additional conditions to login query
 			$this->Auth->authenticate['Form']['scope'] = array(
 				'User.is_disabled' => '0',
@@ -394,7 +383,7 @@ class UsersController extends AppController {
             	'Organization.short_name' => $this->request->data['Organization']['short_name']
         	);
 
-    		if ($this->Auth->login()) {
+    		if($this->Auth->login()) {
 
 				if($this->request->data['User']['remember_me'] == 'on'){
 					$rememberMeData = array(

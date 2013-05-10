@@ -8,6 +8,10 @@ class User extends AppModel {
     	'full_name' => 'CONCAT(User.first_name, " ", User.last_name)',
 	);
 
+	public $actsAs = array(
+		'OrganizationOwned'
+	);
+
 	public $belongsTo = array(
 		'Organization'
 	);
@@ -30,19 +34,19 @@ class User extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => '%f must be an integer'
+                'message' => '%%f must be an integer'
             ),
 			'validForeignKey' => array(
 				'rule' => array('isValidForeignKey'),
-				'message' => 'The organization you supplied does not exist'
+				'message' => '%%f does not exist'
 			)
         ),
         'name' => array(
@@ -62,7 +66,7 @@ class User extends AppModel {
             ),
 			'checkMultiKeyUniqueness' => array(
 				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
-				'message' => 'A user with this username already exists within your organization'
+				'message' => 'This username is already taken'
 			)
         ),
 		'password' => array(
@@ -70,15 +74,15 @@ class User extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Password is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Password cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
 			'minLength' => array(
 				'rule' => array('minLength', 8),
-				'message' => 'Password must be at least 8 characters long'
+				'message' => '%%f must be at least 8 characters long'
 			)
 		),
 		'first_name' => array(
@@ -86,11 +90,11 @@ class User extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'First name is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty', 
-                'message' => 'First name cannot be empty'
+                'message' => '%%f cannot be empty'
             )
 		),
 		'last_name' => array(
@@ -98,11 +102,11 @@ class User extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Last name is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty', 
-                'message' => 'Last name cannot be empty'
+                'message' => '%%f cannot be empty'
             )
         ),
 		'email' => array(
@@ -110,39 +114,39 @@ class User extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => '%f is required'
+                'message' => '%%f is required'
             ),  
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => '%f cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
 			'validEmail' => array(
 				'rule' => 'email',
-				'message' => '%f is not a valid email address'
+				'message' => '%%f is not a valid email address'
 			),
 			'checkMultiKeyUniqueness' => array(
                 'rule' => array('checkMultiKeyUniqueness',array('email','organization_id')),
-                'message' => 'This %f is already registered to another user'
+                'message' => 'This %%f is already registered to another user'
             )
         ),
 		'is_admin' => array(
 			'notEmpty' => array(
 				'rule' => 'notEmpty',
-				'message' => 'is_admin cannot be empty'
+				'message' => '%%f cannot be empty'
 			),
 			'validValue' => array(
 				'rule' => array('inList',array(0,1,'0','1')),
-				'message' => 'is_admin must be 0 or 1'
+				'message' => '%%f must be a valid boolean'
 			)
 		),
 		'is_disabled' => array(
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'is_disabled cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isBoolean' => array(
                 'rule' => 'boolean',
-                'message' => 'Invalid value for is_disabled'
+                'message' => '%%f must be a valid boolean'
             )
         )
     );

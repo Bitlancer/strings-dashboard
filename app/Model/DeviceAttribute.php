@@ -4,6 +4,10 @@ class DeviceAttribute extends AppModel {
 
 	public $useTable = 'device_attribute';
 
+	public $actsAs = array(
+		'OrganizationOwned'
+	);
+
 	public $belongsTo = array(
 		'Organization',
 		'Device'
@@ -19,19 +23,19 @@ class DeviceAttribute extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Organization id is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Organization id cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => 'Organization id must be an integer'
+                'message' => '%%f must be an integer'
             ),
 			'validForeignKey' => array(
 				'rule' => array('isValidForeignKey'),
-				'message' => 'The organization you supplied does not exist'
+				'message' => '%%f does not exist'
 			)
         ),
 		'device_id' => array(
@@ -39,19 +43,19 @@ class DeviceAttribute extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Device id is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Device id cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => 'Device id must be an integer'
+                'message' => '%%f must be an integer'
             ),
             'validForeignKey' => array(
                 'rule' => array('isValidForeignKey'),
-                'message' => 'The device you supplied does not exist'
+                'message' => '%%f does not exist'
             )
         ),	
         'var' => array(
@@ -59,15 +63,15 @@ class DeviceAttribute extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Var is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Var cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
 			'checkMultiKeyUniqueness' => array(
 				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
-				'message' => 'This var has already been defined for this device'
+				'message' => 'This %%f has already been defined for this device'
 			)
         )
     );

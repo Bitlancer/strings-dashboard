@@ -4,6 +4,10 @@ class Implementation extends AppModel {
 
 	public $useTable = 'implementation';
 
+	public $actsAs = array(
+		'OrganizationOwned'
+	);
+
 	public $belongsTo = array(
 		'Organization',
 		'Provider'
@@ -15,19 +19,19 @@ class Implementation extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Organization id is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Organization id cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => 'Organization id must be an integer'
+                'message' => '%%f must be an integer'
             ),
 			'validForeignKey' => array(
 				'rule' => array('isValidForeignKey'),
-				'message' => 'The organization you supplied does not exist'
+				'message' => '%%f does not exist'
 			)
         ),
 		'provider_id' => array(
@@ -35,19 +39,19 @@ class Implementation extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Provider id is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Provider id cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'isNumeric' => array(
                 'rule' => 'numeric',
-                'message' => 'Provider id must be an integer'
+                'message' => '%%f must be an integer'
             ),
             'validForeignKey' => array(
                 'rule' => array('isValidForeignKey'),
-                'message' => 'The provider you supplied does not exist'
+                'message' => '%%f does not exist'
             )
         ),	
         'name' => array(
@@ -55,19 +59,19 @@ class Implementation extends AppModel {
                 'rule' => 'notEmpty',
                 'on' => 'create',
                 'required' => true,
-                'message' => 'Name is required'
+                'message' => '%%f is required'
             ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
-                'message' => 'Name cannot be empty'
+                'message' => '%%f cannot be empty'
             ),
             'validName' => array(
                 'rule' => array('custom','/[A-Za-z0-9-_\. @]{3,}/'),
-                'message' => 'Name is limited to letters, numbers and punctuation and must be at least 3 characters long'
+                'message' => '%%f is limited to letters, numbers and punctuation and must be at least 3 characters long'
             ),
 			'checkMultiKeyUniqueness' => array(
 				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
-				'message' => 'This name is already taken'
+				'message' => 'This %%f is already taken'
 			)
         )
     );
