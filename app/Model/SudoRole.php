@@ -10,7 +10,8 @@ class SudoRole extends AppModel {
 
 	public $hasMany = array(
 		'SudoAttribute' => array(
-			'foreignKey' => 'sudo_id'
+			'foreignKey' => 'sudo_id',
+			'dependent' => true
 		)
 	);
 

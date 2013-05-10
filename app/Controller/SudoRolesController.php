@@ -76,7 +76,7 @@ class SudoRolesController extends AppController {
                    	'organization_id' => $this->Auth->user('organization_id'),
                     'name' => 'sudoRunAs'
                 );
-				$runasUsers = array_unique(explode(",",$this->request->data['runas']));
+				$runasUsers = $this->parseCsvStringToSet($this->request->data['runas']);
                 foreach($runasUsers as $user){
                 	$sudoAttribute['value'] = $user;
 					$sudoAttributes[] = $sudoAttribute;
@@ -87,7 +87,7 @@ class SudoRolesController extends AppController {
                 	'organization_id' => $this->Auth->user('organization_id'),
                     'name' => 'sudoCommand'
                 );
-				$commands = array_unique(explode(",",$this->request->data['commands']));
+				$commands = $this->parseCsvStringToSet($this->request->data['commands']);
                 foreach($commands as $command){
                     $sudoAttribute['value'] = $command;
 					$sudoAttributes[] = $sudoAttribute;
@@ -129,41 +129,17 @@ class SudoRolesController extends AppController {
     }
 
 	public function edit($id=null){
-		
+
 		$sudoRole = $this->SudoRole->find('first',array(
 			'conditions' => array(
 				'SudoRole.id' => $id,
 				'SudoRole.organization_id' => $this->Auth->user('organization_id')
 			)
 		));
-
-		$sudoAttributes = $this->SudoRole->SudoAttribute->find('all',array(
-			'link' => array(
-				'SudoRole'
-			),
-			'fields' => array(
-				'SudoAttribute.name','SudoAttribute.value'
-			),
-			'conditions' => array(
-				'SudoRole.id' => $id,
-				'SudoRole.organization_id' => $this->Auth->user('organization_id')
-			)
-		));
-
-		//Generate runas and commands arrays
-		$runas = array();
-		$commands = array();
-		foreach($sudoAttributes as $attr){
-			switch($attr['SudoAttribute']['name']){
-				case 'sudoRunAs':
-					$runas[] = $attr['SudoAttribute']['value'];
-					break;
-				case 'sudoCommand':
-					$commands[] = $attr['SudoAttribute']['value'];
-					break;
-				default:
-					break;
-			}
+	
+		if(empty($sudoRole)){
+			$this->Session->setFlash(__('This sudo role does not exist.'),'default',array(),'error');
+			$this->redirect(array('action' => 'index'));
 		}
 
 		if($this->request->is('post')){
@@ -179,15 +155,39 @@ class SudoRolesController extends AppController {
 					'organization_id' => $this->Auth->user('organization_id')
 			));
 
-			$this->SudoRole->id = $id;
-			if($this->SudoRole->save($sudoRole)){
+			//For now the user cannot set runas
+            $this->request->data['runas'] = 'root';
 
-				$message = "Saved role " . $sudoRole['SudoRole']['name'];
-				
-			}
+            //Validate runas and commands
+            if(empty($this->request->data['runas'])){
+                $isError = true;
+                $message = "Please specify at least one runas user";
+            }
+            elseif(empty($this->request->data['commands'])){
+                $isError = true;
+                $message = "Please specify at least one command";
+            }
 			else {
-				$isError = true;
-				$message = $this->SudoRole->validationErrorsAsString();
+
+				$this->SudoRole->id = $id;
+				if($this->SudoRole->save($sudoRole)){
+
+					//Diff the list of commands
+					$newCommands = $this->parseCsvStringToSet($this->request->data['commands']);
+					$newRunAs = $this->parseCsvStringToSet($this->request->data['runas']);
+
+					list($isError,$message) = $this->updateAttributes($id,'sudoCommand',$newCommands);
+					if(!$isError){
+						list($isError,$message) = $this->updateAttributes($id,'sudoRunAs',$newRunAs);
+						if(!$isError){
+							$message = "Saved role " . $sudoRole['SudoRole']['name'];
+						}
+					}
+				}
+				else {
+					$isError = true;
+					$message = $this->SudoRole->validationErrorsAsString();
+				}
 			}
 
 			if($isError){
@@ -210,8 +210,36 @@ class SudoRolesController extends AppController {
 
 			$this->Session->setFlash(__('Any changes to this sudo role will affect ...'),'default',array(),'error');
 
-			$runas = implode(",",$runas);
-			$commands = implode(",",$commands);
+			$sudoAttributes = $this->SudoRole->SudoAttribute->find('all',array(
+            	'link' => array(
+                	'SudoRole'
+            	),
+            	'fields' => array(
+                	'SudoAttribute.name','SudoAttribute.value'
+            	),
+            	'conditions' => array(
+                	'SudoRole.id' => $id,
+                	'SudoRole.organization_id' => $this->Auth->user('organization_id')
+            	)
+        	));
+
+        	//Generate runas and commands arrays
+        	$runas = array();
+        	$commands = array();
+        	foreach($sudoAttributes as $attr){
+            	switch($attr['SudoAttribute']['name']){
+                	case 'sudoRunAs':
+                    	$runas[] = $attr['SudoAttribute']['value'];
+                    	break;
+                	case 'sudoCommand':
+                    	$commands[] = $attr['SudoAttribute']['value'];
+                    	break;
+                	default:
+                    	break;
+            	}
+        	}
+			$runas = implode(", ",$runas);
+			$commands = implode(",\n",$commands);
 
 			$this->set(array(
 				'sudoRole' => $sudoRole,
@@ -219,5 +247,115 @@ class SudoRolesController extends AppController {
 				'commands' => $commands
 			));
 		}
+	}
+
+	public function delete($id){
+
+		$sudoRole = $this->SudoRole->find('first',array(
+            'conditions' => array(
+                'SudoRole.id' => $id,
+                'SudoRole.organization_id' => $this->Auth->user('organization_id')
+            )
+        ));
+    
+        if(empty($sudoRole)){
+            $this->Session->setFlash(__('This sudo role does not exist.'),'default',array(),'error');
+            $this->redirect(array('action' => 'index'));
+        }
+
+		if($this->request->is('post')){
+
+            $this->SudoRole->id = $id;
+            if($this->SudoRole->delete($id,true)){
+                $this->Session->setFlash(__($sudoRole['SudoRole']['name'] . ' has been deleted.'),'default',array(),'success');
+                $this->redirect(array('action' => 'index'));
+            }
+            else {
+                $message = $this->SudoRole->validationErrorsAsString();
+                $this->Session->setFlash(__($message), 'default', array(), 'error');
+                $this->redirect(array('action' => 'index'));
+            }
+        }
+
+		$this->set(array(
+			'sudoRole' => $sudoRole
+		));
+	}
+
+	private function updateAttributes($id,$attributeName,$attributes){
+
+		$sudoAttributes = $this->SudoRole->SudoAttribute->find('all',array(
+            'link' => array(
+                'SudoRole'
+            ),
+            'fields' => array(
+                'SudoAttribute.name','SudoAttribute.value'
+            ),
+            'conditions' => array(
+                'SudoRole.id' => $id,
+				'SudoAttribute.name' => $attributeName
+            )
+        ));
+
+		$existingAttrs = array();
+		foreach($sudoAttributes as $attr)
+			$existingAttrs[] = $attr['SudoAttribute']['value'];
+
+		//Diff
+        $addAttrs = array_diff($attributes,$existingAttrs);
+        $deleteAttrs = array_diff($existingAttrs,$attributes);
+
+		if(count($deleteAttrs)){
+
+			$deleteResult = $this->SudoRole->SudoAttribute->deleteAll(array(
+        		'SudoAttribute.sudo_id' => $id,
+            	'SudoAttribute.name' => $attributeName,
+            	'SudoAttribute.value' => $deleteAttrs
+        	));
+
+			if(!$deleteResult)
+				return array(true,$this->SudoRole->SudoAttribute->validationErrorsAsString());
+		}
+
+		if(count($addAttrs)){
+
+        	$sudoAttribute = array(
+            	'SudoAttribute' => array(
+                	'organization_id' => $this->Auth->user('organization_id'),
+                    'sudo_id' => $id,
+                    'name' => $attributeName
+            ));
+
+            $sudoAttributes = array();
+            foreach($addAttrs as $attr){
+            	$sudoAttribute['SudoAttribute']['value'] = $attr;
+                $sudoAttributes[] = $sudoAttribute;
+            }
+
+            if(!$this->SudoRole->SudoAttribute->saveMany($sudoAttributes)){
+				return array(true,$this->SudoRole->SudoAttribute->validationErrorsAsString(true));
+            }
+		}
+
+		return array(false,"");
+	}
+
+	/**
+	 * Parse a comma delimited list into an array of unique non-blank elements
+	 */
+	private static function parseCsvStringToSet($csvString){
+
+		$elements = explode(',',$csvString);
+
+		$newElements = array();
+		foreach($elements as $element){
+			$element = trim($element);
+			if($element !== '')
+				$newElements[] = $element;
+		}
+		$elements = $newElements;
+
+		$elements = array_unique($elements);
+		return $elements;
 	}
 }
