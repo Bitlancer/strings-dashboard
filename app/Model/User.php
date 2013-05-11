@@ -21,10 +21,7 @@ class User extends AppModel {
 			'className' => 'Team',
 			'joinTable' => 'user_team',
 			'foreignKey' => 'user_id',
-			'associationForeignKey' => 'team_id',
-			'conditions' => array(
-				'Team.is_disabled' => 0
-			)
+			'associationForeignKey' => 'team_id'
 		)
 	);
 

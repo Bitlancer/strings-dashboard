@@ -1,4 +1,4 @@
-@import url("http://assets.ambient.ly/bitlancer/jquery.ui.theme.css");
+@import url(jquery.ui.theme.css);
 @import url("http://fonts.googleapis.com/css?family=Pacifico");
 @import url("http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800");
 html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
@@ -130,8 +130,12 @@ body {
     float: right; }
   body .overflow-hidden {
     overflow: hidden; }
+  body .block {
+    display: block; }
   body .arrow:after {
     content: " \00bb"; }
+  body .arrow.block {
+    margin-top: 5px; }
   body ul {
     display: block;
     position: relative; }
@@ -350,6 +354,9 @@ table {
           color: #1e8fe2;
           float: right;
           font-size: 85%; }
+          table tbody tr td a.action.selected {
+            color: #999;
+            font-style: italic; }
         table tbody tr td ul.action-menu {
           float: right; }
           table tbody tr td ul.action-menu > span {
@@ -610,6 +617,7 @@ body .strings-modal {
       body .strings-modal .ui-dialog-titlebar > a:hover {
         background: rgba(0, 0, 0, 0.05); }
   body .strings-modal .ui-dialog-content {
+    background: #fff;
     min-height: auto !important;
     padding: 15px; }
     body .strings-modal .ui-dialog-content form > p {
@@ -656,7 +664,8 @@ form fieldset {
   padding: 10px;
   position: relative; }
   form fieldset legend {
-    font-weight: 600; }
+    font-weight: 600;
+    background: #fff; }
   form fieldset.info {
     margin-bottom: 20px; }
   form fieldset span.with-input {
@@ -738,6 +747,20 @@ textarea {
   font-size: 90%;
   line-height: 1.5;
   text-indent: 1px; }
+
+div.form form div.configure {
+  background: #fff;
+  border: 1px solid #eee;
+  border-bottom: 1px solid #e0e0e0;
+  margin-top: 10px;
+  padding: 15px; }
+div.form form div.submit {
+  margin-top: 45px; }
+  div.form form div.submit legend {
+    color: #999;
+    float: right;
+    line-height: 30px;
+    margin-right: 10px; }
 
 .ui-tooltip {
   background: rgba(0, 0, 0, 0.9);
@@ -1109,6 +1132,16 @@ ul.holder input {
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none; }
+
+input[type='range'] {
+  box-sizing: border-box;
+  width: 99%; }
+
+div#result {
+  margin-top: 5px; }
+  div#result:before {
+    content: 'Instances: ';
+    font-weight: 700; }
 
 body#account {
   background: url("http://assets.ambient.ly/bitlancer/wall3.jpg") center no-repeat; }

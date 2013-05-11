@@ -2,7 +2,7 @@
 
 $this->extend('/Common/standard');
 
-$this->assign('title', 'Sudo Roles');
+$this->assign('title', 'User Management');
 
 //Set sidebar content
 $this->start('sidebar');

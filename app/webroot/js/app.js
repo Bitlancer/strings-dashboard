@@ -100,9 +100,10 @@ var strings = {
             if($(this).attr('data-cta')) parent.find('.top').prepend($(this).attr('data-cta'))
             if($(this).attr('data-title')) parent.find('.top').prepend('<h2>'+$(this).attr('data-title')+'</h2>');
             parent.find('.dataTables_filter input').attr('placeholder','Search');
+            if($(this).attr('data-search') === 'false') parent.find('.dataTables_filter input').remove();
           }
         });
-		$(this).addClass('loaded');
+        $(this).addClass('loaded');
       });
       //$('.dataTables_length').remove();
     }
