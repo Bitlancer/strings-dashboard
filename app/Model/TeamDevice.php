@@ -5,7 +5,7 @@ class TeamDevice extends AppModel
 	public $useTable = 'team_device';
 	
 	public $actsAs = array(
-		'OrganizatonOwned'
+		'OrganizationOwned'
 	);
 	
 	public $belongsTo = array(

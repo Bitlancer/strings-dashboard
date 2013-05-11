@@ -9,7 +9,7 @@
         array(
 			'type' => 'modal',
             'text' => 'Reset Password',
-			'source' => '/Users/reset_password/%__id__%.json'
+			'source' => '/Users/resetPassword/%__id__%.json'
         ),
         array(
 			'type' => 'modal',

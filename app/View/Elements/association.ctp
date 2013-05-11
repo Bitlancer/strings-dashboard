@@ -14,7 +14,7 @@
 <style>
 fieldset#add input {
   margin-right: 5px;
-  width:84%;
+  width:88%;
 }
 fieldset table {
   margin: 10px 0;

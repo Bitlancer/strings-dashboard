@@ -13,6 +13,6 @@
 		'memberData' => $memberData,
 		'addAssociationTitle' => 'Add Formation',
 		'removeAssociationTitle' => 'Existing Formations',
-		'addAssociationUri' => "/Applications/add_formation/$id.json",
-		'removeAssociationUri' => "/Applications/remove_formation/$id.json"
+		'addAssociationUri' => "/Applications/addFormation/$id.json",
+		'removeAssociationUri' => "/Applications/removeFormation/$id.json"
 	));

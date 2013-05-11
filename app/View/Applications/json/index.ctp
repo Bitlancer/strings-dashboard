@@ -9,13 +9,13 @@
         array(
             'type' => 'modal',
             'text' => 'Edit Formations',
-            'source' => '/Applications/edit_formations/%__id__%.json',
+            'source' => '/Applications/editFormations/%__id__%.json',
 			'width' => '450'
         ),
 		array(
-			'type' => 'modal',
+			'type' => 'link',
 			'text' => 'Edit Permissions',
-			'source' => '/Applications/edit_permissions/%__id__%.json'
+			'destination' => '/Applications/editPermissions/%__id__%'
 		),
         array(
             'type' => 'modal',

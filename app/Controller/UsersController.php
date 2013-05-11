@@ -167,7 +167,7 @@ class UsersController extends AppController {
 	/**
 	 * Allow a user to edit his or her own settings
 	 */
-	public function my_settings(){
+	public function mySettings(){
 
 		$id = $this->Auth->user('id');
 
@@ -226,7 +226,7 @@ class UsersController extends AppController {
 		}	
 	}
 
-	public function reset_password($id=null){
+	public function resetPassword($id=null){
 
 		$user = $this->User->find('first',array(
             'conditions' => array(

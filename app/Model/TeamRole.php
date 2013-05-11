@@ -5,7 +5,7 @@ class TeamRole extends AppModel
 	public $useTable = 'team_role';
 	
 	public $actsAs = array(
-		'OrganizatonOwned'
+		'OrganizationOwned'
 	);
 	
 	public $belongsTo = array(

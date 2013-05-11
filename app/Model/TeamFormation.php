@@ -5,7 +5,7 @@ class TeamFormation extends AppModel
 	public $useTable = 'team_formation';
 	
 	public $actsAs = array(
-		'OrganizatonOwned'
+		'OrganizationOwned'
 	);
 	
 	public $belongsTo = array(

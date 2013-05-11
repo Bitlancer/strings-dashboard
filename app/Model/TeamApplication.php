@@ -5,7 +5,7 @@ class TeamApplication extends AppModel
 	public $useTable = 'team_application';
 	
 	public $actsAs = array(
-		'OrganizatonOwned'
+		'OrganizationOwned'
 	);
 	
 	public $belongsTo = array(

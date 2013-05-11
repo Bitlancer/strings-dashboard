@@ -193,7 +193,7 @@ class ApplicationsController extends AppController
         ));
     }
 
-	public function edit_formations($id=null){
+	public function editFormations($id=null){
 
 		$members = $this->Application->Formation->find('all',array(
             'link' => array(
@@ -214,7 +214,7 @@ class ApplicationsController extends AppController
 		));
 	}
 
-	public function add_formation($id=null){
+	public function addFormation($id=null){
 
 		$this->autoRender = false;
 
@@ -276,7 +276,7 @@ class ApplicationsController extends AppController
 		));
 	}
 
-	public function remove_formation($id=null){
+	public function removeFormation($id=null){
 
 		$this->autoRender = false;
 
@@ -287,6 +287,10 @@ class ApplicationsController extends AppController
             $formationId = $this->request->query['id'];	
 
 		$this->Application->habtmDelete('Formation', $id, array($formationId));
+	}
+
+	public function editPermissions(){
+
 	}
 
 }
