@@ -14,16 +14,11 @@ class TeamFormation extends AppModel
         'Formation'
     );
 
-    public $hasMany = array();
-    
-    public $hasAndBelongsToMany = array(
-    	'SudoRole' => array(
-    		'className' => 'SudoRole',
-    		'joinTable' => 'team_formation_sudo',
-    		'foreignKey' => 'team_formation_id',
-    		'associationForeignKey' => 'sudo_id'
-    	)
+    public $hasMany = array(
+        'TeamFormationSudo'
     );
+    
+    public $hasAndBelongsToMany = array();
     
     public $validate = array(
         'organization_id' => array(

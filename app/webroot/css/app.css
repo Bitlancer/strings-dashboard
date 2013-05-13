@@ -644,6 +644,11 @@ body .strings-modal {
           background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#4ba5e8), to(#1773b6));
           background-image: -webkit-linear-gradient(#4ba5e8, #1773b6);
           background-image: -o-linear-gradient(#4ba5e8, #1773b6); }
+  body .strings-modal h2 {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 14px;
+    margin-bottom: 13px; }
   body .strings-modal .details {
     background: #fbfbfb;
     border: 1px dashed #ddd;

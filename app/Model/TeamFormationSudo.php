@@ -1,8 +1,8 @@
 <?php
 
-class TeamRole extends AppModel
+class TeamFormationSudo extends AppModel
 {
-	public $useTable = 'team_role';
+	public $useTable = 'team_formation_sudo';
 	
 	public $actsAs = array(
 		'OrganizationOwned'
@@ -10,13 +10,13 @@ class TeamRole extends AppModel
 	
 	public $belongsTo = array(
         'Organization',
-        'Team',
-        'Role'
+        'TeamFormation',
+        'SudoRole' => array(
+            'foreignKey' => 'sudo_id'
+        )
     );
 
-    public $hasMany = array(
-        'TeamRoleSudo'
-    );
+    public $hasMany = array();
     
     public $hasAndBelongsToMany = array();
     
@@ -41,7 +41,7 @@ class TeamRole extends AppModel
                 'message' => '%%f does not exist'
             )
         ),
-        'team_id' => array(
+        'team_formation_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',
@@ -61,7 +61,7 @@ class TeamRole extends AppModel
                 'message' => '%%f does not exist'
             )
         ),
-        'role_id' => array(
+        'sudo_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',

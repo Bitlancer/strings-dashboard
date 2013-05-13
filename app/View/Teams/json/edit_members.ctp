@@ -4,7 +4,7 @@
     foreach($members as $member){
 
         $member['id'] = $member['User']['id'];
-        $member['displayValue'] = $member['User']['name'] . " (" . $member['User']['full_name'] . ")";
+        $member['displayValue'] = $member['User']['full_name'] . " (" . $member['User']['name'] . ")";
 
         $memberData[] = $member;
     }

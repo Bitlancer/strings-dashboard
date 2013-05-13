@@ -92,6 +92,7 @@ class LinkableBehavior extends ModelBehavior {
 						} elseif ($type === 'hasAndBelongsToMany') {
 							if (isset($association['with'])) {
 								$Link =& $_Model->{$association['with']};
+                                debug($Link);
 								if (isset($Link->belongsTo[$_Model->alias])) {
 									$modelLink = $Link->escapeField($Link->belongsTo[$_Model->alias]['foreignKey']);
 								}

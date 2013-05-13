@@ -14,16 +14,11 @@ class TeamDevice extends AppModel
         'Device'
     );
 
-    public $hasMany = array();
-    
-    public $hasAndBelongsToMany = array(
-    	'SudoRole' => array(
-    		'className' => 'SudoRole',
-    		'joinTable' => 'team_device_sudo',
-    		'foreignKey' => 'team_device_id',
-    		'associationForeignKey' => 'sudo_id'
-    	)
+    public $hasMany = array(
+        'TeamDeviceSudo'
     );
+    
+    public $hasAndBelongsToMany = array();
     
     public $validate = array(
         'organization_id' => array(

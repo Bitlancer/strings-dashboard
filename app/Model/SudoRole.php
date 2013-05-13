@@ -9,17 +9,30 @@ class SudoRole extends AppModel {
 	);
 
 	public $belongsTo = array(
-		'Organization'
+		'Organization',
 	);
 
 	public $hasMany = array(
 		'SudoAttribute' => array(
 			'foreignKey' => 'sudo_id',
 			'dependent' => true
-		)
+		),
+        'TeamApplicationSudo' => array(
+            'foreignKey' => 'sudo_id'
+        ),
+        'TeamRoleSudo' => array(
+            'foreignKey' => 'sudo_id'
+        ),
+        'TeamFormationSudo' => array(
+            'foreignKey' => 'sudo_id'
+        ),
+        'TeamDeviceSudo' => array(
+            'foreignKey' => 'sudo_id'
+        )
 	);
 
-	public $hasAndBelongsToMany = array();
+	public $hasAndBelongsToMany = array(
+    );
 
 	public $validate = array(
         'organization_id' => array(

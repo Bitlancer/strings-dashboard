@@ -289,7 +289,26 @@ class ApplicationsController extends AppController
 		$this->Application->habtmDelete('Formation', $id, array($formationId));
 	}
 
-	public function editPermissions(){
+	public function editPermissions($id=null){
+
+        $this->loadModel('SudoRole');
+
+       $teamsSudoRoles = $this->SudoRole->find('all',array(
+            'link' => array(
+                'TeamApplicationSudo' => array(
+                    'TeamApplication' => array(
+                        'Team',
+                        'Application'
+                    )
+                )
+            ),
+            'conditions' => array(
+                'Application.id' => $id
+            )
+        ));
+
+
+        print_r($teamsSudoRoles); 
 
 	}
 

@@ -2,7 +2,7 @@
 
 class TeamsController extends AppController {
 
-	public function index() {
+	public function index(){
 
 		$teamTableColumns = array(
 			'Name' => array( 
