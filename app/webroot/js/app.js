@@ -33,12 +33,16 @@ var strings = {
     actionmenu : function() {
       $('ul.action-menu').live('click',function(event) {
         event.stopPropagation();
-        var align = ($(this).outerWidth() - $(this).children('span').outerWidth()) * 0.5;
+        var offset = ($(this).outerWidth() - $(this).children('span').outerWidth()) * 0.5;
         if($(this).attr('data-width')){
           $(this).children('span').width($(this).attr('data-width'));
-          align = 0;
+          offset = 0;
         }
-        $(this).children('span').css('right',align);
+        var align = "right";
+        if($(this).attr('data-align')){
+          align = $(this).attr('data-align');
+        }
+        $(this).children('span').css(align,offset);
         $(this).toggleClass('active');
       });
       $('body').click(function() {
@@ -77,6 +81,7 @@ var strings = {
           $(this).dialog("option", "position", ['center', 'center'] );
           strings.ui.tables();
           strings.events.forms();
+          strings.events.keypress();
           modal.find('.cta:not(".cancel,.primary")').bind('click', function() {
             modal.dialog('close');
           });
@@ -130,7 +135,7 @@ var strings = {
         notice.empty();
         $.ajax({
           type: "post",
-          url: form.attr('data-src-add'),
+          url: fielset.attr('data-src-add'),
           data: {
             "name": name
           },
@@ -138,7 +143,11 @@ var strings = {
             if(!data.isError){
               var tbody = form.find("table tbody");
               $(tbody).find('td.blank').parent('tr').remove();
-              $(tbody).append("<tr><td>" + name + "<a class='action remove' data-id='" + data.id + "'>Remove</a>");
+              var element = "<tr><td>";
+              element += name;
+              element += "<a class='action remove' data-id='" + data.id + "'>Remove</a>";
+              element += "</td></tr>";
+              $(tbody).append(element);
               input.val("");
             }
             else {
@@ -165,8 +174,8 @@ var strings = {
           success: function(data, textStatus){
             var tbody = src.closest('tbody');
             src.closest('tr').remove();
-            if($(tbody).find('tr').length == 0){
-              $(tbody).append("<tr><td class='blank'>Add a member above</td></tr>");
+            if(tbody.find('tr').length == 0){
+              tbody.append("<tr><td class='blank'>Add a member above</td></tr>");
             }
           }
         })
@@ -174,9 +183,39 @@ var strings = {
           console.log(textStatus);
         });
       });
+      $("fieldset.association .cta.add").live('click', function(e){
+        e.preventDefault();
+        var src = $(this);
+        var fieldset = src.closest("fieldset");
+        var input = fieldset.find("input[type='text']");
+        var name = input.val();
+        var tbody = fieldset.find("tbody");
+        if(name.length > 0 && tbody.find("input[value='" + name + "']").length == 0){
+          $(tbody).find("td.blank").parent("tr").remove();
+          var element = "<tr><td>";
+          element += name;
+          element += "<input type='hidden' name='" + fieldset.attr('data-field-name') + "' value='" + name + "' />";
+          element += "<a class='action remove'>Remove</a>";
+          tbody.append(element);
+        }
+        input.val("");
+      });
+      $('fieldset.association .action.remove').live('click', function(e){
+        var src = $(this);
+        var tbody = src.closest('tbody');
+        src.closest('tr').remove();
+        if(tbody.find('tr').length == 0){
+          tbody.append("<tr><td class='blank'>Add a member above</td></tr>");
+        }
+      });
     },
     keypress : function() {
-      $(':input').keypress(function (e) {
+      $("fieldset.association input[type='text']").keypress(function(e){
+        if(e.which == 13){
+          $(this).closest("fieldset").find(".cta.add").click();
+        }
+      });
+      $("input").closest('fieldset').not('.association').keypress(function (e) {
         if (e.which == 13) {
           e.preventDefault();
           $(this).closest('form').submit();
@@ -227,7 +266,12 @@ var strings = {
         });
       });
       // auto-complete
-      $('.autocomplete').not('.example > .autocomplete').each(function() {
+      $('.autocomplete').each(function() {
+        $(this).autocomplete({
+          source: $(this).attr('data-src')
+        });
+      });
+      $('.autocomplete-tag').not('.example > .autocomplete-tag').each(function() {
         var json = $(this).attr('data-src') || null;
         var placeholder = $(this).attr('data-placeholder') || 'Enter a tag...';
         var width = $(this).attr('data-width') || '500px';

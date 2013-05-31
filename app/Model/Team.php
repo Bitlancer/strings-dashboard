@@ -13,20 +13,16 @@ class Team extends AppModel {
 	);
 
 	public $hasMany = array(
+        'UserTeam' => array(
+            'dependent' => true
+        ),
 		'TeamDevice',
 		'TeamRole',
 		'TeamFormation',
 		'TeamApplication'
 	);
 
-	public $hasAndBelongsToMany = array(
-        'User' => array(
-            'className' => 'User',
-            'joinTable' => 'user_team',
-            'foreignKey' => 'team_id',
-            'associationForeignKey' => 'user_id'
-        )
-    );
+	public $hasAndBelongsToMany = array();
 
 	public $validate = array(
         'organization_id' => array(

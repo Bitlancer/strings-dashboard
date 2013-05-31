@@ -163,10 +163,6 @@ body > header {
   position: fixed;
   width: 100%;
   z-index: 99;
-  -webkit-transition: top 0.1s ease-in-out;
-  -moz-transition: top 0.1s ease-in-out;
-  -o-transition: top 0.1s ease-in-out;
-  transition: top 0.1s ease-in-out;
   -webkit-box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2);
   -moz-box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2);
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2); }
@@ -196,11 +192,7 @@ body > nav {
   z-index: 15;
   -webkit-box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
   -moz-box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
-  -webkit-transition: left 0.2s 0.15s ease-in-out;
-  -moz-transition: left 0.2s 0.15s ease-in-out;
-  -o-transition: left 0.2s 0.15s ease-in-out;
-  transition: left 0.2s 0.15s ease-in-out; }
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1); }
   body > nav > span {
     display: block;
     margin-right: 1px;
@@ -348,15 +340,18 @@ table {
       border-bottom: 1px solid #e3e3e3; }
       table tbody tr:last-of-type {
         border: 0; }
+      table tbody tr.selected {
+        background: #1e8fe2;
+        color: #fff; }
+        table tbody tr.selected td a.action {
+          color: #fff;
+          font-style: italic; }
       table tbody tr td {
         border-right: 1px solid #e3e3e3; }
         table tbody tr td a.action {
           color: #1e8fe2;
           float: right;
           font-size: 85%; }
-          table tbody tr td a.action.selected {
-            color: #999;
-            font-style: italic; }
         table tbody tr td ul.action-menu {
           float: right; }
           table tbody tr td ul.action-menu > span {
@@ -757,8 +752,35 @@ div.form form div.configure {
   background: #fff;
   border: 1px solid #eee;
   border-bottom: 1px solid #e0e0e0;
-  margin-top: 10px;
-  padding: 15px; }
+  margin-top: 51px;
+  padding: 20px; }
+  div.form form div.configure h3 {
+    font-weight: 600;
+    margin: 15px 0 5px; }
+    div.form form div.configure h3:first-of-type {
+      margin-top: 0; }
+  div.form form div.configure input[type=text], div.form form div.configure input[type=number] {
+    max-width: 60%; }
+  div.form form div.configure nav.tabs {
+    height: 30px;
+    margin: -51px 0 0 -21px;
+    position: absolute; }
+    div.form form div.configure nav.tabs a {
+      background: #f8f8f8;
+      color: #999;
+      display: inline-block;
+      line-height: 30px;
+      margin: 0;
+      padding: 0 10px; }
+      div.form form div.configure nav.tabs a.active {
+        background: #fff;
+        border: 1px solid #eee;
+        border-bottom: 0;
+        color: #444; }
+  div.form form div.configure > span {
+    display: none; }
+    div.form form div.configure > span:first-of-type, div.form form div.configure > span.active {
+      display: block; }
 div.form form div.submit {
   margin-top: 45px; }
   div.form form div.submit legend {
@@ -970,6 +992,11 @@ ul.action-menu {
     line-height: 18px;
     padding: 0 5px; }
 
+/* JQuery Autocomplete */
+ul.ui-autocomplete li {
+  list-style-type: none; }
+
+/* FCBK Autocomplete */
 /* Copyright: Guillermo Rauch <http://devthought.com/> - Distributed under MIT - Keep this message! */
 /* TextboxList sample CSS */
 ul.holder {
@@ -1149,7 +1176,7 @@ div#result {
     font-weight: 700; }
 
 body#account {
-  background: url("http://assets.ambient.ly/bitlancer/wall3.jpg") center no-repeat; }
+  background: url("/img/wall3.jpg") center no-repeat; }
   body#account.landscape {
     background-size: 100% auto; }
   body#account.portrait {
@@ -1166,9 +1193,9 @@ body#account {
     height: 100%;
     vertical-align: middle;
     margin-right: -0.25em; }
-  body#account.loading form#login {
+  body#account.loading div#login {
     opacity: 0; }
-  body#account form#login {
+  body#account div#login {
     background: #fff;
     border-radius: 7px 7px 0 0;
     display: inline-block;
@@ -1182,12 +1209,8 @@ body#account {
     vertical-align: middle;
     -webkit-box-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
     -moz-box-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
-    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
-    -webkit-transition: opacity 0.5s linear;
-    -moz-transition: opacity 0.5s linear;
-    -o-transition: opacity 0.5s linear;
-    transition: opacity 0.5s linear; }
-    body#account form#login h1 {
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.5); }
+    body#account div#login h1 {
       box-sizing: border-box;
       color: #444;
       font-family: 'Pacifico';
@@ -1195,29 +1218,29 @@ body#account {
       font-weight: 400;
       margin-bottom: 25px;
       text-align: center; }
-    body#account form#login input[type=text], body#account form#login input[type=email], body#account form#login input[type=password] {
+    body#account div#login input[type=text], body#account div#login input[type=email], body#account div#login input[type=password] {
       box-sizing: border-box;
       font-size: 90%;
       margin-bottom: 5px;
       padding: 5px;
       width: 100%; }
-      body#account form#login input[type=text]:last-of-type, body#account form#login input[type=email]:last-of-type, body#account form#login input[type=password]:last-of-type {
+      body#account div#login input[type=text]:last-of-type, body#account div#login input[type=email]:last-of-type, body#account div#login input[type=password]:last-of-type {
         margin-bottom: 0; }
-    body#account form#login div[data-id][data-id=password], body#account form#login div[data-id][data-id=register] {
+    body#account div#login div[data-id][data-id=password], body#account div#login div[data-id][data-id=register] {
       display: none; }
-    body#account form#login div[data-id] p {
+    body#account div#login div[data-id] p {
       font-size: 85%;
       margin-bottom: 15px; }
-    body#account form#login div > .buttons {
+    body#account div#login form > .buttons {
       display: block;
       margin-top: 15px; }
-      body#account form#login div > .buttons > * {
+      body#account div#login form > .buttons > * {
         vertical-align: middle; }
-      body#account form#login div > .buttons label {
+      body#account div#login form > .buttons label {
         font-size: 80%; }
-      body#account form#login div > .buttons .cta {
+      body#account div#login form > .buttons .cta {
         margin-right: 5px; }
-    body#account form#login #tabs {
+    body#account div#login #tabs {
       background-color: rgba(0, 0, 0, 0.05);
       background-image: -moz-linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.1));
       background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0, 0, 0, 0.05)), to(rgba(0, 0, 0, 0.1)));
@@ -1236,7 +1259,7 @@ body#account {
       position: absolute;
       width: 300px;
       text-align: center; }
-      body#account form#login #tabs > * {
+      body#account div#login #tabs > * {
         color: #fff;
         display: block;
         float: left;
@@ -1247,17 +1270,17 @@ body#account {
         width: 130px;
         text-align: center;
         text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4); }
-        body#account form#login #tabs > *:first-child {
+        body#account div#login #tabs > *:first-child {
           border-radius: 0 0 0 7px;
           -webkit-box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
           -moz-box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
           box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1); }
-        body#account form#login #tabs > *:last-child {
+        body#account div#login #tabs > *:last-child {
           border-radius: 0 0 7px 0;
           -webkit-box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.1);
           -moz-box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.1);
           box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.1); }
-        body#account form#login #tabs > *:hover, body#account form#login #tabs > *.active {
+        body#account div#login #tabs > *:hover, body#account div#login #tabs > *.active {
           background-color: #fefefe;
           background-image: -moz-linear-gradient(#fefefe, white);
           background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fefefe), to(white));

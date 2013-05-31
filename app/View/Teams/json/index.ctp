@@ -8,12 +8,6 @@
         ),
         array(
 			'type' => 'modal',
-            'text' => 'Edit Members',
-			'source' => '/Teams/editMembers/%__id__%.json',
-			'width' => 500,
-        ),
-        array(
-			'type' => 'modal',
             'text' => 'Disable Team',
 			'source' => '/Teams/disable/%__id__%.json'
         )

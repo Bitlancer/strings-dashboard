@@ -16,14 +16,16 @@ class User extends AppModel {
 		'Organization'
 	);
 
-	public $hasAndBelongsToMany = array(
-		'Team' => array(
-			'className' => 'Team',
-			'joinTable' => 'user_team',
-			'foreignKey' => 'user_id',
-			'associationForeignKey' => 'team_id'
-		)
-	);
+    public $hasMany = array(
+        'UserTeam' => array(
+            'dependent' => true
+        ),
+        'UserAttribute' => array(
+            'dependent' => true
+        ),
+    );
+
+	public $hasAndBelongsToMany = array();
 
 	public $validate = array(
         'organization_id' => array(

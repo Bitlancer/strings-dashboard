@@ -12,10 +12,8 @@ echo $this->element('activity_log',array(
 $this->end();
 
 //Main content
-
-
 echo $this->element('Datatables/default',array(
-    'model' => 'application',
-    'tableColumns' => $applicationTableColumns,
+    'model' => 'team',
+    'tableColumns' => $teamTableColumns,
     'ctaEnabled' => true
 ));

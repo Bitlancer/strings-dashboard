@@ -2,21 +2,10 @@
 
 	$actionMenuItemsTemplate = array(
         array(
-            'type' => 'link',
-            'text' => 'Edit Application',
-            'destination' => '/Applications/edit/%__id__%',
-        ),
-        array(
             'type' => 'modal',
-            'text' => 'Edit Formations',
-            'source' => '/Applications/editFormations/%__id__%.json',
-			'width' => '500'
+            'text' => 'Edit Permissions',
+            'source' => '/Applications/edit/%__id__%.json',
         ),
-		array(
-			'type' => 'link',
-			'text' => 'Edit Permissions',
-			'destination' => '/Applications/editPermissions/%__id__%'
-		),
         array(
             'type' => 'modal',
             'text' => 'Delete',
@@ -31,9 +20,9 @@
         $actionMenuItems = array();
         foreach($actionMenuItemsTemplate as $item){
 			if($item['type'] == 'modal')
-            	$item['source'] = str_replace('%__id__%',$rawRow['Application']['id'],$item['source']);
+            	$item['source'] = str_replace('%__id__%',$rawRow['Team']['id'],$item['source']);
 			else
-				$item['destination'] = str_replace('%__id__%',$rawRow['Application']['id'],$item['destination']);
+				$item['destination'] = str_replace('%__id__%',$rawRow['Team']['id'],$item['destination']);
             $item['disabled'] = !$isAdmin;
             $actionMenuItems[] = $item;
         }
@@ -41,7 +30,7 @@
         $actionMenu = $view->StringsActionMenu->actionMenu('Actions',$actionMenuItems,120);
 
 		//Info link on name column
-        $outputRow[0] = $view->Strings->modalLink($outputRow[0],"/Applications/view/" . $rawRow['Application']['id'] . ".json");		
+        $outputRow[0] = $view->Strings->modalLink($outputRow[0],"/Applications/view/" . $rawRow['Team']['id'] . ".json");		
 
         //Append action menu to last column
         $outputRow[count($outputRow)-1] .= $actionMenu;

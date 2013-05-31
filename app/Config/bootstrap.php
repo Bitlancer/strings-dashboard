@@ -186,7 +186,12 @@ CakeLog::config('error', array(
 /**
  * Application Wide Constants
  */
+
+//CRM emails are sent to this address
+define('CRM_EMAIL','mjuszczak@bitlancer.com');
+
 //Default date format
 define('DEFAULT_DATE_FORMAT','F j, Y, g:i a');
+
 //Default number of rows that are displayed in each table
 define('DEFAULT_TABLE_PAGE_LENGTH','15');

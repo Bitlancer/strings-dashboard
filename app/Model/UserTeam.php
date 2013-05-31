@@ -1,16 +1,17 @@
 <?php
 
-class DeviceAttribute extends AppModel {
+class UserTeam extends AppModel {
 
-	public $useTable = 'device_attribute';
-
+	public $useTable = 'user_team';
+	
 	public $actsAs = array(
 		'OrganizationOwned'
 	);
 
 	public $belongsTo = array(
 		'Organization',
-		'Device'
+        'User',
+        'Team'
 	);
 
 	public $hasMany = array();
@@ -38,7 +39,7 @@ class DeviceAttribute extends AppModel {
 				'message' => '%%f does not exist'
 			)
         ),
-		'device_id' => array(
+        'team_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',
@@ -57,8 +58,8 @@ class DeviceAttribute extends AppModel {
                 'rule' => array('isValidForeignKey'),
                 'message' => '%%f does not exist'
             )
-        ),	
-        'var' => array(
+        ),
+        'user_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',
@@ -69,10 +70,14 @@ class DeviceAttribute extends AppModel {
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'
             ),
-			'checkMultiKeyUniqueness' => array(
-				'rule' => array('checkMultiKeyUniqueness',array('var','organization_id')),
-				'message' => 'This %%f has already been defined for this device'
-			)
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => '%%f must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => '%%f does not exist'
+            )
         )
     );
 }

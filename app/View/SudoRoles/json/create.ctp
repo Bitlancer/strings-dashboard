@@ -1,3 +1,8 @@
+<style>
+  #create-sudo-role textarea {
+    height:100px;
+  }
+</style>
 <div id="create-sudo-role">
   <ul id="notice">
   </ul>
@@ -12,7 +17,7 @@
     </fieldset>
     <fieldset>
       <legend>Commands</legend>
-      <input type="text" placeholder="commands (ex:/usr/sbin/apachectl,/usr/sbin/tcpdump)" name="data[commands]" />
+      <textarea placeholder="ex: /usr/sbin/apachectl, /usr/sbin/tcpdump" name="data[commands]" ></textarea>
     </fieldset>
     <div class="submit">
       <a class="cta primary submit">Save</a>

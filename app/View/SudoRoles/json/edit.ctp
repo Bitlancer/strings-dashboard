@@ -16,7 +16,7 @@
     </fieldset>
     <fieldset>
       <legend>Commands</legend>
-	  <textarea placeholder="comma separated list (ex:/usr/sbin/apachectl, /usr/sbin/tcpdump)" name="data[commands]" ><?php echo $commands; ?></textarea>
+	  <textarea placeholder="ex: /usr/sbin/apachectl, /usr/sbin/tcpdump" name="data[commands]" ><?php echo $commands; ?></textarea>
     </fieldset>
     <div class="submit">
       <a class="cta primary submit">Save</a>

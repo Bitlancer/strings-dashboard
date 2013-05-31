@@ -54,9 +54,16 @@ class OrganizationOwnedBehavior extends ModelBehavior
 
 	public function beforeValidate(Model $Model){
 
-		if(!isset($Model->data[$Model->alias]['organization_id']) || !isset($Model->data['organization_id'])){
-			$Model->data[$Model->alias]['organization_id'] = $this->getOrganizationId();
-		}
+        $orgId = $this->getOrganizationId();
+        if(empty($orgId)){
+            $Model->invalidate('organization_id','Organization Id is required');
+            return false;
+        }
+
+        if(!isset($Model->data[$Model->alias]['organization_id']) || !isset($Model->data['organization_id'])){
+            $this->_addToWhitelist($Model,'organization_id');
+            $Model->data[$Model->alias]['organization_id'] = $orgId;
+        }
 
 		return true;
 	}

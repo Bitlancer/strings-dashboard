@@ -60,6 +60,8 @@ class AppModel extends Model {
 			$message = "";
         	foreach($this->validationErrors as $field => $fieldErrorMessages){
 				array_walk_recursive($fieldErrorMessages,function(&$element,$index) use($field) {
+                    $field = Inflector::humanize($field);
+                    $element = str_replace('%%f',$field,$element);
 					$element = str_replace('%f',$field,$element);
 					$element = ucfirst($element);
 				});
@@ -67,5 +69,10 @@ class AppModel extends Model {
 			}
         	return $message;
 		}
+    }
+
+    public function getSQLLog(){
+
+        return $this->getDataSource()->getLog(false,false);
     }
 }

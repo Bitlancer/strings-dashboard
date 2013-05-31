@@ -1,6 +1,20 @@
 <?php
 
+App::uses('CakeEmail', 'Network/Email');
+
 class UsersController extends AppController {
+
+    public function beforeFilter(){
+
+        parent::beforeFilter();
+
+        $this->Auth->allow(array(
+            'login',
+            'register',
+            'forgotPassword',
+            'resetPassword',
+        ));
+    }
 
 	/**
 	 * Home screen containing list of users and create user CTA
@@ -226,7 +240,7 @@ class UsersController extends AppController {
 		}	
 	}
 
-	public function resetPassword($id=null){
+	public function changePassword($id=null){
 
 		$user = $this->User->find('first',array(
             'conditions' => array(
@@ -431,6 +445,237 @@ class UsersController extends AppController {
 	public function logout() {
     	$this->redirect($this->Auth->logout());
 	}
+
+    public function forgotPassword(){
+
+        //Detach OrganizationOwned behavior
+        $this->User->Behaviors->unload('OrganizationOwned');
+        $this->User->UserAttribute->Behaviors->unload('OrganizationOwned');
+
+        if($this->request->is('ajax')){
+
+            $this->autoRender = false;
+
+            $isError = false;
+            $message = "";
+
+            if(!isset($this->request->data['email']) || empty($this->request->data['email'])){
+                $isError = true;
+                $message = 'Please enter your email address.';
+            }
+            else {
+
+                $email = $this->request->data['email'];
+
+                $user = $this->User->find('first',array(
+                    'fields' => array(
+                        'id','organization_id'
+                    ),
+                    'conditions' => array(
+                        'User.email' => $email,
+                        'User.is_disabled' => 0
+                    )
+                ));
+
+                if(empty($user)){
+                    $isError = true;
+                    $message = 'The supplied email address is not recognized.';
+                }
+                else {
+
+                    $userId = $user['User']['id'];
+
+                    $resetToken = $this->generateResetToken(40);
+                    
+                    if(!$this->User->UserAttribute->saveAttribute($user,'reset_token',$resetToken)){
+                        $isError = true;
+                        $message = 'We encountered an unexpected error. ' . $this->User->UserAttribute->validationErrorsAsString();
+                    }
+                    else {
+
+                        $message = "A link to reset your password has been emailed to $email.";
+
+                        $emailMessage = "Please visit the following link to reset your password.\r\n\r\n" .
+                            'https://' . $_SERVER['HTTP_HOST'] . "/Users/resetPassword?token=" . $resetToken;
+       
+                        $mail = new CakeEmail();
+                        $mail->config('default');
+                        $mail->to($email);
+                        $mail->subject('Password Reset Request');
+                        $mail->send($emailMessage);
+                    }
+                }
+            }
+
+            if($isError){
+                $response = array(
+                    'isError' => $isError,
+                    'message' => __($message)
+                );
+            }
+            else {
+                $this->Session->setFlash(__($message),'default',array(),'success');
+                $response = array(
+                    'redirectUri' => '/login'
+                );
+            }
+
+            echo json_encode($response);
+        }
+        else {
+            $this->redirect(array('action' => 'login'));
+        }
+    }
+
+    public function resetPassword(){
+
+        $this->layout = 'login';
+
+        //Detach OrganizationOwned behavior
+        $this->User->Behaviors->unload('OrganizationOwned');
+        $this->User->UserAttribute->Behaviors->unload('OrganizationOwned');  
+
+        $token = $this->request->is('post') ? $this->request->data['token'] : $this->request->query['token'];
+
+        if($this->request->is('ajax')){
+
+            $this->autoRender = false;
+
+            $isError = false;
+            $message = "";
+
+            $user = $this->User->UserAttribute->find('first',array(
+                'contain' => array(
+                    'User'
+                ),
+                'conditions' => array(
+                    'UserAttribute.var' => 'reset_token',
+                    'UserAttribute.val' => $token
+                )
+            ));
+
+            if(empty($user)){
+                $isError = true;
+                $message = 'Unrecognized token';
+            }
+            else {
+
+                if($this->request->data['password'] != $this->request->data['confirmPassword']){
+                    $isError = true;
+                    $message = 'Passwords do not match.';
+                }
+                else {
+
+                    $this->User->id = $user['User']['id'];
+                    if($this->User->saveField('password',$this->request->data['password'],array('validate' => true))){
+                        $message = 'Your password has been updated successfully.';
+                        $this->User->UserAttribute->delete($user['UserAttribute']['id']);
+                    }
+                    else {
+                        $isError = true;
+                        $message = "Failed to update your password. " . $this->User->validationErrorsAsString();
+                    }
+                }
+            }
+
+            if($isError){
+                $response = array(
+                    'isError' => $isError,
+                    'message' => __($message)
+                );
+            }
+            else {
+                $this->Session->setFlash(__($message),'default',array(),'success');
+                $response = array(
+                    'redirectUri' => '/login'
+                );
+            }
+
+            echo json_encode($response);
+        }
+
+        $this->set(array(
+            'token' => $token
+        ));
+    }
+    
+
+    /**
+     * Generate a URI safe (doesn't need to be urlencoded) token
+     */
+    private function generateResetToken($tokenLen){
+
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $numChars = strlen($chars) - 1;
+
+        $token = "";
+        for($x=0;$x<$tokenLen;$x++){
+            $token .= $chars[mt_rand(0,$numChars)];
+        }
+
+        return $token;
+    }
+
+    public function register(){
+
+        if($this->request->is('ajax')){
+
+            $this->autoRender = false;
+
+            $isError = false;
+            $message = "";
+
+            if(!isset($this->request->data['email']) || empty($this->request->data['email'])){
+                $isError = true;
+                $message = "Please enter a valid email address.";
+            }
+            else {
+
+                $email = $this->request->data['email'];
+
+                $mail = new CakeEmail();
+                $mail->config('default');
+                $mail->to(CRM_EMAIL);
+                $mail->subject('Customer Interest in Strings');
+                $mail->send("The customer below has expressed interest in Strings.\r\n\r\n Email: $email\r\n");
+
+                $message = "You're registered!";
+            }
+
+            $response = array(
+                'isError' => $isError,
+                'message' => __($message)
+            );
+
+            echo json_encode($response);
+        }
+    }
+
+    public function search(){
+
+        $this->autoRender = false;
+
+        $search = $this->request->query['term'];
+
+        $users = $this->User->find('all',array(
+            'fields' => array(
+                'User.id','User.name'
+            ),
+            'conditions' => array(
+                'User.is_disabled' => 0,
+                'OR' => array(
+                    'User.name LIKE' => "%$search%",
+                    'User.full_name LIKE' => "%$search%"
+                )
+            )
+        ));
+
+        foreach($users as $index => $user){
+            $users[$index] = $user['User']['name'];
+        }
+
+        echo json_encode($users);
+    }
 
 }
 

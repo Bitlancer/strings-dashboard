@@ -16,7 +16,7 @@ fieldset#add input {
   margin-right: 5px;
   width:88%;
 }
-fieldset table {
+fieldset#remove table {
   margin: 10px 0;
 }
 </style>
@@ -33,4 +33,5 @@ fieldset table {
     <?php echo $this->StringsTable->cleanTable(array(''),$tableValues,$emptyTableMessage); ?>
   </fieldset>
 </div>
+<hr class="clear" />
 </form>

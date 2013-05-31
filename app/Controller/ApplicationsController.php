@@ -291,14 +291,15 @@ class ApplicationsController extends AppController
 
 	public function editPermissions($id=null){
 
-        $this->loadModel('SudoRole');
+       $this->loadModel('SudoRole');
 
-       $teamsSudoRoles = $this->SudoRole->find('all',array(
-            'link' => array(
-                'TeamApplicationSudo' => array(
-                    'TeamApplication' => array(
-                        'Team',
-                        'Application'
+        /*
+       $teamsSudoRoles = $this->Application->find('all',array(
+            'contain' => array(
+                'TeamApplication' => array(
+                    'Team',
+                    'TeamApplicationSudo' => array(
+                        'SudoRole'
                     )
                 )
             ),
@@ -307,8 +308,56 @@ class ApplicationsController extends AppController
             )
         ));
 
+        $teamsSudoRoles = $this->Application->TeamApplication->find('all',array(
+            'link' => array(
+                'Team'
+            ),
+            'fields' => array(
+                'Team.id','Team.name'
+            ),
+            'conditions' => array(
+                'TeamApplication.application_id' => $id,
+                'Team.is_disabled' => 0 
+            )
+        ));
 
-        print_r($teamsSudoRoles); 
+        */
+
+        $teamTableColumns = array(
+            'Name' => array(
+                'model' => 'Team',
+                'column' => 'name'
+            )
+        );
+
+        if($this->request->isAjax()){
+
+            //Datatables
+            $findParameters = array(
+                'link' => array(
+                    'Team'
+                ),
+                'fields' => array(
+                    'Team.id','Team.name'
+                ),
+                'conditions' => array(
+                    'TeamApplication.application_id' => $id,
+                    'Team.is_disabled' => 0
+                )
+            );
+
+            $dataTable = $this->DataTables->getDataTable($teamTableColumns,$findParameters,$this->Application->TeamApplication);
+
+            $this->set(array(
+                'dataTable' => $dataTable,
+                'isAdmin' => $this->Auth->User('is_admin')
+            ));
+        }
+        else {
+            $this->set(array(
+                'teamTableColumns' => array_keys($teamTableColumns),
+            ));
+        }
 
 	}
 
