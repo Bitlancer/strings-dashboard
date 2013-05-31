@@ -1,13 +1,12 @@
-<?php
-    require('action_menus.php');
-?>
-
 <div id="view-user">
   <h2>
   <?php 
-	echo $this->StringsActionMenu->create('Actions',120,'left');
-    echo $this->Strings->modalLink('Edit User','/Users/edit/' . $user['User']['id'] . '.json',false);
-    echo $this->StringsActionMenu->close();
+    echo $this->element('../Users/_action_menu',array(
+        'align' => 'left',
+        'userId' => $user['User']['id'],
+        'userEnabled' => !$user['User']['is_disabled'],
+        'actionsDisabled' => !$isAdmin
+    ));  
   ?>
   </h2>
   <?php 

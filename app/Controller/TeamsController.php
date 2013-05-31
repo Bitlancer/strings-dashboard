@@ -67,7 +67,8 @@ class TeamsController extends AppController {
 
 		$this->set(array(
 			'team' => $team,
-            'members' => $members
+            'members' => $members,
+            'isAdmin' => $this->Auth->User('is_admin')
 		));
 	}
 

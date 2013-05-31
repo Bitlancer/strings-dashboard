@@ -1,45 +1,15 @@
 <?php
 
-	$enabledTeamActionMenuItems = array(
-        array(
-			'type' => 'modal',
-            'text' => 'Edit Team',
-			'source' => '/Teams/edit/%__id__%.json',
-        ),
-        array(
-			'type' => 'modal',
-            'text' => 'Disable Team',
-			'source' => '/Teams/disable/%__id__%.json'
-        )
-    );
-
-	$disabledTeamActionMenuItems = array(
-		array(
-			'type' => 'modal',
-			'text' => 'Re-enable Team',
-			'source' => '/Teams/enable/%__id__%.json'
-		)
-	);
-
 	echo $this->DataTables->output($dataTable,
-		function($view,$outputRow,$rawRow) use($enabledTeamActionMenuItems,$disabledTeamActionMenuItems,$isAdmin){
+		function($view,$outputRow,$rawRow) use($isAdmin){
 
 		$modifiedOutputRow = $outputRow;
 
-		if($rawRow['Team']['is_disabled'])
-			$actionMenuItemsTemplate = $disabledTeamActionMenuItems;
-		else
-			$actionMenuItemsTemplate = $enabledTeamActionMenuItems;
-
-		//Construct menu item from template
-		$actionMenuItems = array();
-		foreach($actionMenuItemsTemplate as $item){
-			$item['source'] = str_replace('%__id__%',$rawRow['Team']['id'],$item['source']);
-			$item['disabled'] = !$isAdmin;
-			$actionMenuItems[] = $item;
-		}
-
-		$actionMenu = $view->StringsActionMenu->actionMenu('Actions',$actionMenuItems,120);
+        $actionMenu = $view->element('../Teams/_action_menu',array(
+            'teamId' => $rawRow['Team']['id'],
+            'teamEnabled' => !$rawRow['Team']['is_disabled'],
+            'actionsDisabled' => !$isAdmin
+        ));
 
 		//If team is disabled, set disabled class on each column
 		if($rawRow['Team']['is_disabled']){

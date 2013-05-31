@@ -67,7 +67,8 @@ class UsersController extends AppController {
         }
 
 		$this->set(array(
-			'user' => $user
+			'user' => $user,
+            'isAdmin' => $this->Auth->User('is_admin')
 		));
 	}
 

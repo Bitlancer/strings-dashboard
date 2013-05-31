@@ -1,26 +1,15 @@
 <?php
 
-    require('action_menus.php');
-
 	echo $this->DataTables->output($dataTable,
-		function($view,$outputRow,$rawRow) use($enabledUserActionMenuItems,$disabledUserActionMenuItems,$isAdmin){
+		function($view,$outputRow,$rawRow) use($isAdmin){
 
 		$modifiedOutputRow = $outputRow;
 
-		if($rawRow['User']['is_disabled'])
-			$actionMenuItems = $disabledUserActionMenuItems;
-		else
-			$actionMenuItems = $enabledUserActionMenuItems;
-
-		//Construct menu item from template
-		$userActionMenuItems = array();
-		foreach($actionMenuItems as $item){
-			$item['source'] = str_replace('%__id__%',$rawRow['User']['id'],$item['source']);
-			$item['disabled'] = !$isAdmin;
-			$userActionMenuItems[] = $item;
-		}
-
-		$actionMenu = $view->StringsActionMenu->actionMenu('Actions',$userActionMenuItems,120);
+        $actionMenu = $view->element('../Users/_action_menu',array(
+            'userId' => $rawRow['User']['id'],
+            'userEnabled' => !$rawRow['User']['is_disabled'],
+            'actionsDisabled' => !$isAdmin
+        ));
 
 		//If user is disabled, set disabled class on each column
 		if($rawRow['User']['is_disabled']){
