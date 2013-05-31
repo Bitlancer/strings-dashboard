@@ -556,7 +556,14 @@ class UsersController extends AppController {
 
             if(empty($user)){
                 $isError = true;
-                $message = 'Unrecognized token';
+                $message = 'Invalid token.';
+            }
+            elseif(strtotime($user['UserAttribute']['updated']) <= strtotime('-4 hours')){
+
+                $this->User->UserAttribute->delete($user['UserAttribute']['id']);
+
+                $isError = true;
+                $message = 'Your token has expired.';
             }
             else {
 
