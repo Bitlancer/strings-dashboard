@@ -236,7 +236,7 @@ body > nav {
     body > nav > span#user-management > a:before {
       background-image: url("/img/user.png"); }
     body > nav > span.active {
-      background: #fafafa;
+      background: #f9f9f9;
       margin-right: 0; }
       body > nav > span.active:after {
         background: #f8f8f8;
@@ -270,6 +270,8 @@ body > nav {
           margin-right: 1px; }
           body > nav > span.active > span > a:last-of-type {
             border: 0; }
+        body > nav > span.active > span > a.active {
+          background: #fdfdfd; }
     body > nav > span:last-of-type {
       border-bottom: 1px solid #fdfdfd; }
 
