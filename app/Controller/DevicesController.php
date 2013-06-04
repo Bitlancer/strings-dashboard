@@ -34,9 +34,6 @@ class DevicesController extends AppController
             $findParameters = array(
                 'fields' => array(
                     'Device.id','Device.name','Formation.name','Role.name'
-                ),
-                'conditions' => array(
-                    'Device.organization_id' => $this->Auth->user('organization_id')
                 )
             );
 
@@ -53,5 +50,57 @@ class DevicesController extends AppController
 				'isInfraProviderConfigured' => $isInfraProviderConfigured
             ));
         }
+    }
+
+    public function view($id=null){
+
+        $device = $this->Device->find('first',array(
+            'contain' => array(
+                'Implementation' => array(
+                    'ImplementationAttribute',
+                ),
+                'Formation',
+                'Role',
+                'DeviceAttribute'
+            ),
+            'conditions' => array(
+                'Device.id' => $id
+            )
+        ));
+
+        if(empty($device)){
+            $this->Session->setFlash('Device does not exist');
+            $this->redirect(array('action' => 'index'));
+        }
+
+        //Build re-indexed attributes arrays
+        $deviceAttributes = Hash::combine($device['DeviceAttribute'],'{n}.var','{n}.val');
+        $implementationAttributes  = Hash::combine($device['Implementation']['ImplementationAttribute'],'{n}.var','{n}.val');
+
+        $providerDetails= array(
+            'provider_name' => $device['Implementation']['name'],
+            'region' => $deviceAttributes['implementation.region_name'],
+            'image' => 'Default',
+            'flavor' => $this->Device->Implementation->getFlavorDescription($deviceAttributes['implementation.flavor_id']) 
+        );
+
+        $deviceInterfaces = array();
+        foreach($deviceAttributes as $var => $val){
+            if(strpos($var,'implementation.address') === 0){
+
+                list($i,$a,$network,$version) = explode('.',$var); 
+
+                $descr = ucfirst($network) . " IPv" . $version; 
+                $address = $val;
+
+                $deviceInterfaces[] = array($descr,$address);
+            }
+        }
+
+        $this->set(array(
+            'device' => $device,
+            'providerDetails' => $providerDetails,
+            'deviceInterfaces' => $deviceInterfaces
+        ));
     }
 }

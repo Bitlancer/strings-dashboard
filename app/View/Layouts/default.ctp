@@ -17,7 +17,6 @@
   <nav><?php echo $this->element('Layouts/nav'); ?></nav>
   <section> <!-- Content -->
     <?php echo $this->fetch('content'); ?>
-    <?php echo $this->element('sql_dump'); ?>
   </section> <!-- /Content -->
 <!-- Javascript -->
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>

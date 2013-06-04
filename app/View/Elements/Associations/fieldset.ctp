@@ -25,9 +25,9 @@
 	}
 ?>
 <style>
-fieldset.association input {
-  margin-right: 5px;
-  width:84%;
+fieldset.association div#add input {
+  width:82%;
+  margin-right: 1%;
 }
 fieldset.association table {
   margin: 10px 0;

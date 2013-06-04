@@ -76,10 +76,6 @@ body {
     body section h2 a {
       font-size: 12px;
       font-weight: 400; }
-  body section div h2 {
-    margin-top: 30px; }
-    body section div h2:first-of-type {
-      margin-top: 0; }
   body section table a {
     color: #555; }
   body fieldset.info p {
@@ -134,6 +130,8 @@ body {
     content: " \00bb"; }
   body .arrow.block {
     margin-top: 5px; }
+  body .border-light-grey {
+    border: 1px solid #e2e2e2; }
   body ul {
     display: block;
     position: relative; }
@@ -294,6 +292,8 @@ body > section {
         margin-top: 10px; }
     body > section > div.columns > div h2 .cta {
       float: right; }
+  body > section section {
+    margin-bottom: 30px; }
   body > section .details {
     background: #fbfbfb;
     border: 1px dashed #ddd;
@@ -883,6 +883,7 @@ ul.action-menu {
   border-top: 1px solid #ebebeb;
   color: #555;
   text-shadow: 0 1px 0 #fdfdfd;
+  text-align: center;
   vertical-align: middle;
   -webkit-box-shadow: inset 0 -1px 0 #f0f0f0, inset 0 1px 0 white, inset -1px 0 0 white, inset 1px 0 0 white;
   -moz-box-shadow: inset 0 -1px 0 #f0f0f0, inset 0 1px 0 white, inset -1px 0 0 white, inset 1px 0 0 white;

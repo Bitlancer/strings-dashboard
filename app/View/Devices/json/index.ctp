@@ -1,35 +1,12 @@
 <?php
 
-	$actionMenuItemsTemplate = array(
-        array(
-            'type' => 'modal',
-            'text' => 'Detailed View',
-            'source' => '/Device/detailed_view/%__id__%.json',
-        ),
-        array(
-            'type' => 'link',
-            'text' => 'View Formation',
-            'source' => '/Formations/view/%__formation_id__%.json'
-        )
-    );
-
     echo $this->DataTables->output($dataTable,
-        function($view,$outputRow,$rawRow) use($actionMenuItemsTemplate,$isAdmin){
+        function($view,$outputRow,$rawRow) use($isAdmin){
 
-        //Construct menu item from template
-        $actionMenuItems = array();
-        foreach($actionMenuItemsTemplate as $item){
-            $item['source'] = str_replace('%__id__%',$rawRow['User']['id'],$item['source']);
-			$item['source'] = str_replace('%__formation_id__%',$rawRow['Formation']['id'],$items['source']);
-            $item['disabled'] = !$isAdmin;
-            $actionMenuItems[] = $item;
-        }
+        $modifiedOutputRow = $outputRow;
 
-        $actionMenu = $view->StringsActionMenu->actionMenu('Actions',$actionMenuItems,120);
+        //Info link on name column
+        $modifiedOutputRow[0] = $view->Strings->link($modifiedOutputRow[0],"/Devices/view/" . $rawRow['Device']['id']);
 
-        //Append action menu to last column
-        $outputRow[count($outputRow)-1] .= $actionMenu;
-
-        return $outputRow;
-
+        return $modifiedOutputRow;
     });

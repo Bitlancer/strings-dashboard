@@ -1,5 +1,8 @@
 <?php
 
+    if(!isset($title))
+        $title = 'Actions';
+
     if(!isset($align))
         $align = 'right';
     
@@ -12,11 +15,11 @@
     if(!isset($userEnabled))
         $userEnabled = true;
 
-    $actionMenu = $this->StringsActionMenu->create('Actions',120,$align);
+    $actionMenu = $this->StringsActionMenu->create($title,$width,$align);
     
     if($userEnabled){
         $actionMenu .= $this->Strings->modalLink('Edit User',"/Users/edit/$userId.json",$actionsDisabled);
-        $actionMenu .= $this->Strings->modalLink('Reset Password',"/Users/edit/$userId.json",$actionsDisabled);
+        $actionMenu .= $this->Strings->modalLink('Reset Password',"/Users/changePassword/$userId.json",$actionsDisabled);
         $actionMenu .= $this->Strings->modalLink('Disable User',"/Users/disable/$userId.json",$actionsDisabled);
     }
     else {

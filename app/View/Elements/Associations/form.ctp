@@ -3,6 +3,12 @@
 	if(!isset($emptyTableMessage))
 		$emptyTableMessage = 'Add a member above';
 
+    if(!isset($addInputPlaceholder))
+        $addInputPlaceholder = 'name';
+
+    if(!isset($tableColumnHeaders))
+        $tableColumnHeaders = array('Name');
+
 	$tableValues = array();
 	foreach($memberData as $member){
 		$tableRow = array();
@@ -12,26 +18,30 @@
 	}
 ?>
 <style>
-fieldset#add input {
-  margin-right: 5px;
-  width:88%;
-}
-fieldset#remove table {
-  margin: 10px 0;
-}
+  form.association {
+    padding:8px 8px 0px 8px;
+  }
+  form.association div.add {
+    margin-bottom:5px;
+  }
+  form.association input.add {
+    float:left;
+    width:90%;
+    margin-right:1%;
+  }
+  form.association a.cta.add {
+    float:right;
+    width:6%;
+  }
 </style>
-<form class="association" data-src-add="<?php echo $addAssociationUri; ?>" data-src-remove="<?php echo $removeAssociationUri; ?>" >
-  <ul id="notice">
-  </ul>
-  <fieldset id="add">
-    <legend><?php echo $addAssociationTitle; ?></legend>
-    <input type="text" placeholder="name" />
-    <a class="cta primary small add">Add</a>
-  </fieldset>
-  <fieldset id="remove">
-    <legend><?php echo $removeAssociationTitle; ?></legend>
-    <?php echo $this->StringsTable->cleanTable(array(''),$tableValues,$emptyTableMessage); ?>
-  </fieldset>
-</div>
+<form class="association border-light-grey" data-src-add="<?php echo $addAssociationUri; ?>" data-src-remove="<?php echo $removeAssociationUri; ?>" data-callback="<?php $addAssociationCallback; ?>" >
+    <ul id="notice">
+    </ul>
+    <div class="add">
+      <input class="add autocomplete ui-autocomplete-input" type="text" placeholder="<?php echo $addInputPlaceholder; ?>" data-src="<?php echo $addAutocompleteUri; ?>" />
+      <a class="cta primary small add">Add</a>
+      <hr class="clear" />
+    </div>
+    <?php echo $this->StringsTable->cleanTable($tableColumnHeaders,$tableValues,$emptyTableMessage); ?>
 <hr class="clear" />
 </form>

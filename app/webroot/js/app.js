@@ -97,6 +97,7 @@ var strings = {
           "aLengthMenu": [[2, 10, 25, 50, 100, 200, -1], [2, 10, 25, 50, 100, 200, "All"]],
           "iDisplayLength": parseInt($(this).attr('data-length')) || 10,
           "oLanguage": { "sSearch": "","sEmptyTable":"No data available" },
+          "bAutoWidth": false,
           "sDom": '<"top"f>rt<"bottom"p><"clear">',
           "bServerSide": ($(this).attr("data-src") === undefined ? false : true),
           "sAjaxSource": ($(this).attr("data-src") === undefined ? null : $(this).attr("data-src")),
@@ -135,7 +136,7 @@ var strings = {
         notice.empty();
         $.ajax({
           type: "post",
-          url: fielset.attr('data-src-add'),
+          url: form.attr('data-src-add'),
           data: {
             "name": name
           },
@@ -213,6 +214,11 @@ var strings = {
       $("fieldset.association input[type='text']").keypress(function(e){
         if(e.which == 13){
           $(this).closest("fieldset").find(".cta.add").click();
+        }
+      });
+      $("form.association input[type='text']").keypress(function(e){
+        if(e.which == 13){
+          $(this).closest("form").find(".cta.add").click();
         }
       });
       $("input").closest('fieldset').not('.association').keypress(function (e) {

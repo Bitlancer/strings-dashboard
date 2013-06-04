@@ -1,47 +1,14 @@
 <?php
 
-	$actionMenuItemsTemplate = array(
-        array(
-            'type' => 'link',
-            'text' => 'Edit Application',
-            'destination' => '/Applications/edit/%__id__%',
-        ),
-        array(
-            'type' => 'modal',
-            'text' => 'Edit Formations',
-            'source' => '/Applications/editFormations/%__id__%.json',
-			'width' => '500'
-        ),
-		array(
-			'type' => 'link',
-			'text' => 'Edit Permissions',
-			'destination' => '/Applications/editPermissions/%__id__%'
-		),
-        array(
-            'type' => 'modal',
-            'text' => 'Delete',
-            'source' => '/Applications/delete/%__id__%.json'
-        )
-    );
-
     echo $this->DataTables->output($dataTable,
-        function($view,$outputRow,$rawRow) use($actionMenuItemsTemplate,$isAdmin){
+        function($view,$outputRow,$rawRow) use($isAdmin){
 
-        //Construct menu item from template
-        $actionMenuItems = array();
-        foreach($actionMenuItemsTemplate as $item){
-			if($item['type'] == 'modal')
-            	$item['source'] = str_replace('%__id__%',$rawRow['Application']['id'],$item['source']);
-			else
-				$item['destination'] = str_replace('%__id__%',$rawRow['Application']['id'],$item['destination']);
-            $item['disabled'] = !$isAdmin;
-            $actionMenuItems[] = $item;
-        }
-
-        $actionMenu = $view->StringsActionMenu->actionMenu('Actions',$actionMenuItems,120);
+        $actionMenu = $view->element('../Applications/_action_menu',array(
+            'applicationId' => $rawRow['Application']['id'],
+        ));
 
 		//Info link on name column
-        $outputRow[0] = $view->Strings->modalLink($outputRow[0],"/Applications/view/" . $rawRow['Application']['id'] . ".json");		
+        $outputRow[0] = $view->Strings->link($outputRow[0],"/Applications/view/" . $rawRow['Application']['id']);
 
         //Append action menu to last column
         $outputRow[count($outputRow)-1] .= $actionMenu;

@@ -93,7 +93,8 @@ class UsersController extends AppController {
 			{
 				unset($this->request->data['User']['confirm_password']);
 
-				if($this->User->save($this->request->data)){
+                $validFields = array('name','password','first_name','last_name','email');
+				if($this->User->save($this->request->data,true,$validFields)){
 					$message = 'Created new user ' . $this->request->data['User']['name'] . '.';
 				}
 				else {
@@ -111,7 +112,7 @@ class UsersController extends AppController {
 			else {
 				$this->Session->setFlash(__($message),'default',array(),'success');
 				$response = array(
-					'redirectUri' => $this->referer(array('action' => 'index'))
+					'redirectUri' => '/Users/view/' . $this->User->id
 				);
 			}
 
@@ -311,12 +312,12 @@ class UsersController extends AppController {
 
         if(empty($user)){
             $this->Session->setFlash(__('This user does not exist.'),'default',array(),'error');
-            $this->redirect(array('action' => 'index'));
+            $this->redirect($this->referer(array('action' => 'index')));
         }
 
 		if($user['User']['is_disabled']){
             $this->Session->setFlash(__('This user is already disabled.'),'default',array(),'warning');
-            $this->redirect(array('action' => 'index'));
+            $this->redirect($this->referer(array('action' => 'index')));
         }
 
 		if($this->request->is('post')){
@@ -325,12 +326,12 @@ class UsersController extends AppController {
 			$this->User->set('is_disabled',1);
 			if($this->User->save()){
 				$this->Session->setFlash(__('This user has been disabled.'),'default',array(),'success');
-				$this->redirect(array('action' => 'index'));
+				$this->redirect($this->referer(array('action' => 'index')));
 			}
 			else {
 				$message = $this->User->validationErrorsAsString();
 				$this->Session->setFlash(__($message), 'default', array(), 'error');
-				$this->redirect(array('action' => 'index'));
+				$this->redirect($this->referer(array('action' => 'index')));
 			}
 		}
 
@@ -349,12 +350,12 @@ class UsersController extends AppController {
 
         if(empty($user)){
             $this->Session->setFlash(__('This user does not exist.'),'default',array(),'error');
-            $this->redirect(array('action' => 'index'));
+            $this->redirect($this->referer(array('action' => 'index')));
         }
 
         if(!$user['User']['is_disabled']){
             $this->Session->setFlash(__('This user is already enabled.'),'default',array(),'warning');
-            $this->redirect(array('action' => 'index'));
+            $this->redirect($this->referer(array('action' => 'index')));
         }
 
         if($this->request->is('post')){
@@ -362,12 +363,12 @@ class UsersController extends AppController {
             $this->User->set('is_disabled',0);
             if($this->User->save()){
                 $this->Session->setFlash(__('This user has been re-enabled.'),'default',array(),'success');
-                $this->redirect(array('action' => 'index'));
+                $this->redirect($this->referer(array('action' => 'index')));
             }
             else {
                 $message = __('Unable to re-enable user. ' . $this->User->validationErrorsAsString());
                 $this->Session->setFlash(__($message), 'default', array(), 'error');
-                $this->redirect(array('action' => 'index'));
+                $this->redirect($this->referer(array('action' => 'index')));
             }
         }
 

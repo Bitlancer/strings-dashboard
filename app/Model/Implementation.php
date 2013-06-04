@@ -13,6 +13,12 @@ class Implementation extends AppModel {
 		'Provider'
 	);
 
+    public $hasMany = array(
+        'ImplementationAttribute'
+    );
+
+    public $hasAndBelongsToMany = array();
+
 	public $validate = array(
         'organization_id' => array(
             'requiredOnCreate' => array(
@@ -113,5 +119,43 @@ class Implementation extends AppModel {
 		else
 			return false;
 	}
+
+    public function getFlavorDescription($flavorId){
+
+        $flavorDescrs = $this->ImplementationAttribute->find('first',array(
+            'conditions' => array(
+                'ImplementationAttribute.var' => 'flavor_descriptions'
+            )
+        ));
+
+        if(!empty($flavorDescrs)){
+            $flavorDescrs = $flavorDescrs['ImplementationAttribute']['val'];
+        }
+        else {
+
+            $providerAttribute = ClassRegistry::init('ProviderAttribute');
+
+            $flavorDescrs = $providerAttribute->find('first',array(
+                'conditions' => array(
+                    'ProviderAttribute.var' => 'flavor_descriptions',
+                )
+            ));
+
+            if(!empty($flavorDescrs))
+                $flavorDescrs = $flavorDescrs['ProviderAttribute']['val'];
+        }
+
+        if(!empty($flavorDescrs)) {
+
+            $flavorDescrs = json_decode($flavorDescrs,true);
+
+            foreach($flavorDescrs as $flavor){
+                if($flavor['id'] == $flavorId)
+                    return $flavor['description']; 
+            }
+        }
+
+        return 'Unknown';
+    }
 
 }

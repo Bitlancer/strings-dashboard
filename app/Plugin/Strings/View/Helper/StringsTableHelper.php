@@ -121,7 +121,7 @@ class StringsTableHelper extends StringsAppHelper {
         $tableSrc .= "</thead>";
         $tableSrc .= "<tbody>";
 		if(empty($tableValues))
-			$tableSrc .= "<tr><td class=\"blank\">$emptyTableMessage</td></tr>";
+			$tableSrc .= "<tr><td colspan=\"100\" class=\"blank\">$emptyTableMessage</td></tr>";
         foreach($tableValues as $row){
             $tableSrc .= "<tr>";
             $altIndex = 0;

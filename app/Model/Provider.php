@@ -4,6 +4,12 @@ class Provider extends AppModel {
 
 	public $useTable = 'provider';
 
+    public $belongsTo = array();
+
+    public $hasMany = array(
+        'ProviderAttribute'
+    );
+
 	public $hasAndBelongsToMany = array(
         'Service' => array(
             'className' => 'Service',

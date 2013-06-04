@@ -13,17 +13,11 @@ class Application extends AppModel {
 	);
 
 	public $hasMany = array(
-		'TeamApplication'
+		'TeamApplication',
+        'ApplicationFormation'
 	);
 
-	public $hasAndBelongsToMany = array(
-        'Formation' => array(
-            'className' => 'Formation',
-            'joinTable' => 'application_formation',
-            'foreignKey' => 'application_id',
-            'associationForeignKey' => 'formation_id'
-        )
-    );
+	public $hasAndBelongsToMany = array();
 
 	public $validate = array(
         'organization_id' => array(

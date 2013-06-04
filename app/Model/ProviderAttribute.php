@@ -1,16 +1,11 @@
 <?php
 
-class DeviceAttribute extends AppModel {
+class ProviderAttribute extends AppModel {
 
-	public $useTable = 'device_attribute';
-
-	public $actsAs = array(
-		'OrganizationOwned'
-	);
+	public $useTable = 'provider_attribute';
 
 	public $belongsTo = array(
-		'Organization',
-		'Device'
+		'Provider'
 	);
 
 	public $hasMany = array();
@@ -18,27 +13,7 @@ class DeviceAttribute extends AppModel {
 	public $hasAndBelongsToMany = array();
 
 	public $validate = array(
-        'organization_id' => array(
-            'requiredOnCreate' => array(
-                'rule' => 'notEmpty',
-                'on' => 'create',
-                'required' => true,
-                'message' => '%%f is required'
-            ),
-            'notEmpty' => array(
-                'rule' => 'notEmpty',
-                'message' => '%%f cannot be empty'
-            ),
-            'isNumeric' => array(
-                'rule' => 'numeric',
-                'message' => '%%f must be an integer'
-            ),
-			'validForeignKey' => array(
-				'rule' => array('isValidForeignKey'),
-				'message' => '%%f does not exist'
-			)
-        ),
-		'device_id' => array(
+		'provider_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',
@@ -70,7 +45,7 @@ class DeviceAttribute extends AppModel {
                 'message' => '%%f cannot be empty'
             ),
 			'checkMultiKeyUniqueness' => array(
-				'rule' => array('checkMultiKeyUniqueness',array('var','organization_id')),
+				'rule' => array('checkMultiKeyUniqueness',array('var','provider_id')),
 				'message' => 'This %%f has already been defined'
 			)
         )

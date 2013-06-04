@@ -47,4 +47,26 @@ class FormationsController extends AppController
             ));
         }
     }
+
+    public function searchByName(){
+
+        $this->autoRender = false;
+
+        $search = $this->request->query['term'];
+
+        $formations = $this->Formation->find('all',array(
+            'fields' => array(
+                'Formation.id','Formation.name'
+            ),
+            'conditions' => array(
+                'Formation.name LIKE' => "%$search%"
+            )
+        ));
+
+        foreach($formations as $index => $formation){
+            $formations[$index] = $formation['Formation']['name'];
+        }
+
+        echo json_encode($formations);
+    }
 }

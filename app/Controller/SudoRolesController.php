@@ -23,9 +23,6 @@ class SudoRolesController extends AppController {
             $findParameters = array(
                 'fields' => array(
                     'SudoRole.id','SudoRole.name'
-                ),
-                'conditions' => array(
-                    'SudoRole.organization_id' => $this->Auth->user('organization_id')
                 )
             );
 
@@ -41,6 +38,55 @@ class SudoRolesController extends AppController {
                 'sudoTableColumns' => array_keys($sudoTableColumns),
             ));
         }
+    }
+
+    public function view($id=null){
+
+        $sudoRole = $this->SudoRole->find('first',array(
+            'conditions' => array(
+                'SudoRole.id' => $id
+            )
+        ));
+
+        if(empty($sudoRole)){
+            $this->Session->setFlash(__('This sudo role does not exist.'),'default',array(),'error');
+            $this->redirect(array('action' => 'index'));
+        }
+
+        $sudoAttributes = $this->SudoRole->SudoAttribute->find('all',array(
+            'link' => array(
+                'SudoRole'
+            ),
+            'fields' => array(
+                'SudoAttribute.name','SudoAttribute.value'
+            ),
+            'conditions' => array(
+                'SudoRole.id' => $id,
+            )
+        ));
+
+        //Generate runas and commands arrays
+        $runas = array();
+        $commands = array();
+        foreach($sudoAttributes as $attr){
+            switch($attr['SudoAttribute']['name']){
+                case 'sudoRunAs':
+                    $runas[] = $attr['SudoAttribute']['value'];
+                    break;
+                case 'sudoCommand':
+                    $commands[] = $attr['SudoAttribute']['value'];
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        $this->set(array(
+            'sudoRole' => $sudoRole,
+            'runas' => $runas,
+            'commands' => $commands,
+            'isAdmin' => $this->Auth->User('is_admin')
+        ));
     }
 
 	public function create(){
@@ -73,7 +119,6 @@ class SudoRolesController extends AppController {
 
 				//Process runas users
                 $sudoAttribute = array(
-                   	'organization_id' => $this->Auth->user('organization_id'),
                     'name' => 'sudoRunAs'
                 );
 				$runasUsers = $this->parseCsvStringToSet($this->request->data['runas']);
@@ -84,7 +129,6 @@ class SudoRolesController extends AppController {
 
 				//Process commands
                 $sudoAttribute = array(
-                	'organization_id' => $this->Auth->user('organization_id'),
                     'name' => 'sudoCommand'
                 );
 				$commands = $this->parseCsvStringToSet($this->request->data['commands']);
@@ -95,7 +139,6 @@ class SudoRolesController extends AppController {
 
 				$sudoRole = array(
 					'SudoRole' => array(
-						'organization_id' => $this->Auth->User('organization_id'),
 						'name' => $this->request->data['SudoRole']['name'],
 					),
 					'SudoAttribute' => $sudoAttributes
@@ -120,7 +163,7 @@ class SudoRolesController extends AppController {
             else {
                 $this->Session->setFlash(__($message),'default',array(),($isError ? 'error' : 'success'));
                 $response = array(
-                    'redirectUri' => $this->referer(array('action' => 'index'))
+                    'redirectUri' => '/SudoRoles/view/' . $this->SudoRole->id
                 );
             }
 
@@ -133,7 +176,6 @@ class SudoRolesController extends AppController {
 		$sudoRole = $this->SudoRole->find('first',array(
 			'conditions' => array(
 				'SudoRole.id' => $id,
-				'SudoRole.organization_id' => $this->Auth->user('organization_id')
 			)
 		));
 	
@@ -152,7 +194,6 @@ class SudoRolesController extends AppController {
 			$sudoRole = array(
 				'SudoRole' => array(
 					'name' => $this->request->data['SudoRole']['name'],
-					'organization_id' => $this->Auth->user('organization_id')
 			));
 
 			//For now the user cannot set runas
@@ -219,7 +260,6 @@ class SudoRolesController extends AppController {
             	),
             	'conditions' => array(
                 	'SudoRole.id' => $id,
-                	'SudoRole.organization_id' => $this->Auth->user('organization_id')
             	)
         	));
 
@@ -254,7 +294,6 @@ class SudoRolesController extends AppController {
 		$sudoRole = $this->SudoRole->find('first',array(
             'conditions' => array(
                 'SudoRole.id' => $id,
-                'SudoRole.organization_id' => $this->Auth->user('organization_id')
             )
         ));
     
@@ -321,7 +360,6 @@ class SudoRolesController extends AppController {
 
         	$sudoAttribute = array(
             	'SudoAttribute' => array(
-                	'organization_id' => $this->Auth->user('organization_id'),
                     'sudo_id' => $id,
                     'name' => $attributeName
             ));

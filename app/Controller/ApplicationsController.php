@@ -2,6 +2,11 @@
 
 class ApplicationsController extends AppController
 {
+
+    public function test(){
+
+    }
+
 	/**
      * Home screen containing list of applications and create application CTA
      */
@@ -20,9 +25,6 @@ class ApplicationsController extends AppController
             $findParameters = array(
                 'fields' => array(
                     'Application.id','Application.name'
-                ),
-                'conditions' => array(
-                    'Application.organization_id' => $this->Auth->user('organization_id')
                 )
             );
 
@@ -44,13 +46,26 @@ class ApplicationsController extends AppController
 
         $app = $this->Application->find('first',array(
 			'contain' => array(
-				'Formation' => array( 
-					'fields' => array('id','name')
-				)
+                'ApplicationFormation' => array(
+				    'Formation' => array( 
+					    'fields' => array('id','name')
+				    )
+                ),
+                'TeamApplication' => array(
+                    'Team' => array(
+                        'conditions' => array(
+                            'Team.is_disabled' => 0
+                        )
+                    ),
+                    'TeamApplicationSudo' => array(
+                        'SudoRole' => array(
+                            'fields' => array('id','name')
+                        )
+                    )
+                )
 			),
             'conditions' => array(
                 'Application.id' => $id,
-				'Application.organization_id' => $this->Auth->user('organization_id')
             )
         ));
 
@@ -60,7 +75,8 @@ class ApplicationsController extends AppController
         }
 
         $this->set(array(
-            'application' => $app
+            'application' => $app,
+            'isAdmin' => $this->Auth->User('is_admin')
         ));
     }
 
@@ -73,10 +89,7 @@ class ApplicationsController extends AppController
             $isError = false;
             $message = "";
 
-            //Set organization
-            $this->request->data['Application']['organization_id'] = $this->Auth->User('organization_id');
-
-            if($this->Application->save($this->request->data,true,array('organization_id','name'))){
+            if($this->Application->save($this->request->data,true,array('name'))){
             	$message = 'Created new application ' . $this->request->data['Application']['name'] . '.';
             }
             else {
@@ -93,7 +106,7 @@ class ApplicationsController extends AppController
             else {
                 $this->Session->setFlash(__($message),'default',array(),'success');
                 $response = array(
-                    'redirectUri' => $this->referer(array('action' => 'index'))
+                    'redirectUri' => '/Applications/view/' . $this->Application->id
                 );
             }
 
@@ -109,7 +122,6 @@ class ApplicationsController extends AppController
         $app = $this->Application->find('first',array(
             'conditions' => array(
                 'Application.id' => $id,
-                'Application.organization_id' => $this->Auth->user('organization_id')
             )
         ));
 
@@ -124,9 +136,6 @@ class ApplicationsController extends AppController
 
             $isError = false;
             $message = "";
-
-            //Have to set organization_id so multi-column validation can occur
-            $this->request->data['Application']['organization_id'] = $app['Organization']['id'];
 
             $validFields = array('name');
             $this->Application->id = $id;
@@ -165,7 +174,6 @@ class ApplicationsController extends AppController
         $app = $this->Application->find('first',array(
             'conditions' => array(
                 'Application.id' => $id,
-                'Application.organization_id' => $this->Auth->user('organization_id')
             )
         ));
 
@@ -204,7 +212,6 @@ class ApplicationsController extends AppController
             ),
             'conditions' => array(
                 'Application.id' => $id,
-                'Application.organization_id' => $this->Auth->user('organization_id'),
             )
         ));
 
@@ -228,13 +235,14 @@ class ApplicationsController extends AppController
         else
             $formationName = $this->request->query['name'];
 
-		$formation = $this->Application->Formation->find('first',array(
+        $this->loadModel('Formation');
+
+		$formation = $this->Formation->find('first',array(
 			'fields' => array(
 				'Formation.id','Formation.name'
 			),
 			'conditions' => array(
 				'Formation.name' => $formationName,
-				'Formation.organization_id' => $this->Auth->user('organization_id')
 			)
 		));
 

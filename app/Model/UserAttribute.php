@@ -71,7 +71,7 @@ class UserAttribute extends AppModel {
             ),
 			'checkMultiKeyUniqueness' => array(
 				'rule' => array('checkMultiKeyUniqueness',array('var','organization_id')),
-				'message' => 'This %%f has already been defined for this device'
+				'message' => 'This %%f has already been defined'
 			)
         )
     );

@@ -1,44 +1,25 @@
 <?php
 
-class DeviceAttribute extends AppModel {
-
-	public $useTable = 'device_attribute';
-
+class ApplicationFormation extends AppModel
+{
+	public $useTable = 'application_formation';
+	
 	public $actsAs = array(
 		'OrganizationOwned'
 	);
-
+	
 	public $belongsTo = array(
-		'Organization',
-		'Device'
-	);
+        'Organization',
+        'Application',
+        'Formation'
+    );
 
-	public $hasMany = array();
+    public $hasMany = array();
 
-	public $hasAndBelongsToMany = array();
-
-	public $validate = array(
+    public $hasAndBelongsToMany = array();
+    
+    public $validate = array(
         'organization_id' => array(
-            'requiredOnCreate' => array(
-                'rule' => 'notEmpty',
-                'on' => 'create',
-                'required' => true,
-                'message' => '%%f is required'
-            ),
-            'notEmpty' => array(
-                'rule' => 'notEmpty',
-                'message' => '%%f cannot be empty'
-            ),
-            'isNumeric' => array(
-                'rule' => 'numeric',
-                'message' => '%%f must be an integer'
-            ),
-			'validForeignKey' => array(
-				'rule' => array('isValidForeignKey'),
-				'message' => '%%f does not exist'
-			)
-        ),
-		'device_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',
@@ -57,8 +38,8 @@ class DeviceAttribute extends AppModel {
                 'rule' => array('isValidForeignKey'),
                 'message' => '%%f does not exist'
             )
-        ),	
-        'var' => array(
+        ),
+        'application_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',
@@ -69,10 +50,34 @@ class DeviceAttribute extends AppModel {
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'
             ),
-			'checkMultiKeyUniqueness' => array(
-				'rule' => array('checkMultiKeyUniqueness',array('var','organization_id')),
-				'message' => 'This %%f has already been defined'
-			)
-        )
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => '%%f must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => '%%f does not exist'
+            )
+        ),
+        'formation_id' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => '%%f is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => '%%f must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => '%%f does not exist'
+            )
+        ),
     );
 }

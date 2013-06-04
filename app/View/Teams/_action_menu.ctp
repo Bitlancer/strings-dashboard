@@ -1,5 +1,8 @@
 <?php
 
+    if(!isset($title))
+        $title = 'Actions';
+
     if(!isset($align))
         $align = 'right';
 
@@ -10,9 +13,9 @@
         $actionsDisabled = false;
 
     if(!isset($teamEnabled))
-        $userEnabled = true;
+        $teamEnabled = true;
 
-    $actionMenu = $this->StringsActionMenu->create('Actions',120,$align);
+    $actionMenu = $this->StringsActionMenu->create($title,$width,$align);
 
     if($teamEnabled){
         $actionMenu .= $this->Strings->modalLink('Edit Team',"/Teams/edit/$teamId.json",$actionsDisabled);

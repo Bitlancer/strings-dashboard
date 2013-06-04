@@ -114,7 +114,7 @@ class TeamsController extends AppController {
             else {
                 $this->Session->setFlash(__($message),'default',array(),'success');
                 $response = array(
-                    'redirectUri' => $this->referer(array('action' => 'index'))
+                    'redirectUri' => '/Teams/view/' . $this->Team->id
                 );
             }
 
@@ -152,6 +152,7 @@ class TeamsController extends AppController {
 			if($this->Team->save($this->request->data,true,$validFields)){
 
                 $members = (isset($this->request->data['Team']['members']) ? $this->request->data['Team']['members'] : array()); 
+
                 list($isError,$message) = $this->updateTeamMembers($id,$members);
                 if(!$isError)
                     $message = 'Updated team ' . $this->request->data['Team']['name'] . '.';
@@ -207,9 +208,6 @@ class TeamsController extends AppController {
 
         $isError = false;
         $message = "";
-
-        if(empty($teamMembers))
-            return array($isError,$message);
 
         $this->loadModel('User');
 
