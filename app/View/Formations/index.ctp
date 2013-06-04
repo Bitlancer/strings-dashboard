@@ -14,7 +14,9 @@ $this->end();
 //Main content
 echo $this->element('Datatables/default',array(
     'model' => 'formation',
-    'tableColumns' => $formationTableColumns,
-    'ctaEnabled' => true
+    'columnHeadings' => $formationTableColumns,
+    'ctaEnabled' => true,
+    'ctaSrc' => '/Formations/wizard',
+    'ctaModal' => false,
 ));
 

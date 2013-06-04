@@ -26,9 +26,11 @@ $this->end();
 <hr class="clear" />
 <div id="sudo-role-details">
   <?php
-  echo $this->StringsTable->infoTable(array(
-    'Name' => $sudoRole['SudoRole']['name'],
-    'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$sudoRole['SudoRole']['created'])
+  echo $this->element('Tables/info',array(
+    'info' => array(
+      'Name' => $sudoRole['SudoRole']['name'],
+      'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$sudoRole['SudoRole']['created'])
+    )
   ));
   ?>
 </div> <!-- /team-details -->
@@ -41,7 +43,10 @@ $this->end();
     $runasTableData = array();
     foreach($runas as $r)
       $runasTableData[][] = $r;
-    echo $this->StringsTable->table(array('User'),$runasTableData);
+    echo $this->element('Tables/default',array(
+      'columnHeadings' => array('User'),
+      'data' => $runasTableData
+    ));
   ?>
 </div>
 </section>
@@ -53,7 +58,10 @@ $this->end();
     $commandsTableData = array();
     foreach($commands as $c)
       $commandsTableData[][] = $c;
-    echo $this->StringsTable->table(array('Command'),$commandsTableData);
+    echo $this->element('Tables/default',array(
+      'columnHeadings' => array('Command'),
+      'data' => $commandsTableData
+    ));
   ?>
 </div>
 </section>

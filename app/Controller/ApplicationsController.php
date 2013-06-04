@@ -74,8 +74,24 @@ class ApplicationsController extends AppController
             $this->redirect(array('action' => 'index'));
         }
 
+        $formations = array();
+        foreach($app['ApplicationFormation'] as $appForm){
+            $formations[] = array($appForm['Formation']['name']);
+        }
+
+        $permissions = array();
+        foreach($app['TeamApplication'] as $teamApp){
+            $sudoRoles = array();
+            foreach($teamApp['TeamApplicationSudo'] as $teamAppSudo){
+                $sudoRoles[] = $teamAppSudo['SudoRole']['name'];
+            }
+            $permissions[] = array($teamApp['Team']['name'],implode(', ',$sudoRoles));
+        }
+
         $this->set(array(
             'application' => $app,
+            'formations' => $formations,
+            'permissions' => $permissions,
             'isAdmin' => $this->Auth->User('is_admin')
         ));
     }
@@ -368,5 +384,9 @@ class ApplicationsController extends AppController
         }
 
 	}
+
+    public function editTeamPermissions($appId=null,$teamId=null){
+        
+    }
 
 }

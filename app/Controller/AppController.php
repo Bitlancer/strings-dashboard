@@ -31,7 +31,8 @@ class AppController extends Controller {
 			'authorize' => array('Controller')
 		),
 		'RequestHandler',
-		'DataTables.DataTables'
+		'DataTables.DataTables',
+        'Wizard.Wizard',
 	);
 
 	//View Helpers
@@ -40,7 +41,7 @@ class AppController extends Controller {
 		'Strings.StringsTable',
 		'Strings.StringsActionMenu',
 		'DataTables.DataTables',
-		'Time'
+		'Time',
 	);
 
 	public function isAuthorized(){

@@ -14,8 +14,8 @@ $this->end();
 //Main content
 echo $this->element('Datatables/default',array(
 	'model' => 'sudoRole',
-	'tableTitle' => 'Sudo roles',
-    'tableColumns' => $sudoTableColumns,
+	'title' => 'Sudo roles',
+    'columnHeadings' => $sudoTableColumns,
 	'ctaTitle' => 'Sudo Role',
 	'ctaButtonText' => 'Create sudo role',
 	'ctaSrc' => '/sudoRoles/create.json',

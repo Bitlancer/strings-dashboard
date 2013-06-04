@@ -28,12 +28,14 @@ $this->end();
   <hr class="clear" />
   <div id="user-details">
   <?php 
-    echo $this->StringsTable->infoTable(array(
-		'Status' => $user['User']['is_disabled'] ? 'Disabled' : 'Enabled',
-		'Username' => $user['User']['name'],
-		'Name' => $user['User']['full_name'],
-		'Email' => $user['User']['email'],
-		'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$user['User']['created'])
+    echo $this->element('Tables/info',array(
+      'info' => array(
+         'Status' => $user['User']['is_disabled'] ? 'Disabled' : 'Enabled',
+         'Username' => $user['User']['name'],
+         'Name' => $user['User']['full_name'],
+         'Email' => $user['User']['email'],
+         'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$user['User']['created'])
+      )
   ));
   ?>
   </div>

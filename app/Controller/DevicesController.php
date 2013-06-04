@@ -84,7 +84,7 @@ class DevicesController extends AppController
             'flavor' => $this->Device->Implementation->getFlavorDescription($deviceAttributes['implementation.flavor_id']) 
         );
 
-        $deviceInterfaces = array();
+        $deviceAddresses = array();
         foreach($deviceAttributes as $var => $val){
             if(strpos($var,'implementation.address') === 0){
 
@@ -93,14 +93,14 @@ class DevicesController extends AppController
                 $descr = ucfirst($network) . " IPv" . $version; 
                 $address = $val;
 
-                $deviceInterfaces[] = array($descr,$address);
+                $deviceAddresses[] = array($descr,$address);
             }
         }
 
         $this->set(array(
             'device' => $device,
             'providerDetails' => $providerDetails,
-            'deviceInterfaces' => $deviceInterfaces
+            'deviceAddresses' => $deviceAddresses
         ));
     }
 }

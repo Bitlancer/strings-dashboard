@@ -14,7 +14,9 @@
         
     $actionMenu = $this->StringsActionMenu->create($title,$width,$align);
     
-    $actionMenu .= $this->Strings->modalLink('Edit',"/Applications/edit/$applicationId.json",$actionsDisabled);
+    $actionMenu .= $this->Strings->modalLink('Edit Application',"/Applications/edit/$applicationId.json",$actionsDisabled);
+    $actionMenu .= $this->Strings->modalLink('Edit Formations',"/Applications/editFormations/$applicationId.json",$actionsDisabled);
+    $actionMenu .= $this->Strings->link('Edit Permissions',"/Applications/editPermissions/$applicationId",$actionsDisabled);
     $actionMenu .= $this->Strings->modalLink('Delete',"/Applications/delete/$applicationId.json",$actionsDisabled);
     
     $actionMenu .= $this->StringsActionMenu->close();

@@ -3,6 +3,11 @@
 class FormationsController extends AppController
 {
 
+    public function beforeFilter(){
+
+        $this->Wizard->steps = array('blueprint','instanceCount','configureInstances','confirmation');
+    }
+
 	/**
      * Home screen containing list of formation and create formation CTA
      */
@@ -46,6 +51,15 @@ class FormationsController extends AppController
 				'isInfraProviderConfigured' => $isInfraProviderConfigured
             ));
         }
+    }
+
+    public function wizard($step=null){
+
+        $this->Wizard->process($step);
+    }
+
+    public function _processBlueprint(){
+
     }
 
     public function searchByName(){

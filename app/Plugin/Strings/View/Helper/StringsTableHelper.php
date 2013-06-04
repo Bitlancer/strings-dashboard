@@ -26,8 +26,8 @@ class StringsTableHelper extends StringsAppHelper {
         return $this->table($tableColumns,$tableValues,array('class' => 'clean'),array(),array(),$emptyTableMessage);
     }
 
-	/**
-     * Generates a Strings specific Datatable
+    /**
+     * Generates a Strings specific Datatable w/ a CTA
      *
      * @param string $tableElementID Table HTML element id
      * @param string $tableTitle Tabel title
@@ -38,9 +38,9 @@ class StringsTableHelper extends StringsAppHelper {
      * @param strings $ctaWidth Call-to-action data-width attribute - used for modal width
      * @param string[] $ctaClasses Call-to-action css classes
      * @param string $ctaSrc Call-to-action data-src attribute value
-     * @param string HTML table
+     * @return string HTML table
      */
-    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaTxt,$ctaTitle,$ctaSrc,$ctaWidth,$ctaDisabled){
+    public function datatableWithCta($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaModal,$ctaTxt,$ctaSrc,$ctaDisabled,$ctaTitle,$ctaWidth){
 
         //Default CTA classes
         $ctaClasses = array(
@@ -50,8 +50,44 @@ class StringsTableHelper extends StringsAppHelper {
 
         if($ctaDisabled)
             $ctaClasses[] = 'disabled';
-        else
+        elseif($ctaModal)
             $ctaClasses[] = 'modal';
+        else {}
+
+        //Expand ctaClasses into css list
+        $ctaClasses = implode(' ',$ctaClasses);
+
+        //Build cta element
+        if($ctaModal){
+            $ctaAttributes = array(
+                'data-src' => $ctaSrc,
+                'data-title' => $ctaTitle,
+                'data-width' => $ctaWidth,
+                'class' => $ctaClasses
+            );
+        }
+        else {
+            $ctaAttributes = array(
+                'href' => $ctaSrc,
+                'class' => $ctaClasses
+            );
+        }
+        $ctaElement = "<a " . self::buildElementAttributes($ctaAttributes,"'") . ">$ctaTxt</a>"; 
+
+        return $this->datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaElement);
+    }
+
+	/**
+     * Generates a Strings specific Datatable
+     *
+     * @param string $tableElementID Table HTML element id
+     * @param string $tableTitle Tabel title
+     * @param string[] $tableColumns Table column headings
+     * @param mixed $tableData If string, data-src attribute value else two dimensional array containing table data
+     * @param string $ctaElement Call-to-action a element
+     * @return string HTML table
+     */
+    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaElement=false){
 
         //Determine data source
         $tableDataSrc = "";
@@ -63,26 +99,16 @@ class StringsTableHelper extends StringsAppHelper {
             $tableDataSrc = $tableData;
         }
 
-        //Expand ctaClasses into css list
-        $ctaClasses = implode(' ',$ctaClasses);
-
-        //Build cta element
-        $ctaAttributes = array(
-            'data-src' => $ctaSrc,
-            'data-title' => $ctaTitle,
-			'data-width' => $ctaWidth,
-            'class' => $ctaClasses
-        );
-        $ctaElement = "<a " . self::buildElementAttributes($ctaAttributes,"'") . ">$ctaTxt</a>";
-
         $tableAttributes = array(
             'data-type' => 'datatable',
             'id' => $tableElementID,
             'data-title' => $tableTitle,
             'data-src' => $tableDataSrc,
             'data-length' => $tableDataLength,
-            'data-cta' => $ctaElement
         );
+
+        if($ctaElement !== false)
+            $tableAttributes['data-cta'] = $ctaElement;
 
         return $this->table($tableColumns,$tableValues,$tableAttributes);
     }

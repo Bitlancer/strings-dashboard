@@ -27,10 +27,12 @@ $this->end();
 <hr class="clear" />
 <div id="team-details">
   <?php
-  echo $this->StringsTable->infoTable(array(
-    'Status' => $team['Team']['is_disabled'] ? 'Disabled' : 'Enabled',
-    'Name' => $team['Team']['name'],
-    'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$team['Team']['created'])
+  echo $this->element('Tables/info',array(
+    'info' => array(
+      'Status' => $team['Team']['is_disabled'] ? 'Disabled' : 'Enabled',
+      'Name' => $team['Team']['name'],
+      'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$team['Team']['created'])
+     )
   ));
   ?>
 </div> <!-- /team-details -->
@@ -43,7 +45,10 @@ $this->end();
     $memberTableData = array();
     foreach($members as $member)
       $memberTableData[][] = $member['User']['full_name'] . " (" . $member['User']['name'] . ")";
-    echo $this->StringsTable->table(array('Members'),$memberTableData);
+    echo $this->element('Tables/default',array(
+      'columnHeadings' => array('Members'),
+      'data' => $memberTableData
+    ));
   ?>
 </div>
 </section>

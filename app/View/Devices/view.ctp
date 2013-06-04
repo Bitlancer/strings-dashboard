@@ -28,11 +28,13 @@ $this->end();
 <hr class="clear" />
 <div id="device-details">
   <?php
-  echo $this->StringsTable->infoTable(array(
-    'Name' => $device['Device']['name'],
-    'Role' => $device['Role']['name'],
-    'Parent Formation' => $device['Formation']['name'],
-    'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$device['Device']['created'])
+  echo $this->element('Tables/info',array(
+    'info' => array(
+      'Name' => $device['Device']['name'],
+      'Role' => $device['Role']['name'],
+      'Parent Formation' => $device['Formation']['name'],
+      'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$device['Device']['created'])
+    )
   ));
   ?>
 </div> <!-- /device-details -->
@@ -41,25 +43,28 @@ $this->end();
 <section>
 <h2>Provider Details</h2>
   <?php
-  echo $this->StringsTable->infoTable(array(
-    'Provider' => $providerDetails['provider_name'],
-    'Region' => $providerDetails['region'],
-    'Image' => $providerDetails['image'],
-    'Flavor' => $providerDetails['flavor'], 
+  echo $this->element('Tables/info',array(
+    'info' => array(
+      'Provider' => $providerDetails['provider_name'],
+      'Region' => $providerDetails['region'],
+      'Image' => $providerDetails['image'],
+      'Flavor' => $providerDetails['flavor'], 
+    )
   ));
   ?>
 </section>
 
 <section>
-<h2>Interfaces</h2>
+<h2>Addresses</h2>
   <?php
-  foreach($deviceInterfaces as $index => $row){
+  foreach($deviceAddresses as $index => $row){
     $row[1] = "<a href=\"ssh://\"" . $row[1] . "\">" . $row[1] . "</a>";
-    $deviceInterfaces[$index] = $row;
+    $deviceAddresses[$index] = $row;
   }
-  echo $this->StringsTable->table(array('Network','Address'),$deviceInterfaces);
+  echo $this->element('Tables/default',array(
+    'columnHeadings' => array('Network','Address'),
+    'data' => $deviceAddresses
+  ));
   ?>
 </section>
 
-
-<?php print_r($device); ?>

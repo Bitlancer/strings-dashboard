@@ -14,6 +14,6 @@ $this->end();
 //Main content
 echo $this->element('Datatables/default',array(
     'model' => 'application',
-    'tableColumns' => $applicationTableColumns,
+    'columnHeadings' => $applicationTableColumns,
     'ctaEnabled' => true
 ));

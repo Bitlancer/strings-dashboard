@@ -3,39 +3,43 @@
 $model = strtolower($model);
 $modelPlural = Inflector::pluralize($model);
 
-if(!isset($tableTitle))
-	$tableTitle = 'Current ' . $modelPlural;
+if(!isset($title))
+	$title = 'Current ' . $modelPlural;
 
-if(!isset($tableDataSrc))
-    $tableDataSrc = $_SERVER['REQUEST_URI'] . '.json';
+if(!isset($dataSrc))
+    $dataSrc = $_SERVER['REQUEST_URI'] . '.json';
 
-if(!isset($tablePageLength))
-    $tablePageLength = DEFAULT_TABLE_PAGE_LENGTH;
+if(!isset($pageLength))
+    $pageLength = DEFAULT_TABLE_PAGE_LENGTH;
+
+if(!isset($ctaModal))
+    $ctaModal = true;
 
 if(!isset($ctaButtonText))
 	$ctaButtonText = 'Create ' . $model;
 
 if(!isset($ctaTitle))
-	$ctaTitle = 'Create ' . ucfirst($model);
+    $ctaTitle = 'Create ' . ucfirst($model);
 
 if(!isset($ctaSrc))
-	$ctaSrc = "/$modelPlural/create.json"; 
+    $ctaSrc = "/$modelPlural/create.json"; 
 
 if(!isset($ctaWidth))
-	$ctaWidth = 360;
+    $ctaWidth = 360;
 
 if(!isset($ctaDisabled))
-	$ctaDisabled = false;
+    $ctaDisabled = false;
 
-echo $this->StringsTable->datatable(
+echo $this->StringsTable->datatableWithCta(
     $model,			                    //Table ID
-    $tableTitle, 				        //Table title
-    $tableColumns,           			//Column headings
-    $tableDataSrc,  					//URI for pulling data
-    $tablePageLength, 			        //Page length
+    $title, 				            //Table title
+    $columnHeadings,           			//Column headings
+    $dataSrc,  					        //URI for pulling data
+    $pageLength, 			            //Page length
+    $ctaModal,                          //Is CTA a modal or a link
     $ctaButtonText,   	            	//CTA button txt
+    $ctaSrc,                            //Modal src or link href
+    $ctaDisabled,                       //CTA disabled
     $ctaTitle,					        //CTA title
-    $ctaSrc,					        //CTA src
-	$ctaWidth,							//CTA width - used for modal width
-    $ctaDisabled                        //CTA Disabled
+	$ctaWidth   						//CTA width - used for modal width
 );
