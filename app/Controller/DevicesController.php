@@ -81,7 +81,7 @@ class DevicesController extends AppController
             'provider_name' => $device['Implementation']['name'],
             'region' => $deviceAttributes['implementation.region_name'],
             'image' => 'Default',
-            'flavor' => $this->Device->Implementation->getFlavorDescription($deviceAttributes['implementation.flavor_id']) 
+            'flavor' => $this->Device->Implementation->getFlavorDescription($device['Implementation']['id'],$deviceAttributes['implementation.flavor_id']) 
         );
 
         $deviceAddresses = array();

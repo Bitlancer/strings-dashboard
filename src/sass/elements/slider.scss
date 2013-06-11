@@ -1,0 +1,12 @@
+input[type='range'] {
+  box-sizing: border-box;
+  width: 99%;
+}
+
+div#result {
+  margin-top: 5px;
+  &:before {
+    content: 'Instances: ';
+    font-weight: 700;
+  }  
+}

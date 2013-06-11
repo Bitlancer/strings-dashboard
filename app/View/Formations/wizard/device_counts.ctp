@@ -45,7 +45,7 @@ foreach($blueprintParts as $part){
 ?>
 <div class="blueprint">
   <h3><?php echo $name; ?></h3>
-  <select name="data[BlueprintPart][<?php echo $id; ?>][count]" required>
+  <select name="data[blueprintPartCounts][<?php echo $id; ?>]" required>
     <?php for($x=$min;$x<=$max;$x++) {
       echo "<option value=\"$x\">$x</option>";
     } ?>

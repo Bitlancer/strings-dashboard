@@ -51,16 +51,15 @@ var strings = {
     },
     modal : function(obj) {
       var modal;
+      var loadFromServer = false;
       if(obj.attr('data-src')[0] == '#') {
         modal = $(obj.attr('data-src'));
       } else {
+        loadFromServer = true;
         if($('#ajax-modal').length) $('#ajax-modal').remove();
         $('body').append('<div id="ajax-modal" class="hidden"></div>');
         modal = $('#ajax-modal');
-        //modal.load(obj.attr('data-src'));
-        //var int = setInterval(function(){ if($(".ui-dialog").dialog("isOpen") === true) clearInterval(int) },100);
       }
-      //console.log(modal);
       var opt = {
         modal: true,
         title: obj.attr('data-title') || 'No Title',
@@ -77,7 +76,7 @@ var strings = {
           modal.find('.cta:not(".cancel,.primary")').unbind();
         }
       };
-      modal.dialog(opt).dialog('open').load(obj.attr('data-src'), function() {
+      var loadCallback = function() { 
           $(this).dialog("option", "position", ['center', 'center'] );
           strings.ui.tables();
           strings.events.forms();
@@ -85,10 +84,13 @@ var strings = {
           modal.find('.cta:not(".cancel,.primary")').bind('click', function() {
             modal.dialog('close');
           });
-      });
-      //setTimeout(function() {
-      //  $('.ui-dialog').dialog("option", "position", "center");
-      //},5000);
+      };
+      if(loadFromServer) {
+        modal.dialog(opt).dialog('open').load(obj.attr('data-src'),loadCallback);
+      }
+      else {
+        modal.dialog(opt).dialog('open');
+      }
     },
     tables : function() {
       $('table[data-type="datatable"]').not('.example table').not('.loaded').each(function() {

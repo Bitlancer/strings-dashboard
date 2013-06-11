@@ -2,7 +2,6 @@
 
 class FormationsController extends AppController
 {
-
     public function beforeFilter(){
 
         /*
@@ -90,6 +89,7 @@ class FormationsController extends AppController
  */
     public function wizard($step=null){
 
+        $this->set('title_for_layout', 'Create Formation');
         $this->Wizard->process($step);
     }
 
@@ -178,9 +178,8 @@ class FormationsController extends AppController
 
         //Validate count for each blueprint part and build count data structure
         $countsValid = true;
-        $partCounts = $this->request->data['BlueprintPart'];
+        $partCounts = $this->request->data['blueprintPartCounts'];
         foreach($partCounts as $id => $count){
-            $count = $count['count'];
             $blueprintPart = $blueprintParts[$id]['BlueprintPart'];
             $expectedMin = $blueprintPart['minimum'];
             $expectedMax = $blueprintPart['maximum'];
@@ -266,32 +265,82 @@ class FormationsController extends AppController
 
         $this->loadModel('Implementation');
         $this->loadModel('DictionaryWord');
+        $this->loadModel('BlueprintPart');
 
         //Get list of provider regions
         $implementationId = $this->Wizard->read('formationSettings.Implementation.id');
-        $implAttr = $this->Implementation->ImplementationAttribute->find('first',array(
+        $regions = $this->Implementation->getRegions($implementationId);
+
+        //Get list of blueprint parts and associated data
+        $blueprintPartCounts = $this->Wizard->read('deviceCounts.blueprintPartCounts');
+        $blueprintPartIds = array_keys($blueprintPartCounts);
+        $blueprintParts = $this->BlueprintPart->find('all',array(
+            'contain' => array(
+                'Role'
+            ),
             'fields' => array(
-                'ImplementationAttribute.val',
+                'Role.*','BlueprintPart.*'
             ),
             'conditions' => array(
-                'Implementation.id' => $implementationId,
-                'ImplementationAttribute.var' => 'regions'
+                'BlueprintPart.id' => $blueprintPartIds
             )
         ));
-        $regionsJson = $implAttr['ImplementationAttribute']['val'];
-        $regions = json_decode($regionsJson,true);
-        
+        $blueprintParts = Hash::combine($blueprintParts,'{n}.BlueprintPart.id','{n}');
+       
+        //Get total device count
+        $deviceCount = 0;
+        foreach($blueprintPartCounts as $id => $count)
+            $deviceCount += $count;
 
         //Select names for each device from dictionary and mark as used
+        $dictionaryId = $this->Wizard->read('formationSettings.Dictionary.id');
+        $dictionaryWords = $this->DictionaryWord->find('all',array(
+            'limit' => $deviceCount,
+            'conditions' => array(
+                'DictionaryWord.dictionary_id' => $dictionaryId,
+                'DictionaryWord.status' => 0,
+            )
+        ));
+        if(count($dictionaryWords) !== $deviceCount){
+            $this->Session->setFlash(__('Could not allocate enough device names (dictionary words) for this formation'),'default',array(),'error');
+            return false;
+        }
+        $dictionaryWords = Hash::combine($dictionaryWords,'{n}.DictionaryWord.id','{n}');
+        /*
+        $wordIds = array_keys($dictionaryWords);
+        $this->DictionaryWord->updateAll(
+            array(
+                'DictionaryWord.status' => 2
+            ),
+            array(
+                'DictionaryWord.id' => $wordIds
+            )
+        );
+        */
+
+        //Devices data structure
+        $devices = array();
+        $nextDevicePsuedoId = 1;
+        $dictionaryWordIds = array_keys($dictionaryWords);
+        foreach($blueprintPartCounts as $blueprintPartId => $deviceCount){
+            for($x=0;$x<$deviceCount;$x++){
+                $devices[] = array(
+                    'psuedoId' => $nextDevicePsuedoId++,
+                    'dictionaryWordId' => array_shift($dictionaryWordIds),
+                    'blueprintPartId' => $blueprintPartId
+                );
+            }
+        }
 
         $this->set(array(
             'regions' => $regions,
+            'dictionaryWords' => $dictionaryWords,
+            'blueprintParts' => $blueprintParts,
+            'devices' => $devices
         ));
-
     }
 
     public function _processConfigureDevices(){
 
     }
-
 }

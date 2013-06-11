@@ -25,11 +25,13 @@ class StringsHelper extends StringsAppHelper {
 		return $flattenedRecords;
 	}
 
-	public function modalLink($text,$source,$disabled=false,$title=false,$width=360){
+	public function modalLink($text,$source,$disabled=false,$title=false,$width=360,$additionalClasses=array()){
 
         $class ="modal";
         if($disabled)
             $class = "disabled";
+        if(!empty($additionalClasses))
+            $class .= " " . implode(' ',$additionalClasses);
 
 		if($title === false)
 			$title = $text;

@@ -1,0 +1,202 @@
+table {
+  border: 1px solid darken($white,10%);
+  clear:both;
+  width: 100%;
+  thead {
+    background: $white;
+    border-bottom: 1px solid darken($white,5%);
+    th { font-weight: 600 }
+  }
+  tbody {
+    background: #fcfcfc;
+    tr { 
+      border-bottom: 1px solid darken($white,5%);
+      &:last-of-type { border: 0 }
+      &.selected {
+        background: #1e8fe2;
+        color: #fff;
+        td a.action {
+          color: #fff;
+          font-style: italic;
+        }
+      }
+      td {
+        border-right: 1px solid darken($white,5%);
+        a.action {
+          color: $blue_light;
+          float:right;
+          font-size: 85%;
+        }
+        ul.action-menu { 
+          float: right;
+          > span {
+            top: 15px;
+          }
+          > li {
+            font-size: 80%; 
+          }
+          &.active > li { color: #999 }
+        }
+        &[data-status] {
+          position: relative;
+          text-indent: 7px;
+          &:before {
+            content: '';
+            display: table-cell;
+            height: 26px;
+            left: 0;
+            position: absolute;
+            width: 7px; 
+            margin-top: -5px;
+          }
+        }
+        &[data-status=running]:before {
+          background-color: $green;  
+        }
+        &[data-status=error]:before {
+          background-color: $red;  
+        }
+        &[data-status=default]:before {
+          background-color: #ccc;  
+        }
+        &[data-status].activity:before {
+          background-image: url('/img/status.png');
+          background-size: 7px auto;
+          background-position: 0;
+          @include animation(activity 2s infinite linear);
+        }
+        &:last-of-type { border: 0 }
+        &.blank {
+          font-size: 90%;
+          padding: 20px;  
+          text-align: center;
+          h3 {
+            font-weight: 600;
+            font-size: 17px;
+            margin-bottom: 5px;
+          }
+        }  
+      }
+    }
+  }
+  th,td { 
+    padding: 5px;
+    text-align: left;
+    &.sorting,&.sorting_desc,&.sorting_asc { cursor: default }
+    &.sorting:after {
+      content: '\25BC';
+      color: inherit;
+      display: inline-block;
+      margin: -1px 0 0 3px;
+      opacity: .25;
+      vertical-align: top;
+      @include transform(scaleY(.75));
+    }
+    &.sorting_desc:after {
+      content: '\25BC';
+      color: inherit;
+      display: inline-block;
+      margin: -1px 0 0 3px;
+      opacity: .75;
+      vertical-align: top;
+      @include transform(scaleY(.75));
+    }
+    &.sorting_asc:after {
+      content: '\25B2';
+      color: inherit;
+      display: inline-block;
+      margin: -1px 0 0 3px;
+      opacity: .75;
+      vertical-align: top;
+      @include transform(scaleY(.75));
+    }
+    span.disabled {
+      color: #999;
+    }
+  }
+}
+
+.dataTables_wrapper {
+  position: relative;
+  .top {
+    overflow: hidden;
+    position: relative;
+    h2 {
+      //float: left; 
+      margin: 0 0 15px;
+      //line-height: 30px;
+    }
+    .cta {
+      float: left;
+      ~ .cta {
+        margin-left: 5px;
+      }
+    }
+    .dataTables_filter {
+      float: right;
+      margin-bottom: 10px;
+      input {
+        margin: 0;  
+        padding: 6px;
+      }
+    }
+  }
+  .dataTables_filter2 {
+    float: right;
+    padding-bottom: 10px;
+  }
+  .dataTables_paginate {
+    color: #777;
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    overflow: hidden;
+    padding-top: 10px;
+    position: relative;
+    //float: right;
+    > a, > span > a {
+      background: #fcfcfc;
+      border: 1px solid darken($white,5%);
+      color: #777;
+      display: block;
+      float: left;
+      height: 20px;
+      line-height: 20px;
+      margin-right: 3px;
+      padding: 0 5px;
+      text-align: center;
+      &.paginate_active {
+        background: $blue_gray;
+        border: 1px solid darken($blue_gray,15%);
+        color: darken($blue_gray,30%);
+        cursor: default;
+      }
+      &.paginate_button_disabled {
+        color: #ccc;
+        cursor: default;
+      }
+    }
+    .first.paginate_button, .last.paginate_button {
+      display: none;  
+    }
+  }
+  .dataTables_empty {
+    font-size: 90%;
+    padding: 20px;
+    text-align: center;
+    h3 {
+      font-weight: 600;
+      font-size: 17px;
+      margin-bottom: 5px;
+    }
+  }
+}
+
+@include keyframes(activity){
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 27px;
+  }
+}

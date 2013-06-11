@@ -75,7 +75,7 @@ class DictionaryWord extends AppModel
                 'message' => 'This %%f is already defined'
             )
         ),
-        'is_used' => array(
+        'status' => array(
             'notEmpty' => array(
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'

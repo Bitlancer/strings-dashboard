@@ -120,33 +120,12 @@ class Implementation extends AppModel {
 			return false;
 	}
 
-    public function getFlavorDescription($flavorId){
+    public function getFlavorDescription($implementationId,$flavorId){
 
-        $flavorDescrs = $this->ImplementationAttribute->find('first',array(
-            'conditions' => array(
-                'ImplementationAttribute.var' => 'flavor_descriptions'
-            )
-        ));
+        $flavorDescrsAttribute = $this->getOverridableAttribute($implementationId,'flavor_descriptions');
+        if($flavorDescrsAttribute !== false){
 
-        if(!empty($flavorDescrs)){
-            $flavorDescrs = $flavorDescrs['ImplementationAttribute']['val'];
-        }
-        else {
-
-            $providerAttribute = ClassRegistry::init('ProviderAttribute');
-
-            $flavorDescrs = $providerAttribute->find('first',array(
-                'conditions' => array(
-                    'ProviderAttribute.var' => 'flavor_descriptions',
-                )
-            ));
-
-            if(!empty($flavorDescrs))
-                $flavorDescrs = $flavorDescrs['ProviderAttribute']['val'];
-        }
-
-        if(!empty($flavorDescrs)) {
-
+            $flavorDescrs = $flavorDescrsAttribute['val'];
             $flavorDescrs = json_decode($flavorDescrs,true);
 
             foreach($flavorDescrs as $flavor){
@@ -156,6 +135,68 @@ class Implementation extends AppModel {
         }
 
         return 'Unknown';
+    }
+
+    public function getRegions($implementationId){
+
+        $regionsAttribute = $this->getOverridableAttribute($implementationId,'regions');
+        if($regionsAttribute === false)
+            return false;
+
+        $regions = $regionsAttribute['val'];
+
+        $regions = json_decode($regions,true);
+        return $regions;
+    }
+
+    /**
+     * Certain provider attributes should be overridable to allow
+     * customers to change names, etc. This method will first try to
+     * pull an attribute from ImplementationAttribute. If it does
+     * not exist it will pull in the default from ProviderAttribute.
+     *
+     * @param string $attributeVar The name of the attribute
+     * @return mixed[] The attribute val or false if not found
+     */
+    private function getOverridableAttribute($implementationId, $attributeVar){
+
+        if(!$this->exists($implementationId))
+            return false;
+
+        $attribute = $this->ImplementationAttribute->find('first',array(
+            'fields' => array(
+                'ImplementationAttribute.val',
+            ),
+            'conditions' => array(
+                'ImplementationAttribute.implementation_id' => $implementationId,
+                'ImplementationAttribute.var' => $attributeVar
+            )
+        ));
+
+        if(!empty($attribute)){
+            $attribute = $attribute['ImplementationAttribute'];
+        }
+        else {
+
+            $implementation = $this->findById($implementationId);
+            $providerId = $implementation['Implementation']['provider_id'];
+
+            $providerAttribute = ClassRegistry::init('ProviderAttribute');
+            $attribute = $providerAttribute->find('first',array(
+                'conditions' => array(
+                    'ProviderAttribute.provider_id' => $providerId,
+                    'ProviderAttribute.var' => $attributeVar
+                )
+            ));
+
+            if(empty($attribute))
+                return false;
+            else {
+                $attribute = $attribute['ProviderAttribute'];
+            }
+        }
+
+        return $attribute;
     }
 
 }
