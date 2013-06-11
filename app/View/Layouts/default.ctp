@@ -4,6 +4,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title> <?php echo $title_for_layout; ?> - Strings | Bitlancer</title>
   <link id="style" rel="stylesheet" type="text/css" href="/css/app.css">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
   <?php
 		echo $this->Html->meta('icon');
 
@@ -19,8 +21,6 @@
     <?php echo $this->fetch('content'); ?>
   </section> <!-- /Content -->
 <!-- Javascript -->
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 <script src="//ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
 <script src="/js/jquery.fcbkcomplete.js"></script>
 <script type="text/javascript" src="/js/app.js"></script>

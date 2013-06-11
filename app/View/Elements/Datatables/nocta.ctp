@@ -9,6 +9,9 @@ if(!isset($title))
 if(!isset($dataSrc))
     $dataSrc = $_SERVER['REQUEST_URI'] . '.json';
 
+if(!isset($search))
+    $search = true;
+
 if(!isset($pageLength))
     $pageLength = DEFAULT_TABLE_PAGE_LENGTH;
 
@@ -18,5 +21,6 @@ echo $this->StringsTable->datatable(
     $columnHeadings,               //Column headings
     $dataSrc,                      //URI for pulling data
     $pageLength,                   //Page length
-    false                          //CTA element
+    false,                          //CTA element
+    $search                         //Whether the search field is present
 );

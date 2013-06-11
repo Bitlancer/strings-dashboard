@@ -87,15 +87,17 @@ class StringsTableHelper extends StringsAppHelper {
      * @param string $ctaElement Call-to-action a element
      * @return string HTML table
      */
-    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaElement=false){
+    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaElement=false,$search=true){
 
         //Determine data source
+        $loadDataViaAjax = false;
         $tableDataSrc = "";
         $tableValues = array();
         if(is_array($tableData)){
             $tableValues = $tableData;
         }
         else {
+            $loadDataViaAjax = true;
             $tableDataSrc = $tableData;
         }
 
@@ -110,7 +112,24 @@ class StringsTableHelper extends StringsAppHelper {
         if($ctaElement !== false)
             $tableAttributes['data-cta'] = $ctaElement;
 
-        return $this->table($tableColumns,$tableValues,$tableAttributes);
+        if($search === false)
+            $tableAttributes['data-search'] = "false";
+
+        if($loadDataViaAjax){
+            $src = "<table " . self::buildElementAttributes($tableAttributes,"\"") . ">";
+            $src .= "<thead><tr>";
+            foreach($tableColumns as $column){
+                $src .= "<th>$column</th>";
+            }
+            $src .= "</tr></thead>";
+            $src .= "<tbody>";
+            $src .= "<tr><td colspan=\"100\" class=\"blank\"><img src=\"/img/loading.gif\" /></td></tr>";
+            $src .= "</tbody>";
+            $src .= "</table>";
+            return $src;
+        }
+        else
+            return $this->table($tableColumns,$tableValues,$tableAttributes);
     }
 
 	/**

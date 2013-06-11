@@ -5,7 +5,19 @@ class FormationsController extends AppController
 
     public function beforeFilter(){
 
-        $this->Wizard->steps = array('blueprint','instanceCount','configureInstances','confirmation');
+        /*
+         * Formation creation wizard settings
+         */
+        $this->Wizard->steps = array(
+            'selectBlueprint',
+            'deviceCounts',
+            'formationSettings',
+            'configureDevices'
+        );
+        $this->Wizard->lockdown = false;                     //Prevent user from navigating between steps
+        $this->Wizard->nestedViews = true;                  //Store view fields within wizard/
+        $this->Wizard->completeUrl = '/Formations/';        //User is redirected here after wizard completion
+        $this->Wizard->cancelUrl = '/Formations/';          //User is redirected here on wizard cancellation
     }
 
 	/**
@@ -14,7 +26,8 @@ class FormationsController extends AppController
     public function index() {
 
 		//Verify this organization has setup one or more infrastructure providers
-        $isInfraProviderConfigured = $this->Formation->Device->Implementation->hasOrganizationConfiguredServiceProvider($this->Auth->user('organization_id'),'infrastructure');
+        $this->loadModel('Implementation');
+        $isInfraProviderConfigured = $this->Implementation->hasOrganizationConfiguredServiceProvider($this->Auth->user('organization_id'),'infrastructure');
         if(!$isInfraProviderConfigured){
             $this->Session->setFlash(__('Please setup an infrastructure provider <a href="#">here</a>.'),'default',array(),'error');
         }
@@ -32,9 +45,6 @@ class FormationsController extends AppController
             $findParameters = array(
                 'fields' => array(
                     'Formation.id','Formation.name'
-                ),
-                'conditions' => array(
-                    'Formation.organization_id' => $this->Auth->user('organization_id')
                 )
             );
 
@@ -51,15 +61,6 @@ class FormationsController extends AppController
 				'isInfraProviderConfigured' => $isInfraProviderConfigured
             ));
         }
-    }
-
-    public function wizard($step=null){
-
-        $this->Wizard->process($step);
-    }
-
-    public function _processBlueprint(){
-
     }
 
     public function searchByName(){
@@ -83,4 +84,214 @@ class FormationsController extends AppController
 
         echo json_encode($formations);
     }
+
+/**
+ * Formation creation wizard
+ */
+    public function wizard($step=null){
+
+        $this->Wizard->process($step);
+    }
+
+    public function _prepareSelectBlueprint(){
+
+        $blueprintTableColumns = array(
+            'Blueprint' => array(
+                'model' => 'Blueprint',
+                'column' => 'name'
+            ),
+        );
+
+        if($this->request->is('ajax')){
+
+            $this->loadModel('Blueprint');
+
+            //Datatables
+            $findParameters = array(
+                'fields' => array(
+                    'Blueprint.id','Blueprint.name','Blueprint.short_description'
+                ),
+            );
+
+            $dataTable = $this->DataTables->getDataTable($blueprintTableColumns,$findParameters,$this->Blueprint);
+
+            $this->set(array(
+                'dataTable' => $dataTable,
+                'isAdmin' => $this->Auth->User('is_admin')
+            ));
+
+        }
+        else {
+            $this->set(array(
+                'blueprintTableColumns' => array_keys($blueprintTableColumns),
+            ));
+        }
+    }
+
+    public function _processSelectBlueprint(){
+
+        $this->loadModel('Blueprint');
+
+        $blueprintId = $this->request->data['Blueprint']['id'];
+
+        if($this->Blueprint->exists($blueprintId))
+            return true;
+
+        return false;
+    }
+
+    public function _prepareDeviceCounts(){
+
+        $this->loadModel('BlueprintPart');
+
+        $blueprintId = $this->Wizard->read('selectBlueprint.Blueprint.id');
+
+        $blueprintParts = $this->BlueprintPart->find('all',array(
+            'contain' => array(
+                'Role'
+            ),
+            'conditions' => array(
+                'BlueprintPart.blueprint_id' => $blueprintId
+            )
+        ));
+
+        $this->set(array(
+            'blueprintParts' => $blueprintParts
+        ));
+    }
+
+    public function _processDeviceCounts(){
+
+        $this->loadModel('BlueprintPart');
+
+        //Get blueprint parts
+        $blueprintId = $this->Wizard->read('selectBlueprint.Blueprint.id');
+        $blueprintParts = $this->BlueprintPart->find('all',array(
+            'contain' => array(),
+            'conditions' => array(
+                'BlueprintPart.blueprint_id' => $blueprintId
+            )
+        ));
+
+        //Re-index array by id
+        $blueprintParts = Hash::combine($blueprintParts,'{n}.BlueprintPart.id','{n}');
+
+        //Validate count for each blueprint part and build count data structure
+        $countsValid = true;
+        $partCounts = $this->request->data['BlueprintPart'];
+        foreach($partCounts as $id => $count){
+            $count = $count['count'];
+            $blueprintPart = $blueprintParts[$id]['BlueprintPart'];
+            $expectedMin = $blueprintPart['minimum'];
+            $expectedMax = $blueprintPart['maximum'];
+            if($count < $expectedMin || $count > $expectedMax){
+                $countsValid = false;
+                $this->Session->setFlash(__('Invalid device count specified for ' . $blueprintPart['name']),'default',array(),'error');
+                break;
+            }
+        }
+
+        return $countsValid;
+    }
+
+    public function _prepareFormationSettings(){
+
+        $this->loadModel('Implementation');
+        $this->loadModel('Dictionary');
+
+        //Get a list of infrastructure providers
+        $implementations = $this->Implementation->Provider->find('all',array(
+            'link' => array(
+                'Implementation',
+                'Service'
+            ),
+            'fields' => array(
+                'Implementation.*'
+            ),
+            'conditions' => array(
+                'Service.name' => 'infrastructure'
+            )
+        ));
+
+        //Get a list of dictionaries
+        $dictionaries = $this->Dictionary->find('all',array('contain' => array()));
+
+        $this->set(array(
+            'implementations' => $implementations,
+            'dictionaries' => $dictionaries
+        ));
+    }
+
+    public function _processFormationSettings(){
+
+        $this->loadModel('Implementation');
+        $this->loadModel('Dictionary');
+
+        //Validate implementation
+        if(!isset($this->request->data['Implementation']['id']) || empty($this->request->data['Implementation']['id'])){
+            $this->Session->setFlash(__('Infrastructure provider required'),'default',array(),'error');
+            return false;
+        }
+        $implementationId = $this->request->data['Implementation']['id'];
+        $implementation = $this->Implementation->Provider->find('first',array(
+            'link' => array(
+                'Implementation',
+                'Service'
+            ),
+            'conditions' => array(
+                'Implementation.id' => $implementationId,
+                'Service.name' => 'infrastructure'
+            )
+        ));
+        if(empty($implementation)){
+            $this->Session->setFlash(__('Invalid provider supplied'),'default',array(),'error');
+            return false;
+        }
+
+        //Validate dictionary
+        if(!isset($this->request->data['Dictionary']['id']) || empty($this->request->data['Dictionary']['id'])){
+            $this->Session->setFlash(__('Infrastructure provider required'),'default',array(),'error');
+            return false;
+        }
+        $dictionaryId = $this->request->data['Dictionary']['id'];
+        if(!$this->Dictionary->exists($dictionaryId)){
+            $this->Session->setFlash(__('Invalid dictionary supplied'),'default',array(),'error');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function _prepareConfigureDevices(){
+
+        $this->loadModel('Implementation');
+        $this->loadModel('DictionaryWord');
+
+        //Get list of provider regions
+        $implementationId = $this->Wizard->read('formationSettings.Implementation.id');
+        $implAttr = $this->Implementation->ImplementationAttribute->find('first',array(
+            'fields' => array(
+                'ImplementationAttribute.val',
+            ),
+            'conditions' => array(
+                'Implementation.id' => $implementationId,
+                'ImplementationAttribute.var' => 'regions'
+            )
+        ));
+        $regionsJson = $implAttr['ImplementationAttribute']['val'];
+        $regions = json_decode($regionsJson,true);
+        
+
+        //Select names for each device from dictionary and mark as used
+
+        $this->set(array(
+            'regions' => $regions,
+        ));
+
+    }
+
+    public function _processConfigureDevices(){
+
+    }
+
 }

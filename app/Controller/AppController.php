@@ -42,6 +42,7 @@ class AppController extends Controller {
 		'Strings.StringsActionMenu',
 		'DataTables.DataTables',
 		'Time',
+        'Gravatar'
 	);
 
 	public function isAuthorized(){

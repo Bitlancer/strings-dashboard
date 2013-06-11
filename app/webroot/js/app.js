@@ -103,10 +103,20 @@ var strings = {
           "sAjaxSource": ($(this).attr("data-src") === undefined ? null : $(this).attr("data-src")),
           "fnInitComplete": function(oSettings) {
             var parent = $(this).parents('.dataTables_wrapper');
-            if($(this).attr('data-cta')) parent.find('.top').prepend($(this).attr('data-cta'))
-            if($(this).attr('data-title')) parent.find('.top').prepend('<h2>'+$(this).attr('data-title')+'</h2>');
-            parent.find('.dataTables_filter input').attr('placeholder','Search');
-            if($(this).attr('data-search') === 'false') parent.find('.dataTables_filter input').remove();
+            if($(this).attr('data-cta')) {
+              parent.find('.top').prepend($(this).attr('data-cta'))
+            }
+            if($(this).attr('data-title')) { 
+              parent.find('.top').prepend('<h2>'+$(this).attr('data-title')+'</h2>');
+              if(!$(this).attr('data-cta')) parent.find('h2').css('display','inline');
+            } 
+            if($(this).attr('data-search') === 'false') {
+              parent.find('.dataTables_filter input').remove();
+            }
+            else {
+              parent.find('.dataTables_filter input').attr('placeholder','Search');
+            }
+            var parent = $(this).parents('.dataTables_wrapper');
           }
         });
         $(this).addClass('loaded');
