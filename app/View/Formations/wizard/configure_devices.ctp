@@ -13,16 +13,15 @@ $this->assign('forwardButtonText','Complete');
   div.device-modal {
     display:none;
   }
-  div.device-modal .option {
-    margin-bottom:20px;
-  }
-  div.device-modal .option h3 {
-    margin-bottom:6px;
-  }
 <?php $this->end(); ?>
 
 <?php $this->start('stepScript'); ?>
-  $('.cta.primary').removeClass('disabled').addClass('submit');
+  $('.cta.primary').removeClass('disabled');
+  $('.cta.primary').click('live',function(){
+    var form = $(this).closest('form');
+    $('.device-modal').css('display','none').appendTo(form);
+    form.submit();
+  });
 <?php $this->end(); ?>
 
 <table id="configure-devices">
@@ -35,15 +34,13 @@ $this->assign('forwardButtonText','Complete');
 <tbody>
 <?php foreach($devices as $device){
     $psuedoId = $device['psuedoId'];
-    $blueprintPartId = $device['blueprintPartId'];
-    $dictionaryWordId = $device['dictionaryWordId'];
-    $name = $dictionaryWords[$dictionaryWordId]['DictionaryWord']['word'];
-    $role = $blueprintParts[$blueprintPartId]['BlueprintPart']['name'];
+    $name = $device['name'];
+    $blueprintPartName = $device['blueprintPartName'];
   ?>
   <tr>
     <td><?php echo $name; ?></td>
-    <td><?php echo $role; ?></td>
-    <td><?php echo $this->Strings->modalLink('Configure',"#device-$psuedoId",false,'Configure',500,array('action')); ?></td>
+    <td><?php echo $blueprintPartName; ?></td>
+    <td><?php echo $this->Strings->modalLink('Configure',"#device-$psuedoId",false,"Configure - $name",500,array('action')); ?></td>
   </tr>
 <?php } ?>
 </tbody>
@@ -55,16 +52,18 @@ foreach($devices as $device){
   $psuedoId = $device['psuedoId'];
 ?>
 <div class="device-modal" id="device-<?php echo $psuedoId; ?>">
-  <div class="option">
-    <h3>Provider Target</h3>
-    <select name="data[Device][<?php echo $psuedoId; ?>]">
-      <?php foreach($regions as $region) {
-        $name = $region['custom_name'];
-        ?>
-        <option value="<?php echo $name; ?>"><?php echo $name; ?></option>
-      <?php } ?>
-    </select>
-  </div>
+  <?php
+  echo $this->Form->input("Device.$psuedoId.flavor",array(
+    'label' => 'Provider Flavor',
+    'error' => false,
+    'options' => $flavors
+  ));
+  echo $this->Form->input("Device.$psuedoId.region",array(
+    'label' => 'Provider Target',
+    'error' => false,
+    'options' => $regions
+  ));
+  ?>
 </div>
 <?php } ?>
 <!-- /modals -->

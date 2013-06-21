@@ -32,8 +32,12 @@ class DevicesController extends AppController
 
             //Datatables
             $findParameters = array(
+                'contain' => array(
+                    'Formation',
+                    'Role'
+                ),
                 'fields' => array(
-                    'Device.id','Device.name','Formation.name','Role.name'
+                    'Device.*','Formation.*','Role.name'
                 )
             );
 
@@ -69,7 +73,7 @@ class DevicesController extends AppController
         ));
 
         if(empty($device)){
-            $this->Session->setFlash('Device does not exist');
+            $this->setFlash('Device does not exist');
             $this->redirect(array('action' => 'index'));
         }
 
@@ -77,11 +81,13 @@ class DevicesController extends AppController
         $deviceAttributes = Hash::combine($device['DeviceAttribute'],'{n}.var','{n}.val');
         $implementationAttributes  = Hash::combine($device['Implementation']['ImplementationAttribute'],'{n}.var','{n}.val');
 
+        $implementationId = $device['Implementation']['id'];
+
         $providerDetails= array(
             'provider_name' => $device['Implementation']['name'],
-            'region' => $deviceAttributes['implementation.region_name'],
+            'region' => $this->Device->Implementation->getRegionName($implementationId,$deviceAttributes['implementation.region_id']),
             'image' => 'Default',
-            'flavor' => $this->Device->Implementation->getFlavorDescription($device['Implementation']['id'],$deviceAttributes['implementation.flavor_id']) 
+            'flavor' => $this->Device->Implementation->getFlavorDescription($implementationId,$deviceAttributes['implementation.flavor_id'])
         );
 
         $deviceAddresses = array();
@@ -98,9 +104,105 @@ class DevicesController extends AppController
         }
 
         $this->set(array(
+            'isAdmin' => $this->Auth->User('is_admin'),
             'device' => $device,
             'providerDetails' => $providerDetails,
             'deviceAddresses' => $deviceAddresses
         ));
+    }
+
+    public function resize($id=null){
+
+        $this->loadModel('QueueJob');
+
+        $device = $this->Device->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'Device.id' => $id,
+            )
+        ));
+
+        if(empty($device)){
+            $this->setFlash('Device does not exist.');
+            $this->redirect(array('action' => 'index'));
+        }
+
+        $this->redirectIfNotActive($device);
+
+        //Get a list of flavors
+        $flavors = $this->Device->Implementation->getFlavors($device['Device']['implementation_id']);
+        $flavors = Hash::combine($flavors,'{n}.id','{n}');
+
+        //Remove the devices current flavor from the list
+        $deviceFlavor = $this->Device->DeviceAttribute->findByVar('implementation.flavor_id');
+        $deviceFlavorId = $deviceFlavor['DeviceAttribute']['val'];
+        unset($flavors[$deviceFlavorId]);
+
+        if($this->request->is('post')){
+
+            $this->autoRender = false;
+
+            $isError = false;
+            $message = "";
+
+            if(!isset($this->request->data['flavor']) || empty($this->request->data['flavor'])){
+                $isError = true;
+                $message = 'Please select a size.';
+            }
+            else {
+                
+                $deviceId = $device['Device']['id']; 
+                $flavorId = $this->request->data['flavor'];
+
+                //Validate flavor id
+                $flavorIds = array_keys($flavors); 
+                if(!in_array($flavorId,$flavorIds)){
+                    $isError = true;
+                    $message = 'Invalid size selected.';
+                }
+                else {
+
+                    //Add Q job to resize instance
+                    if(!$this->QueueJob->addjob(STRINGS_API_URL . "/Instances/resize/$deviceId/$flavorId")){
+                        $isError = true;
+                        $message = 'Failed to create a job to resize instance.';
+                    }
+                    else {
+                        $this->Device->id = $deviceId;
+                        $this->Device->saveField('status','resizing',true);
+                        $message = "Resize initiated for device {$device['Device']['name']}.";
+                    }
+                }
+            }
+
+            if($isError){
+                $response = array(
+                    'isError' => $isError,
+                    'message' => __($message)
+                );
+            }
+            else {
+                $this->setFlash($message,'success');
+                $response = array(
+                    'redirectUri' => $this->referer(array('action' => 'index'))
+                );
+            }
+
+            echo json_encode($response);
+        }
+        else {
+            $this->set(array(
+                'device' => $device,
+                'flavors' => $flavors
+            ));
+        }
+    }
+
+    protected function redirectIfNotActive($device){
+    
+        if($device['Device']['status'] != 'active'){
+            $this->setFlash('This device is currently undergoing another operation. It cannot be modified until the previous operation completes.');
+            $this->redirect($this->referer(array('action' => 'index')));
+        }
     }
 }

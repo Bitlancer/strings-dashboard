@@ -6,7 +6,7 @@ class QueueJob extends AppModel
 	public $useTable = 'queued_job';
 
 	public $actsAs = array(
-		'OrganizatonOwned'
+		'OrganizationOwned'
 	);
 
 	public $belongsTo = array(
@@ -18,26 +18,6 @@ class QueueJob extends AppModel
 	);
 
 	public $validate = array(
-        'organization_id' => array(
-            'requiredOnCreate' => array(
-                'rule' => 'notEmpty',
-                'on' => 'create',
-                'required' => true,
-                'message' => '%%f is required'
-            ),
-            'notEmpty' => array(
-                'rule' => 'notEmpty',
-                'message' => '%%f cannot be empty'
-            ),
-            'isNumeric' => array(
-                'rule' => 'numeric',
-                'message' => '%%f must be an integer'
-            ),
-            'validForeignKey' => array(
-                'rule' => array('isValidForeignKey'),
-                'message' => '%%f does not exist'
-            )
-        ),
         'http_method' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
@@ -65,10 +45,12 @@ class QueueJob extends AppModel
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'
             ),
+            /* Doesn't work when a port is specified?
             'validUrl' => array(
                 'rule' => 'url',
                 'message' => '%%f is not a valid Url'
             )
+            */
 		),
 		'timeout_secs' => array(
 			'requiredOnCreate' => array(
@@ -119,4 +101,24 @@ class QueueJob extends AppModel
             ),
 		),
 	);
+
+    public function addJob($url,$body="",$httpMethod='post',$timeoutSecs=60,$retries=10,$retryDelaySecs=30){
+
+        $job = array(
+            'QueueJob' => array(
+                'url' => $url,
+                'body' => $body,
+                'http_method' => strtolower($httpMethod),
+                'timeout_secs' => $timeoutSecs,
+                'remaining_retries' => $retries,
+                'retry_delay_secs' => $retryDelaySecs
+            )
+        );
+
+        $this->create();
+        if($this->save($job))
+            return $this->id;
+        else
+            return false;
+    }
 }

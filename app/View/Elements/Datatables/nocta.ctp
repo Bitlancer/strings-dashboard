@@ -17,10 +17,10 @@ if(!isset($pageLength))
 
 echo $this->StringsTable->datatable(
     $model,                        //Table ID
-    $title,                        //Table title
     $columnHeadings,               //Column headings
     $dataSrc,                      //URI for pulling data
     $pageLength,                   //Page length
+    $title,                        //Table title
     false,                          //CTA element
     $search                         //Whether the search field is present
 );

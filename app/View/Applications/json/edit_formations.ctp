@@ -1,18 +1,9 @@
 <?php
+    echo $this->DataTables->output($dataTable,
+        function($view,$outputRow,$rawRow) use($isAdmin){
 
-	$memberData = array();
-	foreach($members as $member){
+        $formationId = $rawRow['Formation']['id'];
 
-		$member['id'] = $member['Formation']['id'];
-		$member['displayValue'] = $member['Formation']['name'];
-
-		$memberData[] = $member;
-	}
-
-	echo $this->element('association',array(
-		'memberData' => $memberData,
-		'addAssociationTitle' => 'Add Formation',
-		'removeAssociationTitle' => 'Existing Formations',
-		'addAssociationUri' => "/Applications/addFormation/$id.json",
-		'removeAssociationUri' => "/Applications/removeFormation/$id.json"
-	));
+        $outputRow[count($outputRow)-1] .= "<a class=\"action remove\" data-id=\"$formationId\">Remove</a>";
+        return $outputRow;
+    });

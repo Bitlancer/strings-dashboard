@@ -3,9 +3,16 @@ body {
     border: 0;
     padding: 0;
     @include box-shadow(0 1px 12px rgba(0,0,0,0.3));
+    .loading {
+      min-height: 24px;
+      background: white url('/img/loading.gif') center no-repeat;
+    }
     .ui-dialog-titlebar {
       border: 0;  
       padding: 10px 15px 9px;
+      .ui-dialog-title {
+        overflow:visible;
+      }
       > a {
         border: 0; 
         padding: 0;

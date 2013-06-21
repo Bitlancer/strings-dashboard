@@ -146,6 +146,7 @@ CakePlugin::load('DebugKit');
 CakePlugin::load('DataTables');
 CakePlugin::load('Strings');
 CakePlugin::load('Wizard');
+CakePlugin::load('AuditLog');
 
 /**
  * You can attach event listeners to the request lifecyle as Dispatcher Filter . By Default CakePHP bundles two filters:
@@ -188,6 +189,9 @@ CakeLog::config('error', array(
  * Application Wide Constants
  */
 
+//Strings API URL
+define('STRINGS_API_URL','http://localhost:8081');
+
 //CRM emails are sent to this address
 define('CRM_EMAIL','mjuszczak@bitlancer.com');
 
@@ -196,3 +200,6 @@ define('DEFAULT_DATE_FORMAT','F j, Y, g:i a');
 
 //Default number of rows that are displayed in each table
 define('DEFAULT_TABLE_PAGE_LENGTH','15');
+
+//Default number of activity logs to display
+define('DEFAULT_RECENT_ACTIVITIES_LIMIT','10');

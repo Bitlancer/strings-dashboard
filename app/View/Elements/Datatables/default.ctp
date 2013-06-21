@@ -1,45 +1,67 @@
 <?php
 
-$model = strtolower($model);
-$modelPlural = Inflector::pluralize($model);
+    $model = strtolower($model);
+    $modelPlural = Inflector::pluralize($model);
 
-if(!isset($title))
-	$title = 'Current ' . $modelPlural;
+    if(!isset($dataSrc))
+        $dataSrc = $_SERVER['REQUEST_URI'] . '.json';
 
-if(!isset($dataSrc))
-    $dataSrc = $_SERVER['REQUEST_URI'] . '.json';
+    if(!isset($emptyTableMsg))
+        $emptyTableMsg = 'No data available';
 
-if(!isset($pageLength))
-    $pageLength = DEFAULT_TABLE_PAGE_LENGTH;
+    if(!isset($pageLength))
+        $pageLength = DEFAULT_TABLE_PAGE_LENGTH;
 
-if(!isset($ctaModal))
-    $ctaModal = true;
+    if(!isset($tableId))
+        $tableId = $model;
 
-if(!isset($ctaButtonText))
-	$ctaButtonText = 'Create ' . $model;
+    if(!isset($ctaModal))
+        $ctaModal = true;
 
-if(!isset($ctaTitle))
-    $ctaTitle = 'Create ' . ucfirst($model);
+    if(!isset($title))
+        $title = "Current $modelPlural";
 
-if(!isset($ctaSrc))
-    $ctaSrc = "/$modelPlural/create.json"; 
+    if(!isset($search))
+        $search = true;
 
-if(!isset($ctaWidth))
-    $ctaWidth = 360;
+    if(!isset($processing))
+        $processing = false;
 
-if(!isset($ctaDisabled))
-    $ctaDisabled = false;
+    if(!isset($paginate))
+        $paginate = true;
 
-echo $this->StringsTable->datatableWithCta(
-    $model,			                    //Table ID
-    $title, 				            //Table title
-    $columnHeadings,           			//Column headings
-    $dataSrc,  					        //URI for pulling data
-    $pageLength, 			            //Page length
-    $ctaModal,                          //Is CTA a modal or a link
-    $ctaButtonText,   	            	//CTA button txt
-    $ctaSrc,                            //Modal src or link href
-    $ctaDisabled,                       //CTA disabled
-    $ctaTitle,					        //CTA title
-	$ctaWidth   						//CTA width - used for modal width
-);
+    if(!isset($ctaButtonText))
+        $ctaButtonText = "Create $model";
+
+    if(!isset($ctaTitle))
+        $ctaTitle = 'Create ' . ucfirst($model);
+
+    if(!isset($ctaSrc))
+        $ctaSrc = "/$modelPlural/create"; 
+
+    if(!isset($ctaWidth))
+        $ctaWidth = 360;
+
+    if(!isset($ctaDisabled))
+        $ctaDisabled = false;
+
+    echo $this->StringsTable->datatableWithCta(
+        $tableId,		                    //Table ID
+        $columnHeadings,           			//Column headings
+        $dataSrc,  					        //URI for pulling data
+        array(
+            'data-title' => $title,
+            'data-length' => $pageLength,
+            'data-empty-table' => $emptyTableMsg,
+            'data-search' => ($search ? 'true' : 'false'),
+            'data-processing' => ($processing ? 'true' : 'false'),
+            'data-paginate' => ($paginate ? 'true' : 'false')
+        ),
+        $ctaModal,                          //Is CTA a modal or a link
+        $ctaSrc,                            //Modal src or link href
+        $ctaButtonText,                     //CTA button txt
+        $ctaDisabled,                       //CTA disabled
+        $ctaTitle,					        //CTA title
+        $ctaWidth   						//CTA width - used for modal width
+    );
+

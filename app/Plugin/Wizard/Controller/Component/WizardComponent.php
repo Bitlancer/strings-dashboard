@@ -423,13 +423,15 @@ class WizardComponent extends Component {
  *
  * @access public
  */		
-	public function save($step = null, $data = null) {
+	public function save($step = null, $data = null, $prepare = false) {
 		if (is_null($step)) {
 			$step = $this->_currentStep;
+            if($prepare)
+                $step = '_' . $step;
 		}
 		if (is_null($data)) {
 			$data = $this->controller->data;
-		}		
+		}
 		$this->controller->Session->write("$this->_sessionKey.$step", $data);
 	}
 	

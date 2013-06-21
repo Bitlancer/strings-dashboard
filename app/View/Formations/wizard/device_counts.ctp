@@ -1,7 +1,7 @@
 <?php
 $this->extend('/Formations/wizard/_formation_wizard');
 
-$this->assign('stepNumber','2');
+$this->assign('stepNumber','3');
 $this->assign('stepTitle','Select Device Counts');
 ?>
 
@@ -11,18 +11,19 @@ $this->assign('stepTitle','Select Device Counts');
     padding-top:20px;
     border-top:1px solid #d6d6d6;
   }
-  div.blueprint:first-of-type {
-    margin-top:20px;
+  div.blueprint:nth-of-type(2){
     border-top:none;
   }
-  div.blueprint h2 {
+  div.blueprint .input {
+    width:100%;
+    margin-bottom:6px;
+  }
+  div.blueprint label {
     display:inline;
-    width:75%;
   }
   div.blueprint select {
-    display:block;
     float:right;
-    width:24%;
+    width:25%;
   }
   div.blueprint p {
     font-size: 13px;
@@ -35,21 +36,25 @@ $this->assign('stepTitle','Select Device Counts');
 <?php $this->end(); ?>
 
 <?php
-//Main content
-foreach($blueprintParts as $part){ 
+foreach($blueprintParts as $part){
   $id = $part['BlueprintPart']['id'];
   $name = $part['BlueprintPart']['name'];
   $descr = $part['BlueprintPart']['description'];
   $min = intval($part['BlueprintPart']['minimum']);
   $max = intval($part['BlueprintPart']['maximum']);
+
+  $countValues = array();
+  for($x=$min;$x<=$max;$x++)
+      $countValues[$x] = $x;
 ?>
 <div class="blueprint">
-  <h3><?php echo $name; ?></h3>
-  <select name="data[blueprintPartCounts][<?php echo $id; ?>]" required>
-    <?php for($x=$min;$x<=$max;$x++) {
-      echo "<option value=\"$x\">$x</option>";
-    } ?>
-  </select>
+  <?php
+  echo $this->Form->input("blueprintPartCounts.$id",array(
+    'label' => $name,
+    'error' => false,
+    'options' => $countValues 
+  ));
+  ?>
   <p><?php echo $descr; ?></p>
 </div>
 <?php } ?>

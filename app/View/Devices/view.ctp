@@ -2,13 +2,11 @@
 
 $this->extend('/Common/standard');
 
-$this->assign('title', 'Device - ' . $device['Device']['name']);
+$this->assign('title',$device['Device']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('activity_log',array(
-    'activityLogUri' => ''
-));
+echo $this->element('../Devices/_activity_log');
 $this->end();
 ?>
 
@@ -17,12 +15,11 @@ $this->end();
 <h2 class="float-left">Device Details</h2>
 <h2 class="float-right">
   <?php
-    /*
-    echo $this->element('../Device/_action_menu',array(
-      'deviceId' => $team['Team']['id'],
-      'actionsDisabled' => !$isAdmin
+    echo $this->element('../Formations/_devices_action_menu',array(
+        'deviceId' => $device['Device']['id'],
+        'formationId' => $device['Device']['formation_id'],
+        'actionsDisabled' => (!$isAdmin || $device['Device']['status'] !== 'active')
     ));
-    */
   ?>
 </h2>
 <hr class="clear" />
@@ -31,6 +28,7 @@ $this->end();
   echo $this->element('Tables/info',array(
     'info' => array(
       'Name' => $device['Device']['name'],
+      'Status' => $device['Device']['status'],
       'Role' => $device['Role']['name'],
       'Parent Formation' => $device['Formation']['name'],
       'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$device['Device']['created'])

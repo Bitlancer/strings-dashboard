@@ -6,9 +6,7 @@ $this->assign('title', 'Formations');
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('activity_log',array(
-    'activityLogUri' => ''
-));
+echo $this->element('../Formations/_activity_log');
 $this->end();
 
 //Main content

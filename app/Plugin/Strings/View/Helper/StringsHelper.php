@@ -48,7 +48,7 @@ class StringsHelper extends StringsAppHelper {
         return $src;
     }
 
-	public function link($text,$destination,$target="_parent",$disabled=false){
+	public function link($text,$destination,$disabled=false,$target='_parent'){
 
         if($disabled){
             $attributes = array(

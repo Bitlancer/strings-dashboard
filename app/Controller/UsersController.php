@@ -96,6 +96,9 @@ class UsersController extends AppController {
                 $validFields = array('name','password','first_name','last_name','email');
 				if($this->User->save($this->request->data,true,$validFields)){
 					$message = 'Created new user ' . $this->request->data['User']['name'] . '.';
+                    
+                    //Set posix attributes (uid,shell)
+                    $this->User->setDefaultPosixAttributes($this->User->id);
 				}
 				else {
 					$isError = true;

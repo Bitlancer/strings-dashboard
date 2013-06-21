@@ -6,9 +6,7 @@ $this->assign('title', 'User Management');
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('activity_log',array(
-    'activityLogUri' => ''
-));
+echo $this->element('../SudoRoles/_activity_log');
 $this->end();
 
 //Main content

@@ -14,33 +14,17 @@ class Formation extends AppModel {
 
 	public $hasMany = array(
 		'Device',
-		'TeamFormation',
-        'ApplicationFormation'
+		'TeamFormation' => array(
+            'dependent' => true
+        ),
+        'ApplicationFormation' => array(
+            'dependent' => true
+        )
 	);
 
 	public $hasAndBelongsToMany = array();
 
 	public $validate = array(
-        'organization_id' => array(
-            'requiredOnCreate' => array(
-                'rule' => 'notEmpty',
-                'on' => 'create',
-                'required' => true,
-                'message' => '%%f is required'
-            ),
-            'notEmpty' => array(
-                'rule' => 'notEmpty',
-                'message' => '%%f cannot be empty'
-            ),
-            'isNumeric' => array(
-                'rule' => 'numeric',
-                'message' => '%%f must be an integer'
-            ),
-			'validForeignKey' => array(
-				'rule' => array('isValidForeignKey'),
-				'message' => '%%f does not exist'
-			)
-        ),
         'name' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
@@ -60,6 +44,16 @@ class Formation extends AppModel {
 				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
 				'message' => 'This %%f is already taken'
 			)
+        ),
+        'status' => array(
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+            'validStatus' => array(
+                'rule' => array('inList',array('altering','active','deleting')),
+                'message' => '%%f is an invalid status'
+            )
         )
     );
 }

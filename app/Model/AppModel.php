@@ -1,13 +1,17 @@
 <?php
 
 App::uses('Model', 'Model');
+App::uses('CakeSession', 'Model/Datasource');
 
 class AppModel extends Model {
 
 	public $actsAs = array(
 		'Containable',
 		'Linkable',
-		'ExtendAssociations2'
+		'ExtendAssociations2',
+        'AuditLog.Auditable' => array(
+            'ignore' => array('created','updated')
+        )
 	); 
 
 	/**
@@ -60,7 +64,7 @@ class AppModel extends Model {
 			$message = "";
         	foreach($this->validationErrors as $field => $fieldErrorMessages){
 				array_walk_recursive($fieldErrorMessages,function(&$element,$index) use($field) {
-                    $field = Inflector::humanize($field);
+                    $field = strtolower(Inflector::humanize($field));
                     $element = str_replace('%%f',$field,$element);
 					$element = str_replace('%f',$field,$element);
 					$element = ucfirst($element);
@@ -71,8 +75,20 @@ class AppModel extends Model {
 		}
     }
 
+    /**
+     * Return the last SQL statement executed
+     */
     public function getSQLLog(){
 
         return $this->getDataSource()->getLog(false,false);
+    }
+
+    /**
+     * Get the current user
+     * Used by the AuditLog plugin
+     */
+    public function currentuser(){
+
+        return CakeSession::read('Auth.User');
     }
 }

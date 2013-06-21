@@ -20,26 +20,6 @@ class Implementation extends AppModel {
     public $hasAndBelongsToMany = array();
 
 	public $validate = array(
-        'organization_id' => array(
-            'requiredOnCreate' => array(
-                'rule' => 'notEmpty',
-                'on' => 'create',
-                'required' => true,
-                'message' => '%%f is required'
-            ),
-            'notEmpty' => array(
-                'rule' => 'notEmpty',
-                'message' => '%%f cannot be empty'
-            ),
-            'isNumeric' => array(
-                'rule' => 'numeric',
-                'message' => '%%f must be an integer'
-            ),
-			'validForeignKey' => array(
-				'rule' => array('isValidForeignKey'),
-				'message' => '%%f does not exist'
-			)
-        ),
 		'provider_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
@@ -120,13 +100,26 @@ class Implementation extends AppModel {
 			return false;
 	}
 
+    public function getDefaultImageId($implementationId){
+
+        $attr = $this->ImplementationAttribute->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'ImplementationAttribute.var' => 'default_image',
+                'ImplementationAttribute.implementation_id' => $implementationId
+            )
+        ));
+
+        if(empty($attr))
+            return false;
+
+        return $attr['ImplementationAttribute']['val'];
+    }
+
     public function getFlavorDescription($implementationId,$flavorId){
 
-        $flavorDescrsAttribute = $this->getOverridableAttribute($implementationId,'flavor_descriptions');
-        if($flavorDescrsAttribute !== false){
-
-            $flavorDescrs = $flavorDescrsAttribute['val'];
-            $flavorDescrs = json_decode($flavorDescrs,true);
+        $flavorDescrs = $this->getFlavors($implementationId);
+        if($flavorDescrs !== false){
 
             foreach($flavorDescrs as $flavor){
                 if($flavor['id'] == $flavorId)
@@ -137,6 +130,33 @@ class Implementation extends AppModel {
         return 'Unknown';
     }
 
+    public function getRegionName($implementationId,$regionId){
+
+        $regions = $this->getRegions($implementationId);
+        if($regions !== false){
+
+            foreach($regions as $region){
+                if($region['id'] == $regionId)
+                    return $region['name'];
+            }
+
+        }
+
+        return 'Unknown';
+    }
+
+    public function getFlavors($implementationId){
+
+        $flavorsAttribute = $this->getOverridableAttribute($implementationId,'flavors');
+        if($flavorsAttribute === false)
+            return false;
+
+        $flavors = $flavorsAttribute['val'];
+        $flavors = json_decode($flavors,true);
+
+        return $flavors;
+    }
+
     public function getRegions($implementationId){
 
         $regionsAttribute = $this->getOverridableAttribute($implementationId,'regions');
@@ -144,8 +164,8 @@ class Implementation extends AppModel {
             return false;
 
         $regions = $regionsAttribute['val'];
-
         $regions = json_decode($regions,true);
+
         return $regions;
     }
 
@@ -155,6 +175,7 @@ class Implementation extends AppModel {
      * pull an attribute from ImplementationAttribute. If it does
      * not exist it will pull in the default from ProviderAttribute.
      *
+     * @param int $implementationId The id of the implementation
      * @param string $attributeVar The name of the attribute
      * @return mixed[] The attribute val or false if not found
      */

@@ -1,6 +1,3 @@
-// jQuery
-@import 'jquery.ui.theme.css';
-
 // Defaults
 @import 'reset.scss';
 @import 'colors.scss';
@@ -27,3 +24,5 @@
 
 // Views
 @import 'views/account.scss';
+@import 'views/associations.scss';
+@import 'views/permissions.scss';

@@ -7,9 +7,11 @@
 	$applicationsControllers = array('applications');
 	$usersControllers = array('users','teams','sudoroles');
 ?>
+<!--
 <span id="dashboard" class="<?php if(in_array($controller,$dashboardControllers)) { echo 'active'; } ?>" >
   <a href="/">Dashboard</a>
 </span>
+-->
 <span id="devices" class="<?php if(in_array($controller,$devicesControllers)) { echo 'active'; } ?>">
   <a href="/devices">Devices</a>
 </span>

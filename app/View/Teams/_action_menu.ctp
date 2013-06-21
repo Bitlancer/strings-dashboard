@@ -18,11 +18,11 @@
     $actionMenu = $this->StringsActionMenu->create($title,$width,$align);
 
     if($teamEnabled){
-        $actionMenu .= $this->Strings->modalLink('Edit Team',"/Teams/edit/$teamId.json",$actionsDisabled);
-        $actionMenu .= $this->Strings->modalLink('Disable Team',"/Teams/disable/$teamId.json",$actionsDisabled);
+        $actionMenu .= $this->Strings->modalLink('Edit Team',"/Teams/edit/$teamId",$actionsDisabled);
+        $actionMenu .= $this->Strings->modalLink('Disable Team',"/Teams/disable/$teamId",$actionsDisabled);
     }
     else {
-        $actionMenu .= $this->Strings->modalLink('Re-enable Team',"/Teams/enable/$teamId.json",$actionsDisabled);
+        $actionMenu .= $this->Strings->modalLink('Re-enable Team',"/Teams/enable/$teamId",$actionsDisabled);
     }
 
     $actionMenu .= $this->StringsActionMenu->close();

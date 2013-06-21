@@ -1,27 +1,25 @@
 var strings = {
 
-  client : {
-    init : function() {
+  client: {
+    init: function() {
       if(!$('header').html().length) strings.client.include();
     },
-    loaded : function() {
+    loaded: function() {
       if($('body').hasClass('loading')) $('body').removeClass('loading');
-      strings.ui.tables();
+      strings.ui.tables.attach('table[data-type="datatable"]');
+      strings.associations.attach('.association');
       strings.events.forms();
       strings.events.clicks();
       strings.events.keypress();
       strings.ui.actionmenu();
+      strings.ui.recent_activites();
     },
-    include : function() {
-      $('body > header').load('assets/html/header.html');
-      $('body > nav').load('assets/html/nav.html', function(response, status, xhr){
-        console.log('Nav loaded via ajax')
-      });
+    include: function() {
     }
   },
   
-  ui : {
-    messages : function(type,title,message) {
+  ui: {
+    messages: function(type,title,message) {
       if(!title) title = type;
       if(!$('ul#messages').length) {
         var container = $('body > section > div');
@@ -30,7 +28,7 @@ var strings = {
       }
       $('body section ul#messages').prepend('<li class="'+type+'"><span>'+title+'</span>'+message+'<a class="close"></a></span>');
     },
-    actionmenu : function() {
+    actionmenu: function() {
       $('ul.action-menu').live('click',function(event) {
         event.stopPropagation();
         var offset = ($(this).outerWidth() - $(this).children('span').outerWidth()) * 0.5;
@@ -49,7 +47,7 @@ var strings = {
         $('ul.action-menu.active').removeClass('active');
       });
     },
-    modal : function(obj) {
+    modal: function(obj) {
       var modal;
       var loadFromServer = false;
       if(obj.attr('data-src')[0] == '#') {
@@ -74,14 +72,21 @@ var strings = {
           if($('body').hasClass('blur')) $('body').removeClass('blur');
           if($('.ui-dialog .autocomplete').length) $('.ui-dialog input.maininput').parents('.ui-dialog-content').css('overflow','auto');
           modal.find('.cta:not(".cancel,.primary")').unbind();
+          if(obj.hasClass('reload')) {
+            location.reload();
+          }
         }
       };
-      var loadCallback = function() { 
+      var loadCallback = function(rescanDom) {
+          rescanDom = typeof rescanDom !== 'undefined' ? rescanDom: true;
           $(this).dialog("option", "position", ['center', 'center'] );
-          strings.ui.tables();
-          strings.events.forms();
-          strings.events.keypress();
-          modal.find('.cta:not(".cancel,.primary")').bind('click', function() {
+          if(rescanDom){
+            strings.ui.tables.attach('.strings-modal table[data-type="datatable"]:not(.loaded)');
+            strings.associations.attach('.association');
+            strings.events.forms();
+            strings.events.keypress();
+          }
+          modal.find('.cta:not(.cancel,.primary)').bind('click', function() {
             modal.dialog('close');
           });
       };
@@ -90,45 +95,60 @@ var strings = {
       }
       else {
         modal.dialog(opt).dialog('open');
+        loadCallback(false);
       }
     },
-    tables : function() {
-      $('table[data-type="datatable"]').not('.example table').not('.loaded').each(function() {
-        $(this).dataTable({
-          "sPaginationType": "full_numbers",
-          "aLengthMenu": [[2, 10, 25, 50, 100, 200, -1], [2, 10, 25, 50, 100, 200, "All"]],
-          "iDisplayLength": parseInt($(this).attr('data-length')) || 10,
-          "oLanguage": { "sSearch": "","sEmptyTable":"No data available" },
-          "bAutoWidth": false,
-          "sDom": '<"top"f>rt<"bottom"p><"clear">',
-          "bServerSide": ($(this).attr("data-src") === undefined ? false : true),
-          "sAjaxSource": ($(this).attr("data-src") === undefined ? null : $(this).attr("data-src")),
-          "fnInitComplete": function(oSettings) {
-            var parent = $(this).parents('.dataTables_wrapper');
-            if($(this).attr('data-cta')) {
-              parent.find('.top').prepend($(this).attr('data-cta'))
+    tables: {
+      attach: function(filter) {
+        $(filter).each(function() {
+          $(this).dataTable({
+            "sPaginationType": "full_numbers",
+            "aLengthMenu": [[2, 10, 25, 50, 100, 200, -1], [2, 10, 25, 50, 100, 200, "All"]],
+            "iDisplayLength": parseInt($(this).attr('data-length')) || 10,
+            "oLanguage": {
+              "sSearch": "",
+              "sEmptyTable": $(this).attr("data-empty-table") === undefined ? "No data available": $(this).attr("data-empty-table"),
+              "sProcessing":"<img class='loading' src='/img/loading.gif' />"
+            },
+            "sDom": '<"top"f>rt<"bottom"p><"clear">',
+            "bAutoWidth": $(this).attr('data-auto-width') === undefined ? false: ($(this).attr('data-auto-width') == 'true'),
+            "bPaginate": $(this).attr('data-paginate') === undefined ? true: ($(this).attr('data-paginate') == 'true'),
+            "bFilter": $(this).attr('data-search') === undefined ? false: ($(this).attr('data-search') == 'true'),
+            "bProcessing": $(this).attr('data-processing') === undefined ? false: ($(this).attr('data-processing') == 'true'),
+            "bServerSide": ($(this).attr("data-src") === undefined || $(this).attr('data-src') == 'false' ? false: true),
+            "sAjaxSource": ($(this).attr("data-src") === undefined || $(this).attr("data-src") == 'false' ? null: $(this).attr("data-src")),
+            "fnInitComplete": function(oSettings) {
+              var parent = $(this).parents('.dataTables_wrapper');
+              if($(this).attr('data-cta')) {
+                parent.find('.top').prepend($(this).attr('data-cta'))
+              }
+              if($(this).attr('data-title')) { 
+                parent.find('.top').prepend('<h2>'+$(this).attr('data-title')+'</h2>');
+                if(!$(this).attr('data-cta')) parent.find('h2').css('display','inline');
+              }
+              if($(this).attr('data-search') === undefined || $(this).attr('data-search') == 'true'){ 
+                parent.find('.dataTables_filter input').attr('placeholder','Search');
+              }
+              var parent = $(this).parents('.dataTables_wrapper');
             }
-            if($(this).attr('data-title')) { 
-              parent.find('.top').prepend('<h2>'+$(this).attr('data-title')+'</h2>');
-              if(!$(this).attr('data-cta')) parent.find('h2').css('display','inline');
-            } 
-            if($(this).attr('data-search') === 'false') {
-              parent.find('.dataTables_filter input').remove();
-            }
-            else {
-              parent.find('.dataTables_filter input').attr('placeholder','Search');
-            }
-            var parent = $(this).parents('.dataTables_wrapper');
-          }
+          });
+          $(this).addClass('loaded');
         });
-        $(this).addClass('loaded');
-      });
-      //$('.dataTables_length').remove();
+      }
+    },
+
+    recent_activites: function() {
+      var refresh = function() {
+        $('.recent-activities .cta.refresh').click();
+      };
+      refresh();
+      setInterval(refresh,120000);
     }
+
   },
   
-  events : {
-    clicks : function() {
+  events: {
+    clicks: function() {
       // close message boxes
       $('ul#messages li a.close').live('click', function() { $(this).parent().remove() });
       // tooltips
@@ -136,116 +156,31 @@ var strings = {
       // modal windows
       $('.modal').live('click',function(){strings.ui.modal($(this))});
       // form ctas
-      $('form .cta.submit').live('click',function(){ $(this).closest('form').submit() });
-      //Assocation ctas
-      $('form.association .cta.add').live('click',function(e){
-        e.preventDefault();
-        var src = $(this);
-        var form = src.closest('form');
-        var input = form.find('input');
-        var name = input.val();
-        var notice = form.find("#notice");
-        notice.empty();
-        $.ajax({
-          type: "post",
-          url: form.attr('data-src-add'),
-          data: {
-            "name": name
-          },
-          success: function(data, textStatus){
-            if(!data.isError){
-              var tbody = form.find("table tbody");
-              $(tbody).find('td.blank').parent('tr').remove();
-              var element = "<tr><td>";
-              element += name;
-              element += "<a class='action remove' data-id='" + data.id + "'>Remove</a>";
-              element += "</td></tr>";
-              $(tbody).append(element);
-              input.val("");
-            }
-            else {
-              notice.append("<li class='error'>" + data.message + "</li>");
-            }
-          }
-        })
-        .error(function(jqXHR,textStatus){
-          console.log(textStatus);
-        }); 
-      });
-      $('form.association .action.remove').live('click',function(e){
-        e.preventDefault();
-        var src = $(this);
-        var form = src.closest('form');
-        var notice = form.find("#notice");
-        notice.empty();
-        $.ajax({
-          type: "post",
-          url: form.attr('data-src-remove'),
-          data: {
-            "id": src.attr('data-id')
-          },
-          success: function(data, textStatus){
-            var tbody = src.closest('tbody');
-            src.closest('tr').remove();
-            if(tbody.find('tr').length == 0){
-              tbody.append("<tr><td class='blank'>Add a member above</td></tr>");
-            }
-          }
-        })
-        .error(function(jqXHR,textStatus){
-          console.log(textStatus);
-        });
-      });
-      $("fieldset.association .cta.add").live('click', function(e){
-        e.preventDefault();
-        var src = $(this);
-        var fieldset = src.closest("fieldset");
-        var input = fieldset.find("input[type='text']");
-        var name = input.val();
-        var tbody = fieldset.find("tbody");
-        if(name.length > 0 && tbody.find("input[value='" + name + "']").length == 0){
-          $(tbody).find("td.blank").parent("tr").remove();
-          var element = "<tr><td>";
-          element += name;
-          element += "<input type='hidden' name='" + fieldset.attr('data-field-name') + "' value='" + name + "' />";
-          element += "<a class='action remove'>Remove</a>";
-          tbody.append(element);
-        }
-        input.val("");
-      });
-      $('fieldset.association .action.remove').live('click', function(e){
-        var src = $(this);
-        var tbody = src.closest('tbody');
-        src.closest('tr').remove();
-        if(tbody.find('tr').length == 0){
-          tbody.append("<tr><td class='blank'>Add a member above</td></tr>");
-        }
+      $('form .cta.submit:not(.disable-autosubmit)').live('click',function(){ $(this).closest('form').submit() });
+      $('.recent-activities .cta.refresh').live('click',function() {
+        var container = $(this).closest('.recent-activities');
+        container.find('ul').load(container.attr('data-src'));
       });
     },
-    keypress : function() {
-      $("fieldset.association input[type='text']").keypress(function(e){
-        if(e.which == 13){
-          $(this).closest("fieldset").find(".cta.add").click();
-        }
-      });
-      $("form.association input[type='text']").keypress(function(e){
-        if(e.which == 13){
-          $(this).closest("form").find(".cta.add").click();
-        }
-      });
-      $("input").closest('fieldset').not('.association').keypress(function (e) {
+    keypress: function() {
+      $("input:not(.disable-autosubmit)").keypress(function (e) {
         if (e.which == 13) {
           e.preventDefault();
           $(this).closest('form').submit();
         }
       });
     },
-    forms : function() {
-	  $('form.ajax').each(function() {
-		$(this).submit(function(e) {
+    forms: function() {
+      $('form.disabled').each(function(){
+        $(this).submit(function(e){
+          e.preventDefault();
+        });
+      });
+	  $('form.ajax').each(function(){
+		$(this).submit(function(e){
 		  e.preventDefault();
 		  $.ajax({
-		    type: (($(this).attr('method') === undefined || $(this).attr('method').toLowerCase() == 'post') ? 'post' : 'get'),
+		    type: (($(this).attr('method') === undefined || $(this).attr('method').toLowerCase() == 'post') ? 'post': 'get'),
 			url: $(this).attr('action'),
 			data: $(this).serialize(),
 			success: function(data, textStatus){
@@ -289,6 +224,7 @@ var strings = {
           source: $(this).attr('data-src')
         });
       });
+      // FCBK auto-complete
       $('.autocomplete-tag').not('.example > .autocomplete-tag').each(function() {
         var json = $(this).attr('data-src') || null;
         var placeholder = $(this).attr('data-placeholder') || 'Enter a tag...';
@@ -323,6 +259,105 @@ var strings = {
         $(this).fcbkcomplete(options);
       });
     }
+  },
+
+  notifications: {
+    unexpectedError: function(){
+      strings.notifications.alert('We encountered an unexpected error. Please refresh the page.');
+    },
+    alert: function(msg){
+      strings.notifications.notify(msg,'error',true);     
+    },
+    notify: function(msg,type,empty){
+      type = type === undefined ? 'error': type;
+      empty = empty === undefined ? true: empty;
+      if($('#notice').length == 0){
+        alert(type + ":" + msg);
+      }
+      else {
+        var notice = $('#notice');
+        notice.empty();
+        notice.append("<li class='" + type + "'>" + msg + "</li>");
+      }
+    },
+    empty: function(){
+      $('#notice').empty();
+    }
+  },
+
+  associations: {
+    attach: function(filter){
+      $(filter).each(function(){
+        var container = $(this);
+        $(this).find("input:text").keypress(function(e){
+          if(e.which == 13){
+            container.find(".cta.add").click();
+          }
+        });
+        $(this).find('.cta.add').live('click',function(e){
+          var table = container.find('table');
+          var dataTable = table.dataTable();
+          var input = container.find('input');
+          var name = input.val();
+          strings.notifications.empty();
+          input.blur();
+          $.ajax({
+            type: "post",
+            url: container.attr('data-src-add'),
+            data: {
+              "name": name
+            },
+            dataType: 'json',
+            success: function(data, textStatus){
+              if(!data.isError){
+                input.val("");
+                dataTable.fnReloadAjax();
+              }
+              else {
+                strings.notifications.alert(data.message);
+              }
+            }
+          })
+          .error(function(jqXHR,textStatus){
+            strings.notifications.unexpectedError();
+            console.log(textStatus);
+          });
+        });
+        $(this).find('.action.remove').live('click',function(e){
+          var table = container.find('table');
+          var dataTable = table.dataTable();
+          strings.notifications.empty();
+          $.ajax({
+            type: "post",
+            url: container.attr('data-src-remove'),
+            data: {
+              "id": $(this).attr('data-id')
+            },
+            success: function(data, textStatus){
+              dataTable.fnReloadAjax();
+            }
+          })
+          .error(function(jqXHR,textStatus){
+            strings.notifications.unexpectedError();
+            console.log(textStatus);
+          });
+        });
+      });
+    },
+    disable: function(filter){
+      $(filter).each(function(){
+        $(this).addClass('disabled');
+        $(this).find('.cta.add').addClass('disabled');
+        $(this).find('input:text').prop('disabled',true);
+      });
+    },
+    enable: function(filter){
+      $(filter).each(function(){
+        $(this).removeClass('disabled');
+        $(this).find('.cta.add').removeClass('disabled');
+        $(this).find('input:text').prop('disabled',false);
+      });
+    },
   }
   
 };

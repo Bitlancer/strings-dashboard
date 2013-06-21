@@ -1,7 +1,7 @@
 <?php
 $this->extend('/Formations/wizard/_formation_wizard');
 
-$this->assign('stepNumber','1');
+$this->assign('stepNumber','2');
 $this->assign('stepTitle','Select a Blueprint');
 
 //Styling
@@ -92,9 +92,8 @@ $('.select').live('click', function() {
 <?php //Main content ?>
 <input type="hidden" id="blueprint" name="data[Blueprint][id]" value="" />
 <?php
-    echo $this->element('Datatables/nocta',array(
-      'model' => 'blueprint',
-      'title' => '',
+    echo $this->element('Datatables/basic',array(
+      'tableId' => 'blueprint',
       'columnHeadings' => $blueprintTableColumns,
   ));
 ?>

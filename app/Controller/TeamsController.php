@@ -467,5 +467,28 @@ class TeamsController extends AppController {
 
         $this->Team->habtmDelete('User', $id, array($userId));
     }
+
+    public function searchByName(){
+
+        $this->autoRender = false;
+
+        $search = $this->request->query['term'];
+
+        $teams = $this->Team->find('all',array(
+            'fields' => array(
+                'Team.id','Team.name'
+            ),
+            'conditions' => array(
+                'Team.is_disabled' => 0,
+                'Team.name LIKE' => "%$search%",
+            )
+        ));
+
+        foreach($teams as $index => $team){
+            $teams[$index] = $team['Team']['name'];
+        }
+
+        echo json_encode($teams);
+    }
 }
 

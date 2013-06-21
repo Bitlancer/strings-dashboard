@@ -6,7 +6,7 @@
       <?php echo $this->Session->read('Auth.User.full_name'); ?>
     </li>
     <span>
-      <a class="modal" data-src="/users/mySettings.json" data-title="My Settings">Settings</a>
+      <a class="modal" data-src="/users/mySettings" data-title="My Settings">Settings</a>
       <a href="/logout">Sign Out</a>
     </span>
   </ul>

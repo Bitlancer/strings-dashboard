@@ -21,7 +21,7 @@ class AppController extends Controller {
 		'Auth' => array(
 			'authError' => 'Please login',
 			'authenticate' => array(
-				'Form' => array(
+				'Sha1' => array(
 					'fields' => array(
 						'username' => 'name',
 						'password' => 'password'
@@ -41,6 +41,7 @@ class AppController extends Controller {
 		'Strings.StringsTable',
 		'Strings.StringsActionMenu',
 		'DataTables.DataTables',
+        'Form',
 		'Time',
         'Gravatar'
 	);
@@ -55,4 +56,47 @@ class AppController extends Controller {
     	$this->Cookie->key = '>qfAHms1U1c{}0wC6SWZjur#!31TaB58LJQqathasGb$@11~_+!@#HKis~#^';
     	$this->Cookie->httpOnly = true;
 	}
+
+    /**
+     * Whether the current request is for json
+     */
+    public function isJsonRequest(){
+        return $this->request->ext == 'json';
+    }
+
+    /**
+     * Display a generic flash message
+     */
+    public function setFlash($message,$type='error'){
+        $this->Session->setFlash(__($message),'default',array(),$type);
+    }
+
+    /**
+     * Search for a list of entities with a matching name
+     * Used for autocomplete forms
+     */
+    public function searchByName(){
+
+        $this->autoRender = false;
+
+        $search = $this->request->query['term'];
+
+        $model = $this->modelClass;
+
+        $results = $this->$model->find('all',array(
+            'contain' => array(),
+            'fields' => array(
+                'id','name'
+            ),
+            'conditions' => array(
+                'name LIKE' => "%$search%",
+            )
+        ));
+
+        foreach($results as $index => $result){
+            $results[$index] = $result[$model]['name'];
+        }
+
+        echo json_encode($results);
+    }
 }

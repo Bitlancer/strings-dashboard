@@ -31,17 +31,17 @@ Router::parseExtensions('json');
  * Application specific routes
  */
 //Home
-Router::connect('/', array('controller' => 'dashboard', 'action' => 'index'));
+Router::connect('/', array('controller' => 'devices', 'action' => 'index'));
 
 //Login & logout
 Router::connect('/login', array('controller' => 'users', 'action' => 'login'));
 Router::connect('/logout', array('controller' => 'users', 'action' => 'logout'));
 
-//Users subsystem
-Router::connect('/users', array('controller' => 'users', 'action' => 'index'));
-
 //Sudo
 Router::connect('/sudo', array('controller' => 'sudoRoles', 'action' => 'index'));
+
+//Audit
+Router::connect('/audits/recent', array('controller' => 'audits', 'action' => 'recentActivities'));
 
 /**
  * Load all plugin routes.  See the CakePlugin documentation on

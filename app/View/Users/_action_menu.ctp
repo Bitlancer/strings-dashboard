@@ -18,12 +18,13 @@
     $actionMenu = $this->StringsActionMenu->create($title,$width,$align);
     
     if($userEnabled){
-        $actionMenu .= $this->Strings->modalLink('Edit User',"/Users/edit/$userId.json",$actionsDisabled);
-        $actionMenu .= $this->Strings->modalLink('Reset Password',"/Users/changePassword/$userId.json",$actionsDisabled);
-        $actionMenu .= $this->Strings->modalLink('Disable User',"/Users/disable/$userId.json",$actionsDisabled);
+        $actionMenu .= $this->Strings->modalLink('Edit User',"/Users/edit/$userId",$actionsDisabled);
+        $actionMenu .= $this->Strings->modalLink('SSH Keys',"/Users/sshKeys/$userId",true);
+        $actionMenu .= $this->Strings->modalLink('Reset Password',"/Users/changePassword/$userId",$actionsDisabled);
+        $actionMenu .= $this->Strings->modalLink('Disable User',"/Users/disable/$userId",$actionsDisabled);
     }
     else {
-        $actionMenu .= $this->Strings->modalLink('Re-enable User',"/Users/enable/$userId.json",$actionsDisabled);
+        $actionMenu .= $this->Strings->modalLink('Re-enable User',"/Users/enable/$userId",$actionsDisabled);
     }
     
     $actionMenu .= $this->StringsActionMenu->close();

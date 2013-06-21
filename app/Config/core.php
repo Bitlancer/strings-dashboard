@@ -74,7 +74,7 @@
  */
 	Configure::write('Exception', array(
 		'handler' => 'ErrorHandler::handleException',
-		'renderer' => 'ExceptionRenderer',
+		'renderer' => 'AppExceptionRenderer',
 		'log' => true
 	));
 
@@ -185,7 +185,8 @@
  *
  */
 	Configure::write('Session', array(
-		'defaults' => 'php'
+		'defaults' => 'php',
+        'timeout' => '60',
 	));
 
 /**

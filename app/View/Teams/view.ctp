@@ -2,13 +2,11 @@
 
 $this->extend('/Common/standard');
 
-$this->assign('title', 'Team - ' . $team['Team']['name']);
+$this->assign('title',$team['Team']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('activity_log',array(
-    'activityLogUri' => ''
-));
+echo $this->element('../Teams/_activity_log';
 $this->end();
 ?>
 

@@ -3,10 +3,6 @@
 class ApplicationsController extends AppController
 {
 
-    public function test(){
-
-    }
-
 	/**
      * Home screen containing list of applications and create application CTA
      */
@@ -76,23 +72,24 @@ class ApplicationsController extends AppController
 
         $formations = array();
         foreach($app['ApplicationFormation'] as $appForm){
-            $formations[] = array($appForm['Formation']['name']);
+            $formations[] = array('Formation' => $appForm['Formation']);
         }
 
         $permissions = array();
         foreach($app['TeamApplication'] as $teamApp){
             $sudoRoles = array();
+            $team = array('Team' => $teamApp['Team']);
             foreach($teamApp['TeamApplicationSudo'] as $teamAppSudo){
-                $sudoRoles[] = $teamAppSudo['SudoRole']['name'];
+                $sudoRoles[] = array('SudoRole' => $teamAppSudo['SudoRole']);
             }
-            $permissions[] = array($teamApp['Team']['name'],implode(', ',$sudoRoles));
+            $permissions[] = array_merge($team,array('SudoRole' => $sudoRoles));
         }
 
         $this->set(array(
+            'isAdmin' => $this->Auth->User('is_admin'),
             'application' => $app,
             'formations' => $formations,
             'permissions' => $permissions,
-            'isAdmin' => $this->Auth->User('is_admin')
         ));
     }
 
@@ -219,22 +216,48 @@ class ApplicationsController extends AppController
 
 	public function editFormations($id=null){
 
-		$members = $this->Application->Formation->find('all',array(
-            'link' => array(
-                'Application'
-            ),
-            'fields' => array(
-                'Formation.id','Formation.name'
-            ),
+        $application = $this->Application->find('first',array(
+            'contain' => array(),
             'conditions' => array(
-                'Application.id' => $id,
+                'Application.id' => $id
             )
         ));
 
-		$this->set(array(
-			'id' => $id,
-			'members' => $members
-		));
+        if(empty($application)){
+            $this->setFlash('Application does not exist');
+            $this->redirect(array('action' => 'index'));
+        }
+
+        $formationTableColumns = array(
+            'Name' => array(
+                'model' => 'Formation',
+                'column' => 'name'
+            )
+        );
+
+        if($this->isJsonRequest()){
+
+            $findParameters = array(
+                'contain' => array(
+                    'Formation'
+                ),
+                'conditions' => array(
+                    'ApplicationFormation.application_id' => $id
+                )
+            );
+
+            $dataTable = $this->DataTables->getDataTable($formationTableColumns,$findParameters,$this->Application->ApplicationFormation);
+
+            $this->set(array(
+                'dataTable' => $dataTable,
+                'isAdmin' => $this->Auth->User('is_admin')
+            ));
+        }
+        else {
+            $this->set(array(
+                'application' => $application
+            ));
+        }
 	}
 
 	public function addFormation($id=null){
@@ -270,25 +293,25 @@ class ApplicationsController extends AppController
 			$formationId = $formation['Formation']['id'];
 
 			//Check if this formation is already a member of this application
-			$count = $this->Application->Formation->find('count',array(
-				'link' => array(
-					'Application'
-				),
+			$count = $this->Application->ApplicationFormation->find('count',array(
 				'conditions' => array(
-					'Application.id' => $id,
-					'Formation.id' => $formationId
+					'ApplicationFormation.application_id' => $id,
+					'ApplicationFormation.formation_id' => $formationId
 				)
 			));
-			if($count){
-				$isError = true;
-				$message = 'This formation is already a member of this application';	
-			}
-			else {
-				if(!$this->Application->habtmAdd('Formation', $id, array($formationId)))
+			if(!$count){
+                $appFormation = array(
+                    'ApplicationFormation' => array(
+                        'application_id' => $id,
+                        'formation_id' => $formationId
+                    )
+                );
+				if($this->Application->ApplicationFormation->save($appFormation))
 					$memberId = $formationId;
 				else {
 					$isError = true;
 					$message = 'Unable to add this formation to this application';
+                    $message = $this->Application->ApplicationFormation->validationErrorsAsString();
 				}
 			}
 		}
@@ -300,7 +323,7 @@ class ApplicationsController extends AppController
 		));
 	}
 
-	public function removeFormation($id=null){
+	public function removeFormation($applicationId=null){
 
 		$this->autoRender = false;
 
@@ -310,83 +333,319 @@ class ApplicationsController extends AppController
         else
             $formationId = $this->request->query['id'];	
 
-		$this->Application->habtmDelete('Formation', $id, array($formationId));
+		$this->Application->ApplicationFormation->deleteAll(
+            array(
+                'ApplicationFormation.application_id' => $applicationId,
+                'ApplicationFormation.formation_id' => $formationId
+            )
+        );
 	}
 
 	public function editPermissions($id=null){
 
-       $this->loadModel('SudoRole');
+        $this->loadModel('Team');
 
-        /*
-       $teamsSudoRoles = $this->Application->find('all',array(
-            'contain' => array(
-                'TeamApplication' => array(
-                    'Team',
-                    'TeamApplicationSudo' => array(
-                        'SudoRole'
-                    )
-                )
-            ),
+        $application = $this->Application->find('first',array(
             'conditions' => array(
                 'Application.id' => $id
             )
         ));
 
-        $teamsSudoRoles = $this->Application->TeamApplication->find('all',array(
-            'link' => array(
-                'Team'
+        if(empty($application)){
+            $this->setFlash('Application does not exist.');
+            $this->redirect(array('action' => 'index'));
+        }
+
+        $teams = $this->Team->find('all',array(
+            'contain' => array(),
+            'conditions' => array(
+                'Team.is_disabled' => 0,
             ),
-            'fields' => array(
-                'Team.id','Team.name'
+        ));
+
+        //Get first teams associations
+        $firstTeam = $teams[0];
+        $firstTeamApp = $this->Application->TeamApplication->find('first',array(
+            'contain' => array(
+                'TeamApplicationSudo'
             ),
             'conditions' => array(
                 'TeamApplication.application_id' => $id,
-                'Team.is_disabled' => 0 
+                'TeamApplication.team_id' => $firstTeam['Team']['id']
+            )
+        ));
+        $firstTeam = array_merge($firstTeam,$firstTeamApp);
+
+        $this->set(array(
+            'application' => $application,
+            'teams' => $teams,
+            'firstTeam' => $firstTeam
+        ));
+        
+	}
+
+    public function editTeamPermissions($applicationId=null,$teamId=null){
+
+        $this->loadModel('TeamApplicationSudo');
+
+        $this->autoRender = false;
+
+        $isError = false;
+        $message = "";
+
+        $grantLogin = false;
+        $grantSudo = false;
+
+        $teamApp = $this->Application->TeamApplication->find('first',array(
+            'contain' => array(
+                'TeamApplicationSudo'
+            ),
+            'conditions' => array(
+                'TeamApplication.application_id' => $applicationId,
+                'TeamApplication.team_id' => $teamId
             )
         ));
 
-        */
+        if($this->request->is('post')){
 
-        $teamTableColumns = array(
+            $grantLogin = $this->request->data['grantLogin'] == 'true';
+            $grantSudo = $this->request->data['grantSudo'] == 'true';
+            if(!$grantLogin)
+                $grantSudo = false;
+
+            if($grantLogin){
+
+                //Create application team associations
+                if(empty($teamApp)){
+
+                    $newTeamApp = array(
+                        'TeamApplication' => array(
+                            'application_id' => $applicationId,
+                            'team_id' => $teamId
+                        )
+                    );
+                    if(!$this->Application->TeamApplication->save($newTeamApp)){
+                        $isError = true;
+                        $message = "We encountered an error while granting this team login permissions.";
+                        $message = $this->Application->TeamApplication->validationErrorsAsString();
+                    }
+                }
+
+                //Destroy application team sudo associations
+                if(!empty($teamApp) && !$grantSudo){
+                    $result = $this->TeamApplicationSudo->deleteAll(
+                        array(
+                            'TeamApplicationSudo.team_application_id' => $teamApp['TeamApplication']['id']
+                        )
+                    );
+                    if(!$result){
+                        $isError = true;
+                        $message = "We encountered an error while removing this team's privileges.";
+                    }
+                }
+            }
+            else {
+                //Delete all assoications
+                if(!empty($teamApp)){
+                    if(!$this->Application->TeamApplication->delete($teamApp['TeamApplication']['id'])){
+                        $isError = true;
+                        $message = "We encountered an error while removing this team's privileges.";
+                    }
+                }
+            }
+
+            //If error encountered reset flags to original values
+            if($isError){
+                $grantLogin = !$grantLogin;
+                $grantSudo = !$grantSudo;
+            }
+        }
+        else {
+            if(!empty($teamApp)){
+                $grantLogin = true;
+                if(count($teamApp['TeamApplicationSudo']))
+                    $grantSudo = true;
+            }
+        }
+
+        echo json_encode(array(
+            'isError' => $isError,
+            'message' => __($message),
+            'grantLogin' => (bool) $grantLogin,
+            'grantSudo' => (bool) $grantSudo
+        ));
+    }
+
+    public function teamSudoRoles($modelId=null,$teamId=null){
+
+        $associationModel = 'TeamApplication';
+
+        $model = $this->modelClass;
+        $sudoAssociationModel = "{$associationModel}Sudo";
+        $sudoAssociationFK = $this->$model->$associationModel->hasMany[$sudoAssociationModel]['foreignKey'];
+
+        $this->loadModel($sudoAssociationModel);
+
+        $teamAssoc = $this->$model->$associationModel->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                "$associationModel.application_id" => $modelId,
+                "$associationModel.team_id" => $teamId,
+            ),
+        ));
+
+        $teamAssocId = empty($teamAssoc) ? 0 : $teamAssoc[$associationModel]['id'];
+
+        $teamAssocSudoTableColumns = array(
             'Name' => array(
-                'model' => 'Team',
+                'model' => 'SudoRole',
                 'column' => 'name'
             )
         );
 
-        if($this->request->isAjax()){
+        $findParameters = array(
+            'contain' => array(
+                'SudoRole'
+            ),
+            'conditions' => array(
+                "$sudoAssociationModel.$sudoAssociationFK" => $teamAssocId
+            )
+        );
 
-            //Datatables
-            $findParameters = array(
-                'link' => array(
-                    'Team'
-                ),
-                'fields' => array(
-                    'Team.id','Team.name'
-                ),
-                'conditions' => array(
-                    'TeamApplication.application_id' => $id,
-                    'Team.is_disabled' => 0
+        $dataTable = $this->DataTables->getDataTable($teamAssocSudoTableColumns,$findParameters,$this->$sudoAssociationModel);
+
+        $this->set(array(
+            'dataTable' => $dataTable,
+            'isAdmin' => $this->Auth->User('is_admin')
+        ));
+    }
+
+    public function addSudoRoleToTeam($modelId=null,$teamId=null){
+
+        $this->autoRender = false;
+
+        $model = $this->modelClass;
+        $associationModel = 'TeamApplication';
+        $sudoAssociationModel = 'TeamApplicationSudo';
+
+        $this->loadModel('SudoRole');
+        $this->loadModel($sudoAssociationModel);
+
+        //Get association model foreign key
+        $associationModelFK = 'application_id';
+        $sudoAssociationModelFK = 'team_application_id';
+
+        $isError = false;
+        $message = "";
+        $newSudoAssocId = 0;
+
+        //Get the association model id
+        $teamAssoc = $this->$model->$associationModel->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                "$associationModel.$associationModelFK" => $modelId,
+                "$associationModel.team_id" => $teamId
+            )
+        ));
+
+        if(empty($teamAssoc)){
+            $isError = true;
+            $message = "This team is not associated with this $model.";
+        }
+        else {
+
+            //Get sudo role by name
+            $sudoRole = $this->SudoRole->findByName($this->request->data['name']);
+            if(empty($sudoRole)){
+                $isError = true;
+                $message = "This sudo role does not exist.";
+            }
+            else {
+
+                $sudoRoleId = $sudoRole['SudoRole']['id'];
+
+                //Check if this sudo role is already associated with this team
+                $existingAssoc = $this->$sudoAssociationModel->findBySudoId($sudoRoleId);
+                if(empty($existingAssoc)){
+
+                    $teamAssocSudo = array(
+                        "$sudoAssociationModel" => array(
+                            "$sudoAssociationModelFK" => $teamAssoc[$associationModel]['id'],
+                            'sudo_id' => $sudoRole['SudoRole']['id']
+                    ));
+                            
+                    if($this->$sudoAssociationModel->save($teamAssocSudo)){
+                        $newSudoAssocId = $this->$sudoAssociationModel->id;
+                    }
+                    else {
+                        $isError = true;
+                        $message = "Failed to associate this sudo role with this team.";
+                    }
+                }
+            }
+        }
+
+        echo json_encode(array(
+            'isError' => $isError,
+            'message' => __($message)
+        ));
+    }
+
+    public function removeSudoRoleFromTeam($modelId=null,$teamId=null){
+
+        $this->autoRender = false;
+
+        $model = $this->modelClass;
+        $associationModel = 'TeamApplication';
+        $sudoAssociationModel = 'TeamApplicationSudo';
+
+        $this->loadModel('SudoRole');
+        $this->loadModel($sudoAssociationModel);
+
+        //Get association model foreign key
+        $associationModelFK = 'application_id';
+        $sudoAssociationModelFK = 'team_application_id';
+
+        $isError = false;
+        $message = "";
+
+        //Get the association model id
+        $teamAssoc = $this->$model->$associationModel->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                "$associationModel.$associationModelFK" => $modelId,
+                "$associationModel.team_id" => $teamId
+            )
+        ));
+
+        if(empty($teamAssoc)){
+            $isError = true;
+            $message = "This team is not associated with this $model.";
+        }
+        else {
+            $result = $this->$sudoAssociationModel->deleteAll(
+                array(
+                    "sudo_id" => $this->request->data['id']
                 )
             );
 
-            $dataTable = $this->DataTables->getDataTable($teamTableColumns,$findParameters,$this->Application->TeamApplication);
-
-            $this->set(array(
-                'dataTable' => $dataTable,
-                'isAdmin' => $this->Auth->User('is_admin')
-            ));
-        }
-        else {
-            $this->set(array(
-                'teamTableColumns' => array_keys($teamTableColumns),
-            ));
+            if(!$result){
+                $isError = true;
+                $message = "Failed to remove the association between this sudo role and this team.";
+            }
         }
 
-	}
-
-    public function editTeamPermissions($appId=null,$teamId=null){
-        
+        echo json_encode(array(
+            'isError' => $isError,
+            'message' => __($message)
+        )); 
     }
 
+    public function deploy($id=null){
+
+    }
+
+    public function dns($id=null){
+
+    }
 }

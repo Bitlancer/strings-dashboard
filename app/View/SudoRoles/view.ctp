@@ -2,13 +2,11 @@
 
 $this->extend('/Common/standard');
 
-$this->assign('title', 'Sudo Role - ' . $sudoRole['SudoRole']['name']);
+$this->assign('title',$sudoRole['SudoRole']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('activity_log',array(
-    'activityLogUri' => ''
-));
+echo $this->element('../SudoRoles/_activity_log');
 $this->end();
 ?>
 

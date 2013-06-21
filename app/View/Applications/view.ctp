@@ -2,13 +2,11 @@
 
 $this->extend('/Common/standard');
 
-$this->assign('title', 'Application - ' . $application['Application']['name']);
+$this->assign('title',$application['Application']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('activity_log',array(
-    'activityLogUri' => ''
-));
+echo $this->element('../Applications/_activity_log');
 $this->end();
 ?>
 
@@ -19,7 +17,8 @@ $this->end();
   <?php
     echo $this->element('../Applications/_action_menu',array(
       'applicationId' => $application['Application']['id'],
-      'actionsDisabled' => !$isAdmin
+      'actionsDisabled' => !$isAdmin,
+      'reload' => true
     ));
   ?>
 </h2>
@@ -39,19 +38,43 @@ $this->end();
 <section>
 <h2>Formations</h2>
   <?php
+    $formationsTableData = array();
+    foreach($formations as $formation){
+        $name = $formation['Formation']['name'];
+        $id = $formation['Formation']['id'];
+        $formationsTableData[] = array(
+            $this->Strings->link($name,'/Formations/view/' . $id)
+        );
+    }
     echo $this->element('Tables/default',array(
       'columnHeadings' => array('Formation'),
-      'data' => $formations
+      'data' => $formationsTableData
     ));
   ?>
 </section>
 
 <section>
-<h2>Permissions</h2>
+<h2>User Privileges</h2>
   <?php
+  $permissionsTableData = array();
+  foreach($permissions as $permission){
+
+    $sudoRoles = array();
+    foreach($permission['SudoRole'] as $sudoRole){
+      $name = $sudoRole['SudoRole']['name'];
+      $id = $sudoRole['SudoRole']['id'];
+      $sudoRoles[] = $this->Strings->link($name,'/SudoRoles/view/' . $id);
+    }
+
+    $name = $permission['Team']['name'];
+    $id = $permission['Team']['id'];
+    $team = $this->Strings->link($name,'/Teams/view/' . $id);
+
+    $permissionsTableData[] = array($team,implode(',',$sudoRoles));
+  }
   echo $this->element('Tables/default',array(
     'columnHeadings' => array('Teams','Sudo Roles'),
-    'data' => $permissions
+    'data' => $permissionsTableData
   ));
 ?>
 </section>

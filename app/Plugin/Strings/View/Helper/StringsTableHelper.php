@@ -40,7 +40,7 @@ class StringsTableHelper extends StringsAppHelper {
      * @param string $ctaSrc Call-to-action data-src attribute value
      * @return string HTML table
      */
-    public function datatableWithCta($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaModal,$ctaTxt,$ctaSrc,$ctaDisabled,$ctaTitle,$ctaWidth){
+    public function datatableWithCta($tableElementID,$tableColumns,$tableData,$dataTableOptions,$ctaModal,$ctaSrc,$ctaText,$ctaDisabled,$ctaTitle='Create',$ctaWidth='360'){
 
         //Default CTA classes
         $ctaClasses = array(
@@ -72,9 +72,10 @@ class StringsTableHelper extends StringsAppHelper {
                 'class' => $ctaClasses
             );
         }
-        $ctaElement = "<a " . self::buildElementAttributes($ctaAttributes,"'") . ">$ctaTxt</a>"; 
+        $ctaElement = "<a " . self::buildElementAttributes($ctaAttributes,"'") . ">$ctaText</a>"; 
+        $dataTableOptions['data-cta'] = $ctaElement;
 
-        return $this->datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaElement);
+        return $this->datatable($tableElementID,$tableColumns,$tableData,$dataTableOptions);
     }
 
 	/**
@@ -87,7 +88,7 @@ class StringsTableHelper extends StringsAppHelper {
      * @param string $ctaElement Call-to-action a element
      * @return string HTML table
      */
-    public function datatable($tableElementID,$tableTitle,$tableColumns,$tableData,$tableDataLength,$ctaElement=false,$search=true){
+    public function datatable($tableElementID,$tableColumns,$tableData,$dataTableOptions){
 
         //Determine data source
         $loadDataViaAjax = false;
@@ -104,16 +105,16 @@ class StringsTableHelper extends StringsAppHelper {
         $tableAttributes = array(
             'data-type' => 'datatable',
             'id' => $tableElementID,
-            'data-title' => $tableTitle,
             'data-src' => $tableDataSrc,
-            'data-length' => $tableDataLength,
+            'data-length' => 15,
+            'data-empty-table' => 'No data available',
+            'data-processing' => 'false',
+            'data-title' => 'false',
+            'data-search' => 'false',
+            'data-processing' => 'false',
         );
 
-        if($ctaElement !== false)
-            $tableAttributes['data-cta'] = $ctaElement;
-
-        if($search === false)
-            $tableAttributes['data-search'] = "false";
+        $tableAttributes = array_merge($tableAttributes,$dataTableOptions);
 
         if($loadDataViaAjax){
             $src = "<table " . self::buildElementAttributes($tableAttributes,"\"") . ">";
@@ -123,7 +124,10 @@ class StringsTableHelper extends StringsAppHelper {
             }
             $src .= "</tr></thead>";
             $src .= "<tbody>";
-            $src .= "<tr><td colspan=\"100\" class=\"blank\"><img src=\"/img/loading.gif\" /></td></tr>";
+            $src .= "<tr><td colspan=\"100\" class=\"blank\">";
+            if($tableAttributes['data-processing'] != 'true')
+                $src .= "<img class=\"loading\" src=\"/img/loading.gif\" />";
+            $src .= "</td></tr>";
             $src .= "</tbody>";
             $src .= "</table>";
             return $src;
