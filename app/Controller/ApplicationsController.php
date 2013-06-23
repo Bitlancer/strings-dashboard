@@ -3,6 +3,23 @@
 class ApplicationsController extends AppController
 {
 
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
+        
+        if(parent::isAuthorized($user))
+            return true;
+
+        switch($this->action){
+            case 'index':
+            case 'view':
+                return true;
+        }
+
+        return false;
+    }
+
 	/**
      * Home screen containing list of applications and create application CTA
      */
@@ -34,6 +51,7 @@ class ApplicationsController extends AppController
         else {
             $this->set(array(
                 'applicationTableColumns' => array_keys($applicationTableColumns),
+                'createCTADisabled' => !$this->Auth->User('is_admin'),
             ));
         }
     }

@@ -271,13 +271,13 @@ var strings = {
     notify: function(msg,type,empty){
       type = type === undefined ? 'error': type;
       empty = empty === undefined ? true: empty;
-      if($('#notice').length == 0){
-        alert(type + ":" + msg);
+      if($('#notice').length > 0 || $('#messages').length > 0) {
+        var notifContainer = $('#notice').length > 0 ? $('#notice') : $('#messages');
+        notifContainer.empty();
+        notifContainer.append("<li class='" + type + "'>" + msg + "</li>");
       }
       else {
-        var notice = $('#notice');
-        notice.empty();
-        notice.append("<li class='" + type + "'>" + msg + "</li>");
+        alert(type + ":" + msg);
       }
     },
     empty: function(){

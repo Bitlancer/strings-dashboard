@@ -5,6 +5,7 @@
 
         $actionMenu = $view->element('../Applications/_action_menu',array(
             'applicationId' => $rawRow['Application']['id'],
+            'actionsDisabled' => !$isAdmin
         ));
 
 		//Info link on name column

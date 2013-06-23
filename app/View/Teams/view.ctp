@@ -6,7 +6,7 @@ $this->assign('title',$team['Team']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('../Teams/_activity_log';
+echo $this->element('../Teams/_activity_log');
 $this->end();
 ?>
 

@@ -10,13 +10,14 @@ $this->end();
 ?>
 
 <!-- Main content -->
-<section id="user-keys">
+<section id="user-keys" class="association" data-src-remove="/Users/removeSshKey/<?php echo $user['User']['id']; ?>" >
 <?php
   echo $this->element('Datatables/default',array(
     'model' => 'UserKey',
     'title' => 'SSH Keys',
     'tableId' => 'keys',
     'columnHeadings' => $tableColumns,
+    'processing' => true,
     'ctaModal' => true,
     'ctaSrc' => '/Users/addSshKey/' . $user['User']['id'],
     'ctaButtonText' => 'Add Key',

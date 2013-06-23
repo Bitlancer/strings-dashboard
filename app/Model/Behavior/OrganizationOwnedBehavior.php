@@ -52,6 +52,31 @@ class OrganizationOwnedBehavior extends ModelBehavior
 		return $query;
 	}
 
+    public function beforeDelete(Model $model,$cascade=true){
+
+        $organizationId = $this->getOrganizationId();
+        if(empty($organizationId)){
+            $model->invalidate('organization_id','Unable to determine organization id');
+            return false;
+        }
+
+        $object = $model->find('first',array(
+            'recursive' => -1,
+            'conditions' => array(
+                'id' => $model->id,
+                'organization_id' => $organizationId
+            )
+        ));
+
+        if(empty($object)){
+            $model->invalidate('organization_id','Record does not exist.');
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
     public function beforeSave(Model $model){
 
         $organizationId = $this->getOrganizationId();

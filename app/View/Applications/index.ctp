@@ -14,5 +14,5 @@ echo $this->element('Datatables/default',array(
     'tableId' => 'applications',
     'model' => 'application',
     'columnHeadings' => $applicationTableColumns,
-    'ctaEnabled' => true
+    'ctaDisabled' => $createCTADisabled
 ));

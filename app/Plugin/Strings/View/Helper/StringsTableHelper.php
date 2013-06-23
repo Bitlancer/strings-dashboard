@@ -70,7 +70,7 @@ class StringsTableHelper extends StringsAppHelper {
             $ctaAttributes = array(
                 'class' => $ctaClasses
             );
-            if($ctaSrc !== false)
+            if($ctaSrc !== false && !$ctaDisabled)
                 $ctaAttributes['href'] = $ctaSrc;
 
         }

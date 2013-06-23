@@ -28,7 +28,8 @@ class AppController extends Controller {
 					)
 				)
 			),
-			'authorize' => array('Controller')
+			'authorize' => array('Controller'),
+            'unauthorizedRedirect' => false,
 		),
 		'RequestHandler',
 		'DataTables.DataTables',
@@ -46,8 +47,15 @@ class AppController extends Controller {
         'Gravatar'
 	);
 
-	public function isAuthorized(){
-		return true;
+    /**
+     * Default authorization logic - child controllers must override
+     */
+	public function isAuthorized($user){
+
+        if($user['is_admin'])
+            return true;
+
+        return false;
 	}
 
 	public function beforeFilter(){

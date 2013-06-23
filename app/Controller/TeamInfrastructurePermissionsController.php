@@ -4,7 +4,22 @@ class TeamInfrastructurePermissionsController extends AppController {
 
     public $uses = array();
 
+    /*
+     * The models specified below are the only which a user may edit
+     * edit infrastructure permissions for
+     */
     protected $validModels = array('Application','Formation','Role','Device');
+
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
+
+        if(parent::isAuthorized($user))
+            return true;
+
+        return false;
+    }
 
     public function edit($model=null,$id=null){
 

@@ -18,5 +18,5 @@ echo $this->element('Datatables/default',array(
 	'ctaButtonText' => 'Create sudo role',
 	'ctaSrc' => '/sudoRoles/create.json',
 	'ctaWidth' => '500',
-    'ctaEnabled' => true
+    'ctaDisabled' => $createCTADisabled
 ));

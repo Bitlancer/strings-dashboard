@@ -13,5 +13,5 @@ $this->end();
 echo $this->element('Datatables/default',array(
 	'model' => 'team',
 	'columnHeadings' => $teamTableColumns,
-	'ctaEnabled' => $teamTableCTAEnabled
+    'ctaDisabled' => $createCTADisabled
 ));

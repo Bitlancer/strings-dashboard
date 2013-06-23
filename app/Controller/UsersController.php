@@ -16,6 +16,31 @@ class UsersController extends AppController {
         ));
     }
 
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
+
+        if(parent::isAuthorized($user))
+            return true;
+
+        switch($this->action){
+            case 'index':
+            case 'view':
+            case 'logout':
+                return true;
+            case 'changePassword':
+            case 'sshKeys':
+            case 'addSshKey':
+            case 'removeSshKey':
+                $userId = $this->request->pass[0];
+                if($userId == $user['id'])
+                    return true;
+        }
+
+        return false;
+    }
+
 	/**
 	 * Home screen containing list of users and create user CTA
 	 */
@@ -48,7 +73,7 @@ class UsersController extends AppController {
         else{
             $this->set(array(
             	'userTableColumns' => array_keys($userTableColumns),
-                'userTableCTAEnabled' => ($this->Auth->User('can_create_user') || $this->Auth->User('is_admin'))
+                'createCTADisabled' => !$this->Auth->User('can_create_user') || !$this->Auth->User('is_admin'),
             ));
         }
 	}
@@ -168,64 +193,6 @@ class UsersController extends AppController {
 				'user' => $user
 			));
 		}
-	}
-
-	/**
-	 * Allow a user to edit his or her own settings
-	 */
-	public function mySettings(){
-
-		$id = $this->Auth->user('id');
-
-		$user = $this->User->find('first',array(
-            'conditions' => array(
-                'User.id' => $id
-            )
-        ));	
-
-		if($this->request->is('post')){
-
-			$this->autoRender = false;
-
-			$isError = false;
-			$message = "";
-
-			//Verify passwords match
-            if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
-				$isError = true;
-                $message = 'Passwords do not match.';
-            }
-            else {
-
-                unset($this->request->data['User']['confirm_password']);
-
-				//Save user
-            	$validFields = array('password','first_name','last_name','email');
-            	$this->User->id = $id;
-            	if(!$this->User->save($this->request->data,true,$validFields)){
-					$isError = true;
-                	$message = $this->User->validationErrorsAsString();
-            	}
-			}
-
-			if($isError){
-                $response = array(
-                    'isError' => $isError,
-                    'message' => __($message)
-                );
-            }
-            else {
-                $response = array(
-                    'redirectUri' => $this->referer(array('action' => 'index'))
-                );
-            }
-            echo json_encode($response);
-        }
-		else {
-			$this->set(array(
-            	'user' => $user
-        	));
-		}	
 	}
 
 	public function changePassword($id=null){
@@ -441,6 +408,58 @@ class UsersController extends AppController {
             }
             echo json_encode($response); 
         }
+    }
+
+    public function removeSshKey($userId=null){
+
+        $this->autoRender = false;
+        
+        $isError = false;
+        $message = "";
+
+        $user = $this->User->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'User.id' => $userId
+            )
+        ));
+
+        if(empty($user))
+            throw NotFoundException('User does not exist.');
+
+        $this->redirectIfDisabled($user);
+
+        if($this->request->is('post')){
+
+            if(!isset($this->request->data['id']) || empty($this->request->data['id'])){
+                $isError = true;
+                $message = 'A ssh key id was not specified.';
+            }
+            else {
+                $keyId = $this->request->data['id'];
+
+                $result = $this->User->UserKey->deleteAll(
+                    array(
+                        'UserKey.user_id' => $userId,
+                        'UserKey.id' => $keyId
+                    ),
+                    true,
+                    true
+                );
+
+                if(!$result){
+                    $isError = true;
+                    $message = 'Failed to delete key. ' . $this->User->UserKey->validationErrorsAsString();
+                }
+            }
+        }
+
+        $response = array(
+            'isError' => $isError,
+            'message' => __($message)
+        );
+
+        echo json_encode($response);
     }
 
     public function redirectIfDisabled($user){

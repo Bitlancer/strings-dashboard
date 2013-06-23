@@ -6,6 +6,22 @@ class AuditsController extends AppController {
         'AuditLog.Audit'
     );
 
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
+
+        if(parent::isAuthorized($user))
+            return true;
+
+        switch($this->action){
+            case 'recentActivities':
+                return true;
+        }
+
+        return false;
+    }
+
     public function recentActivities(){
 
         /*

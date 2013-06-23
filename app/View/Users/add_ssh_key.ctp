@@ -1,6 +1,10 @@
 <style>
   #new-key textarea.key {
+    font-size:10px;
     height:80px;
+  }
+  #private-key p {
+    margin-bottom:6px;
   }
 </style>
 <div id="new-key">
@@ -27,6 +31,7 @@
 </fieldset>
 <fieldset id="private-key" style="display:none;">
   <legend>Private Key</legend>
+  <p>We do not retain your private key. Please import it into your local keychain before submitting this form.</p>
   <textarea id="private-key-value" class="key" disabled></textarea>
 </fieldset>
 <div class="submit">
@@ -38,6 +43,8 @@
 <script>
   $('#supply-key').on('click',function(){
     $('#public-key-value').val("");
+    $('#private-key-value').val("");
+    $('#private-key').css('display','none');
   });
   $('#generate-key').on('click',function(){
     var container = $(this).parent('div');
@@ -56,7 +63,6 @@
        privateKeyTA.val(response.privateKey);
        privateKeyFS.css('display','block');
        generateKeySpinner.css('visibility','hidden');
-       strings.notifications.alert('Your keypair has been generated successfully. Please save your private key.');
       }
     });
   }); 

@@ -13,8 +13,8 @@ $this->end();
 echo $this->element('Datatables/default',array(
     'model' => 'formation',
     'columnHeadings' => $formationTableColumns,
-    'ctaEnabled' => true,
     'ctaSrc' => '/Formations/wizard',
     'ctaModal' => false,
+    'ctaDisabled' => $createCTADisabled
 ));
 

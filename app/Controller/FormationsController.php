@@ -19,6 +19,23 @@ class FormationsController extends AppController
         $this->Wizard->cancelUrl = '/Formations/';          //User is redirected here on wizard cancellation
     }
 
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
+        
+        if(parent::isAuthorized($user))
+            return true;
+
+        switch($this->action){
+            case 'index':
+            case 'view':
+                return true;
+        }
+
+        return false;
+    }
+
 	/**
      * Home screen containing list of formation and create formation CTA
      */
@@ -57,7 +74,7 @@ class FormationsController extends AppController
         else {
             $this->set(array(
                 'formationTableColumns' => array_keys($formationTableColumns),
-				'isInfraProviderConfigured' => $isInfraProviderConfigured
+                'createCTADisabled' => !$isInfraProviderConfigured || !$this->Auth->User('is_admin'),
             ));
         }
     }

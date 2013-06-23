@@ -3,8 +3,15 @@
 class BlueprintsController extends AppController
 {
 
-    public function index(){
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
 
+        if(parent::isAuthorized($user))
+            return true;
+
+        return false;
     }
 
     public function summary($id=null){

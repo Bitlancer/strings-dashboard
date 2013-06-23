@@ -2,6 +2,22 @@
 
 class UserKeysController extends AppController {
 
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
+
+        if(parent::isAuthorized($user))
+            return true;
+
+        switch($this->action){
+            case 'generateKeyPair':
+                return true;
+        }
+
+        return false;
+    }
+ 
     public function generateKeyPair(){
 
         $this->autoRender = false;

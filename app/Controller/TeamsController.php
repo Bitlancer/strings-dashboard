@@ -2,6 +2,23 @@
 
 class TeamsController extends AppController {
 
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
+
+        if(parent::isAuthorized($user))
+            return true;
+
+        switch($this->action){
+            case 'index':
+            case 'view':
+                return true;
+        }
+
+        return false;
+    }
+
 	public function index(){
 
 		$teamTableColumns = array(
@@ -30,7 +47,7 @@ class TeamsController extends AppController {
         else{
             $this->set(array(
             	'teamTableColumns' => array_keys($teamTableColumns),
-                'teamTableCTAEnabled' => ($this->Auth->User('can_create_user') || $this->Auth->User('is_admin'))
+                'createCTADisabled' => !$this->Auth->User('can_create_user') || !$this->Auth->User('is_admin'),
             ));
         }
 	}

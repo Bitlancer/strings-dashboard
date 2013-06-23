@@ -8,6 +8,23 @@ class SudoRolesController extends AppController {
 		$this->set('title_for_layout', 'Sudo');
 	}
 
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
+
+        if(parent::isAuthorized($user))
+            return true;
+
+        switch($this->action){
+            case 'index':
+            case 'view':
+                return true;
+        }
+
+        return false;
+    }
+
 	public function index() {
 
         $sudoTableColumns = array(
@@ -36,6 +53,7 @@ class SudoRolesController extends AppController {
         else {
             $this->set(array(
                 'sudoTableColumns' => array_keys($sudoTableColumns),
+                'createCTADisabled' => !$this->Auth->User('is_admin'),
             ));
         }
     }

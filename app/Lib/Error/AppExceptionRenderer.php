@@ -16,19 +16,31 @@ class AppExceptionRenderer extends ExceptionRenderer {
     
         $debug = Configure::read('debug');
 
-        $statusCode = 500;
-        $errorMessage = 'Internal Server Error';
+        $statusCode = 0;
+        $errorMessage = "";
 
         //Set status code and error message
+        if($exception instanceof MissingControllerException || $exception instanceof MissingActionException){
+            $statusCode = 404;
+            $errorMessage = 'Not Found';
+        }
+        elseif($exception instanceof ForbiddenException){
+            $statusCode = 403;
+            $errorMessage = 'Forbidden';
+        }
+        elseif($exception instanceof BadRequestException){
+            $statusCode = 400; 
+            $errorMessage = 'Bad Request';
+        }
+        else {
+            $statusCode = 500;
+            $errorMessage = 'Internal Server Error';
+        }
+
         if($debug){
             $errorMessage = $exception->getMessage();
         }
-        else {
-            if($exception instanceof MissingControllerException || $exception instanceof MissingActionException){
-                $statusCode = 404;
-                $errorMessage = 'Not Found';
-            }
-        }
+
 
         //Select template
         $template = 'default';
@@ -91,8 +103,9 @@ EOD;
 <body>
   <div>
     <h1>Oops!</h1>
-    <h3>$statusCode - $errorMessage</h3>
+    <h2>$statusCode - $errorMessage</h2>
     <h3>$file ($line)</h3>
+    <h3>$exceptionClass</h3>
     <pre class="wrap">$trace</pre>
   </div>
 </body>

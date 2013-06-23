@@ -69,7 +69,7 @@ class UserKey extends AppModel {
     );
 
     public function beforeSave($options=array()){
-     
+
         //Remove description from public key and add user supplied name
         if(isset($this->data['UserKey']['name']) && isset($this->data['UserKey']['public_key'])){
 
