@@ -23,6 +23,9 @@ class User extends AppModel {
         'UserAttribute' => array(
             'dependent' => true
         ),
+        'UserKey' => array(
+            'dependent' => true
+        )
     );
 
 	public $hasAndBelongsToMany = array();

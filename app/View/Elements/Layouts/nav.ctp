@@ -5,6 +5,7 @@
 	$devicesControllers = array('devices');
 	$formationsControllers = array('formations');
 	$applicationsControllers = array('applications');
+    $configMgmtControllers = array('roles','profiles','components');
 	$usersControllers = array('users','teams','sudoroles');
 ?>
 <!--
@@ -20,6 +21,14 @@
 </span>
 <span id="applications" class="<?php if(in_array($controller,$applicationsControllers)) { echo 'active'; } ?>">
   <a href="/applications">Applications</a>
+</span>
+<span id="config-management" class="<?php if(in_array($controller,$configMgmtControllers)) { echo 'active'; } ?>">
+  <a href="/roles">Config Management</a>
+  <span>
+    <a href="/roles" class="<?php if($controller == 'roles') { echo 'active'; } ?>">Roles</a>
+    <a href="/roles" class="<?php if($controller == 'profiles') { echo 'active'; } ?>">Profiles</a>
+    <a href="/roles" class="<?php if($controller == 'components') { echo 'active'; } ?>">Components</a>
+  </span>
 </span>
 <span id="user-management" class="<?php if(in_array($controller,$usersControllers)) { echo 'active'; } ?>">
   <a href="/users" rel="noreferrer">User Management</a>

@@ -90,7 +90,7 @@ EOD;
 </head>
 <body>
   <div>
-    <h1>Oops</h1>
+    <h1>Oops!</h1>
     <h3>$statusCode - $errorMessage</h3>
     <h3>$file ($line)</h3>
     <pre class="wrap">$trace</pre>

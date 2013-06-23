@@ -61,10 +61,8 @@ class UsersController extends AppController {
             )
         ));
 
-        if(empty($user)){
-            $this->Session->setFlash(__('This user does not exist.'),'default',array(),'error');
-            $this->redirect(array('action' => 'index'));
-        }
+        if(empty($user))
+            throw new NotFoundException('User does not exist.');
 
 		$this->set(array(
 			'user' => $user,
@@ -95,8 +93,7 @@ class UsersController extends AppController {
 
                 $validFields = array('name','password','first_name','last_name','email');
 				if($this->User->save($this->request->data,true,$validFields)){
-					$message = 'Created new user ' . $this->request->data['User']['name'] . '.';
-                    
+
                     //Set posix attributes (uid,shell)
                     $this->User->setDefaultPosixAttributes($this->User->id);
 				}
@@ -113,9 +110,8 @@ class UsersController extends AppController {
 				);
 			}
 			else {
-				$this->Session->setFlash(__($message),'default',array(),'success');
 				$response = array(
-					'redirectUri' => '/Users/view/' . $this->User->id
+					'redirectUri' => $this->referer(array('action' => 'index'))
 				);
 			}
 
@@ -134,15 +130,10 @@ class UsersController extends AppController {
 			)
 		));
 
-		if(empty($user)){
-			$this->Session->setFlash(__('This user does not exist.'),'default',array(),'error');
-			$this->redirect(array('action' => 'index'));
-		}
+		if(empty($user))
+            throw new NotFoundException('User does not exist.');
 
-		if($user['User']['is_disabled']){
-            $this->Session->setFlash(__('This user is disabled. Please re-enable this user if you would like to make changes to the user'),'default',array(),'error');
-            $this->redirect(array('action' => 'index'));
-        }
+        $this->redirectIfDisabled($user);
 
 		if($this->request->is('post')){
 
@@ -153,10 +144,7 @@ class UsersController extends AppController {
 
 			$validFields = array('first_name','last_name','email');
 			$this->User->id = $id;
-			if($this->User->save($this->request->data,true,$validFields)){
-				$message = 'Updated user ' . $user['User']['name'] . '.';
-			}
-			else {
+			if(!$this->User->save($this->request->data,true,$validFields)){
 				$isError = true;
 				$message = $this->User->validationErrorsAsString();
 			}
@@ -168,7 +156,6 @@ class UsersController extends AppController {
 				);
 			}
 			else {
-				$this->Session->setFlash(__($message),'default',array(),'success');
 				$response = array(
 					'redirectUri' => $this->referer(array('action' => 'index'))
 				);
@@ -215,10 +202,7 @@ class UsersController extends AppController {
 				//Save user
             	$validFields = array('password','first_name','last_name','email');
             	$this->User->id = $id;
-            	if($this->User->save($this->request->data,true,$validFields)){
-                	$message = 'Updated your information.';
-            	}
-            	else {
+            	if(!$this->User->save($this->request->data,true,$validFields)){
 					$isError = true;
                 	$message = $this->User->validationErrorsAsString();
             	}
@@ -231,7 +215,6 @@ class UsersController extends AppController {
                 );
             }
             else {
-                $this->Session->setFlash(__($message),'default',array(),'success');
                 $response = array(
                     'redirectUri' => $this->referer(array('action' => 'index'))
                 );
@@ -253,15 +236,10 @@ class UsersController extends AppController {
             )
         ));
 
-        if(empty($user)){
-            $this->Session->setFlash(__('This user does not exist.'),'default',array(),'error');
-            $this->redirect(array('action' => 'index'));
-        }
+        if(empty($user))
+            throw new NotFoundException('User does not exist.');
 
-		if($user['User']['is_disabled']){
-			$this->Session->setFlash(__('This user is disabled. Please re-enable this user if you would like to make changes to the user'),'default',array(),'error');
-			$this->redirect(array('action' => 'index'));
-		}
+        $this->redirectIfDisabled($user);
 
 		if($this->request->is('post')){
 
@@ -281,7 +259,7 @@ class UsersController extends AppController {
 
 				$this->User->id = $id;
 				if($this->User->save($this->request->data,true,array('password'))){
-					$message = 'Updated user password.';
+					$message = 'User password updated.';
 				}
 				else {
 					$isError = true;
@@ -313,15 +291,10 @@ class UsersController extends AppController {
             )
         ));
 
-        if(empty($user)){
-            $this->Session->setFlash(__('This user does not exist.'),'default',array(),'error');
-            $this->redirect($this->referer(array('action' => 'index')));
-        }
+        if(empty($user))
+            throw new NotFoundException('User does not exist.');
 
-		if($user['User']['is_disabled']){
-            $this->Session->setFlash(__('This user is already disabled.'),'default',array(),'warning');
-            $this->redirect($this->referer(array('action' => 'index')));
-        }
+        $this->redirectIfDisabled($user);
 
 		if($this->request->is('post')){
 
@@ -351,25 +324,20 @@ class UsersController extends AppController {
             )
         ));
 
-        if(empty($user)){
-            $this->Session->setFlash(__('This user does not exist.'),'default',array(),'error');
-            $this->redirect($this->referer(array('action' => 'index')));
-        }
+        if(empty($user))
+            throw new NotFoundException('User does not exist');
 
-        if(!$user['User']['is_disabled']){
-            $this->Session->setFlash(__('This user is already enabled.'),'default',array(),'warning');
-            $this->redirect($this->referer(array('action' => 'index')));
-        }
+        $this->redirectIfDisabled($user);
 
         if($this->request->is('post')){
             $this->User->id = $id;
             $this->User->set('is_disabled',0);
             if($this->User->save()){
-                $this->Session->setFlash(__('This user has been re-enabled.'),'default',array(),'success');
+                $this->Session->setFlash(__('User has been re-enabled.'),'default',array(),'success');
                 $this->redirect($this->referer(array('action' => 'index')));
             }
             else {
-                $message = __('Unable to re-enable user. ' . $this->User->validationErrorsAsString());
+                $message = __('Failed to re-enable user. ' . $this->User->validationErrorsAsString());
                 $this->Session->setFlash(__($message), 'default', array(), 'error');
                 $this->redirect($this->referer(array('action' => 'index')));
             }
@@ -378,6 +346,109 @@ class UsersController extends AppController {
         $this->set(array(
             'user' => $user
         ));
+    }
+
+    public function sshKeys($userId=null){
+
+        $user = $this->User->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'User.id' => $userId
+            )
+        ));
+
+        if(empty($user))
+            throw NotFoundException('User does not exist.');
+
+        $this->redirectIfDisabled($user);
+
+        $tableColumns = array(
+            'Name' => array(
+                'model' => 'UserKey',
+                'column' => 'name'
+            )
+        );
+
+        if($this->request->isAjax()){ //Datatables request
+
+            //Datatables
+            $findParameters = array(
+                'fields' => array(
+                    'UserKey.*'
+                ),
+                'conditions' => array(
+                    'UserKey.user_id' => $userId
+                )
+            );
+
+            $dataTable = $this->DataTables->getDataTable($tableColumns,$findParameters,$this->User->UserKey);
+
+            $this->set(array(
+                'dataTable' => $dataTable,
+                'isAdmin' => $this->Auth->User('is_admin')
+            ));
+        }
+        else{ //First load
+            $this->set(array(
+                'user' => $user,
+                'tableColumns' => array_keys($tableColumns),
+            ));
+        }
+    }
+
+    public function addSshKey($userId=null){
+
+        $user = $this->User->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'User.id' => $userId
+            )
+        ));
+
+        if(empty($user))
+            throw NotFoundException('User does not exist.');
+
+        $this->redirectIfDisabled($user);
+
+        if($this->request->is('post')){
+
+            $this->autoRender = false;
+
+            $isError = false;
+            $message = "";
+
+            $this->request->data['UserKey']['user_id'] = $userId;
+            $validFields = array('user_id','name','public_key');
+            if($this->User->UserKey->save($this->request->data,true,$validFields)){
+              $message = 'Added new SSH key.';    
+            }
+            else {
+                $isError = true;
+                $message = 'Failed to add SSH key. ' . $this->User->UserKey->validationErrorsAsString();
+            }
+
+            if($isError){
+                $response = array(
+                    'isError' => $isError,
+                    'message' => __($message)
+                );
+            }
+            else {
+                $this->setFlash($message,'success');
+                $response = array(
+                    'redirectUri' => $this->referer(array('action' => 'index'))
+                );
+            }
+            echo json_encode($response); 
+        }
+    }
+
+    public function redirectIfDisabled($user){
+
+        if($user['User']['is_disabled']){
+            $this->setFlash('This user is disabled. You must re-enable his or her account to make any changes.');
+            $this->redirect(array('action' => 'index'));
+        }
     }
 
 	public function login() {

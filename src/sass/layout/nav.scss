@@ -51,6 +51,9 @@ body > nav {
     &#applications > a:before {
       background-image: url('/img/application.png');
     }
+    &#config-management > a:before {
+      background-image: url('/img/config-mgmt.png');
+    }
     &#user-management > a:before {
       background-image: url('/img/user.png'); 
     }

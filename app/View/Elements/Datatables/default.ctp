@@ -39,6 +39,9 @@
     if(!isset($ctaSrc))
         $ctaSrc = "/$modelPlural/create"; 
 
+    if(!isset($ctaClasses))
+        $ctaClasses = array();
+
     if(!isset($ctaWidth))
         $ctaWidth = 360;
 
@@ -61,6 +64,7 @@
         $ctaSrc,                            //Modal src or link href
         $ctaButtonText,                     //CTA button txt
         $ctaDisabled,                       //CTA disabled
+        $ctaClasses,                        //Additional classes to add to the CTA
         $ctaTitle,					        //CTA title
         $ctaWidth   						//CTA width - used for modal width
     );

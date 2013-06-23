@@ -1,4 +1,4 @@
-.cta {
+a.cta {
   border-radius: 3px;
   display: inline-block;
   font-size: 15px;
@@ -114,4 +114,7 @@
     line-height: 18px;
     padding: 0 5px;
   }
+}
+a.action {
+  color: #1e8fe2 !important;
 }

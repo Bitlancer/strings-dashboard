@@ -43,6 +43,16 @@ form {
     box-sizing: border-box;
     width: 50%;  
   }
+  div.input {
+    margin-bottom:6px;
+    .loading {
+      display:inline-block;
+      width:16px;
+      height:16px;
+      background-size:16px;
+      vertical-align:text-bottom;
+    }
+  }
   div.submit {
     margin-top: 15px;
     overflow: hidden;

@@ -15,10 +15,6 @@ table {
       &.selected {
         background: #1e8fe2;
         color: #fff;
-        td a.action {
-          color: #fff;
-          font-style: italic;
-        }
       }
       td {
         border-right: 1px solid darken($white,5%);
@@ -128,6 +124,7 @@ table {
   .top {
     overflow: hidden;
     position: relative;
+    margin-bottom:10px;
     h2 {
       //float: left; 
       margin: 0 0 15px;
@@ -141,7 +138,6 @@ table {
     }
     .dataTables_filter {
       float: right;
-      margin-bottom: 10px;
       input {
         margin: 0;  
         padding: 6px;

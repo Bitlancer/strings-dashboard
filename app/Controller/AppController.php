@@ -72,6 +72,15 @@ class AppController extends Controller {
     }
 
     /**
+     * Add a Vendor library to the php path
+     */
+    protected function addVendorLibToPHPPath($vendorLibrary){
+
+        $vendorLibPath = APP . 'Vendor' . DS . $vendorLibrary;
+        set_include_path(get_include_path() . PATH_SEPARATOR . $vendorLibPath);
+    }
+
+    /**
      * Search for a list of entities with a matching name
      * Used for autocomplete forms
      */

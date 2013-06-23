@@ -1,0 +1,49 @@
+<style>
+</style>
+<div id="ssh-keys">
+  <ul id="notice"></ul>
+  <div id="user-keys" style="display:none;">
+    <?php
+      echo $this->element('Datatables/default',array(
+        'model' => 'UserKey',
+        'title' => false,
+        'tableId' => 'keys',
+        'columnHeadings' => array('Name'),
+        'dataSrc' => $this->here . ".json",
+        'search' => false,
+        'ctaModal' => false,
+        'ctaSrc' => false,
+        'ctaButtonText' => 'Add Key',
+        'ctaClasses' => array('small')
+      ));
+    ?> 
+  </div>
+  <div id="new-key">
+    <form class="ajax" method="post" action="<?php echo $this->here . '.json'; ?>">
+    <fieldset>
+      <legend>Name</legend>
+      <input type="text" name="name" placeholder="ex: laptop" />
+    </fieldset>
+    <fieldset>
+      <legend>Public Key</legend>
+      <div>
+        <input type="radio" id="supply-key" name="key-type" value="supply" checked/>
+        <label for="supply-key">Supply a key</label>
+      </div>
+      <div>
+        <input type="radio" id="erate-key" name="key-type" value="generate" />
+        <label for="generate-key">Generate me a new key-pair</label>
+      </div>
+      <textarea name="public-key"></textarea>
+    </fieldset>
+    <div class="submit">
+      <a class="cta primary">Add Key</a>
+      <a class="cta">Cancel</a>
+    </form>
+  </div>
+</div>
+<script>
+  var sshkey = function(container){
+    var container = $(container);    
+  }
+</script>

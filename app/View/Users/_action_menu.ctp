@@ -19,7 +19,7 @@
     
     if($userEnabled){
         $actionMenu .= $this->Strings->modalLink('Edit User',"/Users/edit/$userId",$actionsDisabled);
-        $actionMenu .= $this->Strings->modalLink('SSH Keys',"/Users/sshKeys/$userId",true);
+        $actionMenu .= $this->Strings->link('SSH Keys',"/Users/sshKeys/$userId",$actionsDisabled);
         $actionMenu .= $this->Strings->modalLink('Reset Password',"/Users/changePassword/$userId",$actionsDisabled);
         $actionMenu .= $this->Strings->modalLink('Disable User',"/Users/disable/$userId",$actionsDisabled);
     }

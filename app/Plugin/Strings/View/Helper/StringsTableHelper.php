@@ -40,13 +40,13 @@ class StringsTableHelper extends StringsAppHelper {
      * @param string $ctaSrc Call-to-action data-src attribute value
      * @return string HTML table
      */
-    public function datatableWithCta($tableElementID,$tableColumns,$tableData,$dataTableOptions,$ctaModal,$ctaSrc,$ctaText,$ctaDisabled,$ctaTitle='Create',$ctaWidth='360'){
+    public function datatableWithCta($tableElementID,$tableColumns,$tableData,$dataTableOptions,$ctaModal,$ctaSrc,$ctaText,$ctaDisabled,$ctaClasses,$ctaTitle='Create',$ctaWidth='360'){
 
         //Default CTA classes
-        $ctaClasses = array(
+        $ctaClasses = array_merge($ctaClasses,array(
             'primary',
             'cta'
-        );
+        ));
 
         if($ctaDisabled)
             $ctaClasses[] = 'disabled';
@@ -68,9 +68,11 @@ class StringsTableHelper extends StringsAppHelper {
         }
         else {
             $ctaAttributes = array(
-                'href' => $ctaSrc,
                 'class' => $ctaClasses
             );
+            if($ctaSrc !== false)
+                $ctaAttributes['href'] = $ctaSrc;
+
         }
         $ctaElement = "<a " . self::buildElementAttributes($ctaAttributes,"'") . ">$ctaText</a>"; 
         $dataTableOptions['data-cta'] = $ctaElement;

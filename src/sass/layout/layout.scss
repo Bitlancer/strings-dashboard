@@ -59,6 +59,12 @@ body {
       margin-bottom: 10px;
     }
   }
+  div.loading {
+    background: #f8f8f8 url('/img/loading.gif') center no-repeat;
+  }
+  div.loading.white {
+    background: white url('/img/loading-white.gif') center no-repeat;
+  }
   //::-webkit-scrollbar { display: inherit; width: 12px; }
   //::-webkit-scrollbar-track { background: transparent; border: 0; }
   //::-webkit-scrollbar-thumb { background: #888; border: 3px solid #333; border-radius: 6px; }
