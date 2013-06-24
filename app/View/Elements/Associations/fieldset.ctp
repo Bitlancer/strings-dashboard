@@ -26,7 +26,7 @@
 ?>
 <style>
 fieldset.association-old div#add input {
-  width:82%;
+  width:78%;
 }
 fieldset.association-old div#add .cta {
   width:12%;
