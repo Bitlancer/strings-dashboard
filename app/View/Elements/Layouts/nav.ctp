@@ -26,8 +26,8 @@
   <a href="/roles">Config Management</a>
   <span>
     <a href="/roles" class="<?php if($controller == 'roles') { echo 'active'; } ?>">Roles</a>
-    <a href="/roles" class="<?php if($controller == 'profiles') { echo 'active'; } ?>">Profiles</a>
-    <a href="/roles" class="<?php if($controller == 'components') { echo 'active'; } ?>">Components</a>
+    <a href="/profiles" class="<?php if($controller == 'profiles') { echo 'active'; } ?>">Profiles</a>
+    <a href="/components" class="<?php if($controller == 'components') { echo 'active'; } ?>">Components</a>
   </span>
 </span>
 <span id="user-management" class="<?php if(in_array($controller,$usersControllers)) { echo 'active'; } ?>">

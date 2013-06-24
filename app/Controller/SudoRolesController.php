@@ -197,10 +197,8 @@ class SudoRolesController extends AppController {
 			)
 		));
 	
-		if(empty($sudoRole)){
-			$this->Session->setFlash(__('This sudo role does not exist.'),'default',array(),'error');
-			$this->redirect(array('action' => 'index'));
-		}
+		if(empty($sudoRole))
+            throw new NotFoundException('Sudo Role does not exist');
 
 		if($this->request->is('post')){
 
@@ -267,7 +265,7 @@ class SudoRolesController extends AppController {
 		}
 		else {
 
-			$this->Session->setFlash(__('Any changes to this sudo role will affect ...'),'default',array(),'error');
+			//$this->Session->setFlash(__('Any changes to this sudo role will affect ...'),'default',array(),'error');
 
 			$sudoAttributes = $this->SudoRole->SudoAttribute->find('all',array(
             	'link' => array(

@@ -25,32 +25,32 @@
 	}
 ?>
 <style>
-fieldset.association div#add input {
+fieldset.association-old div#add input {
   width:82%;
 }
-fieldset.association div#add .cta {
+fieldset.association-old div#add .cta {
   width:12%;
   vertical-align:baseline;
 }
-fieldset.association table {
+fieldset.association-old table {
   margin: 10px 0;
 }
 </style>
-<fieldset id="<?php echo $fieldsetId; ?>" class="association" data-field-name="<?php echo $memberFieldName; ?>" data-empty-table-msg="<?php echo $emptyTableMessage; ?>">
+<fieldset id="<?php echo $fieldsetId; ?>" class="association-old" data-field-name="<?php echo $memberFieldName; ?>" data-empty-table-msg="<?php echo $emptyTableMessage; ?>">
   <legend><?php echo $fieldsetTitle; ?></legend>
   <div id="add">
     <input class="autocomplete disable-autosubmit" type="text" placeholder="name" data-src="<?php echo $memberAutocompleteSrc; ?>" />
     <a class="cta primary small add">Add</a>
   </div>
-  <?php echo $this->StringsTable->cleanTable(array(''),$tableValues,$emptyTableMessage); ?>
+  <?php echo $this->StringsTable->cleanTable(array('Name'),$tableValues,$emptyTableMessage); ?>
 </fieldset>
 <script>
-  $("fieldset.association input[type='text']").keypress(function(e){
+  $("fieldset.association-old input[type='text']").keypress(function(e){
     if(e.which == 13){
       $(this).closest("fieldset").find(".cta.add").click();
     }
   });
-  $("fieldset.association .cta.add").live('click', function(e){
+  $("fieldset.association-old .cta.add").live('click', function(e){
     e.preventDefault();
     var src = $(this);
     var fieldset = src.closest("fieldset");
@@ -67,7 +67,7 @@ fieldset.association table {
     }
     input.val("");
   });
-  $('fieldset.association .action.remove').live('click', function(e){
+  $('fieldset.association-old .action.remove').live('click', function(e){
     var src = $(this);
     var emptyTableMessage = src.closest('fieldset').attr('data-empty-table-msg');
     var tbody = src.closest('tbody');

@@ -2,6 +2,23 @@
 
 class RolesController extends AppController
 {
+    /**
+     * Authorization logic
+     */
+    public function isAuthorized($user){
+
+        if(parent::isAuthorized($user))
+            return true;
+
+        switch($this->action){
+            case 'index':
+            case 'view':
+                return true;
+        }
+
+        return false;
+    }
+
     public function index() {
 
         $tableColumns = array(

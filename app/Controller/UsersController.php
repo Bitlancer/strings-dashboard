@@ -73,7 +73,7 @@ class UsersController extends AppController {
         else{
             $this->set(array(
             	'userTableColumns' => array_keys($userTableColumns),
-                'createCTADisabled' => !$this->Auth->User('can_create_user') || !$this->Auth->User('is_admin'),
+                'createCTADisabled' => !$this->Auth->User('is_admin') && !$this->Auth->User('can_create_user'),
             ));
         }
 	}

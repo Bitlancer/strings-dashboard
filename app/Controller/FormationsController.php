@@ -514,6 +514,8 @@ class FormationsController extends AppController
             //Select device names from dictionary and mark as reserved
             $dictionaryId = $this->Wizard->read('formationSettings.Dictionary.id');
             $dictionaryWords = $this->DictionaryWord->reserve($dictionaryId,$deviceCount);
+            if($dictionaryWords === false)
+                throw new InternalErrorException('Dictionary does not contain enough free words to accomodate this formation');
             $dictionaryWords = Hash::combine($dictionaryWords,'{n}.DictionaryWord.id','{n}');
             $dictionaryWordIds = array_keys($dictionaryWords);
 

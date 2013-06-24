@@ -62,5 +62,4 @@ foreach($blueprintParts as $part){
 <?php
 //Sidebar
 $this->start('sidebar'); ?>
-<h2>Help</h2>
 <?php $this->end(); ?>

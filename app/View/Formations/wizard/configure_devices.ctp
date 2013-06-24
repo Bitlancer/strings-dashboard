@@ -71,6 +71,5 @@ foreach($devices as $device){
 <?php
 //Sidebar
 $this->start('sidebar'); ?>
-<h2>Help</h2>
 <?php $this->end(); ?>
 

@@ -107,7 +107,5 @@ $('.select').live('click', function() {
 <?php
 //Sidebar
 $this->start('sidebar'); ?>
-<h2>Help</h2>
-<p>A <strong>blueprint</strong> is a template for spinning up a collection of related devices that should be managed together. Within the application stack, a blueprint sits between the device layer and the application layer. For a full  explanation of String's application model please visit our <a href="#">tutorial</a>.</p>
 <?php $this->end(); ?>
 

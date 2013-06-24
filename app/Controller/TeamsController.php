@@ -47,7 +47,7 @@ class TeamsController extends AppController {
         else{
             $this->set(array(
             	'teamTableColumns' => array_keys($teamTableColumns),
-                'createCTADisabled' => !$this->Auth->User('can_create_user') || !$this->Auth->User('is_admin'),
+                'createCTADisabled' => !$this->Auth->User('is_admin') && !$this->Auth->User('can_create_user'),
             ));
         }
 	}
