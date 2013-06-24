@@ -1,8 +1,8 @@
 <?php
 
-class Formation extends AppModel {
+class ModuleSource extends AppModel {
 
-	public $useTable = 'formation';
+	public $useTable = 'module_source';
 
 	public $actsAs = array(
 		'OrganizationOwned'
@@ -12,17 +12,9 @@ class Formation extends AppModel {
 		'Organization'
 	);
 
-	public $hasMany = array(
-		'Device',
-		'TeamFormation' => array(
-            'dependent' => true
-        ),
-        'ApplicationFormation' => array(
-            'dependent' => true
-        )
-	);
-
-	public $hasAndBelongsToMany = array();
+    public $hasMany = array(
+        'Module',
+    );
 
 	public $validate = array(
         'name' => array(
@@ -36,24 +28,36 @@ class Formation extends AppModel {
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'
             ),
-            'validName' => array(
-                'rule' => array('custom','/[A-Za-z0-9-_\. @]{3,}/'),
-                'message' => '%%f is limited to letters, numbers and punctuation and must be at least 3 characters long'
-            ),
 			'checkMultiKeyUniqueness' => array(
 				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
 				'message' => 'This %%f is already taken'
 			)
         ),
-        'status' => array(
+        'type' => array(
             'notEmpty' => array(
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'
             ),
-            'validStatus' => array(
-                'rule' => array('inList',array('building','resizing','active','deleting','error')),
+            'validType' => array(
+                'rule' => array('inList',array('git','forge')),
                 'message' => '%%f is an invalid status'
             )
-        )
+        ),
+        'url' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => '%%f is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+            'validUrl' => array(
+                'rule' => 'url',
+                'message' => '%%f is not a valid Url'
+            )
+        ),
     );
 }

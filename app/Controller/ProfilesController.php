@@ -33,4 +33,28 @@ class ProfilesController extends AppController
             ));
         }
     }
+
+    public function view($profileId=null){
+
+        $profile = $this->Profile->find('first',array(
+            'contain' => array(
+                'ProfileModule' => array(
+                    'Module'
+                )
+            ),
+            'conditions' => array(
+                'Profile.id' => $profileId
+            )
+        ));
+
+        if(empty($profile))
+            throw new NotFoundException('Profile does not exist');
+
+        $this->set(array(
+            'isAdmin' => $this->Auth->User('is_admin'),
+            'profile' => array('Profile' => $profile['Profile']),
+            'modules' => $profile['ProfileModule']
+        ));
+    }
+
 }

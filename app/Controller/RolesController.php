@@ -50,4 +50,27 @@ class RolesController extends AppController
             ));
         }
     }
+
+    public function view($roleId=null){
+
+        $role = $this->Role->find('first',array(
+            'contain' => array(
+                'RoleProfile' => array(
+                    'Profile'
+                )
+            ),
+            'conditions' => array(
+                'Role.id' => $roleId
+            )
+        ));
+
+        if(empty($role))
+            throw new NotFoundException('Role does not exist');
+
+        $this->set(array(
+            'isAdmin' => $this->Auth->User('is_admin'),
+            'role' => array('Role' => $role['Role']),
+            'profiles' => $role['RoleProfile']
+        ));
+    }
 }

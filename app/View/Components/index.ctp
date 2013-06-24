@@ -2,7 +2,7 @@
 
 $this->extend('/Common/standard');
 
-$this->assign('title', 'Roles');
+$this->assign('title', 'Components');
 
 //Set sidebar content
 $this->start('sidebar');
@@ -11,7 +11,7 @@ $this->end();
 
 //Main content
 echo $this->element('Datatables/default',array(
-    'model' => 'role',
+    'model' => 'component',
     'columnHeadings' => $columnHeadings,
     'noCta' => true
 ));

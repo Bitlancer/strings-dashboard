@@ -2,11 +2,13 @@
 
 class ComponentsController extends AppController
 {
+    public $uses = array('Module');
+
     public function index() {
 
         $tableColumns = array(
             'Name' => array(
-                'model' => 'Component',
+                'model' => 'Module',
                 'column' => 'short_name'
             ),
         );
@@ -16,11 +18,11 @@ class ComponentsController extends AppController
             $findParameters = array(
                 'contain' => array(),
                 'fields' => array(
-                    'Component.*'
+                    'Module.*'
                 )
             );
 
-            $dataTable = $this->DataTables->getDataTable($tableColumns,$findParameters);
+            $dataTable = $this->DataTables->getDataTable($tableColumns,$findParameters,$this->Module);
 
             $this->set(array(
                 'dataTable' => $dataTable,

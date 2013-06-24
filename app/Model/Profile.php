@@ -1,8 +1,8 @@
 <?php
 
-class Role extends AppModel {
+class Profile extends AppModel {
 
-	public $useTable = 'role';
+	public $useTable = 'profile';
 
 	public $actsAs = array(
 		'OrganizationOwned'
@@ -12,14 +12,14 @@ class Role extends AppModel {
 		'Organization'
 	);
 
-	public $hasMany = array(
-		'TeamRole' => array(
-            'dependent' => true
-        ),
+    public $hasMany = array(
         'RoleProfile' => array(
             'dependent' => true
+        ),
+        'ProfileModule' => array(
+            'dependent' => true
         )
-	);
+    );
 
 	public $validate = array(
         'name' => array(

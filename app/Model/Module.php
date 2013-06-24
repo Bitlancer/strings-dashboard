@@ -1,8 +1,8 @@
 <?php
 
-class Device extends AppModel {
-	
-	public $useTable = 'device';
+class Module extends AppModel {
+
+	public $useTable = 'module';
 
 	public $actsAs = array(
 		'OrganizationOwned'
@@ -10,39 +10,11 @@ class Device extends AppModel {
 
 	public $belongsTo = array(
 		'Organization',
-        'DeviceType',
-		'Implementation',
-		'Formation',
-		'Role'
+        'ModuleSource',
 	);
 
-	public $hasMany = array(
-		'DeviceAttribute',
-		'TeamDevice'
-	);
-	
 	public $validate = array(
-        'device_type_id' => array(
-            'requiredOnCreate' => array(
-                'rule' => 'notEmpty',
-                'on' => 'create',
-                'required' => true,
-                'message' => '%%f is required'
-            ),
-            'notEmpty' => array(
-                'rule' => 'notEmpty',
-                'message' => '%%f cannot be empty'
-            ),
-            'isNumeric' => array(
-                'rule' => 'numeric',
-                'message' => '%%f must be an integer'
-            ),
-            'validForeignKey' => array(
-                'rule' => array('isValidForeignKey'),
-                'message' => '%%f does not exist'
-            )
-        ),  
-		'formation_id' => array(
+        'module_source_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',
@@ -62,7 +34,7 @@ class Device extends AppModel {
                 'message' => '%%f does not exist'
             )
         ),
-		'role_id' => array(
+        'short_name' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',
@@ -73,44 +45,38 @@ class Device extends AppModel {
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'
             ),
-            'isNumeric' => array(
-                'rule' => 'numeric',
-                'message' => '%%f must be an integer'
-            ),
-            'validForeignKey' => array(
-                'rule' => array('isValidForeignKey'),
-                'message' => '%%f does not exist'
-            )
-        ),
-		'name' => array(
-			'requiredOnCreate' => array(
-                'rule' => 'notEmpty',
-                'on' => 'create',
-                'required' => true,
-                'message' => '%%f is required'
-            ),
-            'notEmpty' => array(
-                'rule' => 'notEmpty',
-                'message' => '%%f cannot be empty'
-            ),
-			'validHostname' => array(
-				'rule' => array('custom', '/^(?![0-9]+$)(?!-)[a-zA-Z0-9-]{,63}(?<!-)$/'),
-				'message' => 'Please enter a valid hostname'
-			),
-			'checkMultiKeyUniqueness' => array(
+            'checkMultiKeyUniqueness' => array(
                 'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
                 'message' => 'This %%f is already taken'
             )
-		),
-        'status' => array(
+        ), 
+        'name' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => '%%f is required'
+            ),
             'notEmpty' => array(
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'
-            ), 
-            'validStatus' => array(
-                'rule' => array('inList',array('building','resizing','active','deleting','error')),
-                'message' => '%%f is an invalid status'
-            )
-        )
-	);
+            ),
+			'checkMultiKeyUniqueness' => array(
+				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
+				'message' => 'This %%f is already taken'
+			)
+        ),
+        'reference' => array(
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+        ),
+        'path' => array(
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+        ),
+    );
 }
