@@ -20,6 +20,11 @@
  */
 
 /**
+ * Set CODE_ENVIRONMENT php constant
+ */
+  define('CODE_ENVIRONMENT',getenv('CODE_ENVIRONMENT'));
+
+/**
  * CakePHP Debug Level:
  *
  * Production Mode:
@@ -32,7 +37,14 @@
  * In production mode, flash messages redirect after a time interval.
  * In development mode, you need to click the flash message to continue.
  */
-	Configure::write('debug', 2);
+    switch(CODE_ENVIRONMENT){
+        case 'development':
+          Configure::write('debug', 2);
+          break;
+        case 'production':
+        default:
+	      Configure::write('debug', 0);
+    }
 
 /**
  * Configure the Error handler used to handle errors for your application.  By default
@@ -185,6 +197,7 @@
  *
  */
 	Configure::write('Session', array(
+        'cookie' => 'strings',
 		'defaults' => 'php',
         'timeout' => '60',
 	));
