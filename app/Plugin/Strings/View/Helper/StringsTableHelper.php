@@ -16,6 +16,8 @@ class StringsTableHelper extends StringsAppHelper {
         //Convert key=>value $fields into array(label,value)
         $tableValues = array();
         foreach($fields as $key => $value){
+            if(!is_numeric($value) && empty($value))
+                $value = "<span class=\"null\"></span>";
             $tableValues[] = array("<strong>$key</strong>",$value);
         }
 

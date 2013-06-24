@@ -35,4 +35,23 @@ class ComponentsController extends AppController
             ));
         }
     }
+
+    public function view($moduleId=null){
+
+        $module = $this->Module->find('first',array(
+            'contain' => array(
+                'ModuleSource'
+            ),
+            'conditions' => array(
+                'Module.id' => $moduleId
+            )
+        ));
+
+        if(empty($module))
+            throw new NotFoundException('Module not found');
+
+        $this->set(array(
+            'module' => $module
+        ));
+    }
 }

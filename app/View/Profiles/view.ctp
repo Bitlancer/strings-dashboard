@@ -26,18 +26,18 @@ $this->end();
 </section>
 
 <section>
-<h2>Profiles</h2>
+<h2>Modules</h2>
   <?php
     $modulesTableData = array();
     foreach($modules as $module){
-        $name = $module['Module']['name'];
+        $name = $module['Module']['short_name'];
         $id = $module['Module']['id'];
         $modulesTableData[] = array(
-            $this->Strings->link($name,'/Modules/view/' . $id)
+            $this->Strings->link($name,'/Components/view/' . $id)
         );
     }
     echo $this->element('Tables/default',array(
-      'columnHeadings' => array('Module'),
+      'columnHeadings' => array('Name'),
       'data' => $modulesTableData
     ));
   ?>

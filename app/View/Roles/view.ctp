@@ -47,7 +47,7 @@ $this->end();
         );
     }
     echo $this->element('Tables/default',array(
-      'columnHeadings' => array('Profile'),
+      'columnHeadings' => array('Name'),
       'data' => $profilesTableData
     ));
   ?>
