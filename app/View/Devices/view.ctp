@@ -44,7 +44,7 @@ $this->end();
   echo $this->element('Tables/info',array(
     'info' => array(
       'Provider' => $providerDetails['provider_name'],
-      'Region' => $providerDetails['region'],
+      'Datacenter' => $providerDetails['region'],
       'Image' => $providerDetails['image'],
       'Flavor' => $providerDetails['flavor'], 
     )
