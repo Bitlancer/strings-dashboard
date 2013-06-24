@@ -294,8 +294,6 @@ class UsersController extends AppController {
         if(empty($user))
             throw new NotFoundException('User does not exist');
 
-        $this->redirectIfDisabled($user);
-
         if($this->request->is('post')){
             $this->User->id = $id;
             $this->User->set('is_disabled',0);
