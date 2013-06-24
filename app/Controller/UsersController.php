@@ -116,7 +116,7 @@ class UsersController extends AppController {
 			{
 				unset($this->request->data['User']['confirm_password']);
 
-                $validFields = array('name','password','first_name','last_name','email');
+                $validFields = array('name','password','first_name','last_name','email','is_admin');
 				if($this->User->save($this->request->data,true,$validFields)){
 
                     //Set posix attributes (uid,shell)
@@ -167,7 +167,7 @@ class UsersController extends AppController {
 			$isError = false;
 			$message = "";
 
-			$validFields = array('first_name','last_name','email');
+			$validFields = array('first_name','last_name','email','is_admin');
 			$this->User->id = $id;
 			if(!$this->User->save($this->request->data,true,$validFields)){
 				$isError = true;
