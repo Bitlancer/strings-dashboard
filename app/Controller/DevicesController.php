@@ -69,7 +69,7 @@ class DevicesController extends AppController
         else {
             $this->set(array(
                 'deviceTableColumns' => array_keys($deviceTableColumns),
-                'createCTADisabled' => !$isInfraProviderConfigured || !$this->Auth->User('is_admin'),
+                'createCTADisabled' => true, //!$isInfraProviderConfigured || !$this->Auth->User('is_admin'),
             ));
         }
     }
