@@ -342,6 +342,8 @@ table {
     border-bottom: 1px solid #e3e3e3; }
     table thead th {
       font-weight: 600; }
+    table thead th:last-of-type {
+      border-right: 1px solid #d6d6d6; }
   table tbody {
     background: #fcfcfc; }
     table tbody tr {

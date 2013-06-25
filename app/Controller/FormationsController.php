@@ -82,11 +82,7 @@ class FormationsController extends AppController
     public function view($id=null){
 
         $formation = $this->Formation->find('first',array(
-            'contain' => array(
-                'Device' => array(
-                    'Role'
-                )
-            ),
+            'contain' => array(),
             'conditions' => array(
                 'Formation.id' => $id
             )

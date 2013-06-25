@@ -34,21 +34,3 @@ $this->end();
   ?>
 </div> <!-- /formation-details -->
 </section>
-
-<section>
-<h2>Devices</h2>
-<div>
-  <?php
-    $deviceTableData = array();
-    foreach($formation['Device'] as $device){
-      $deviceTableData[] = array(
-      $this->Strings->link($device['name'],'/Devices/view/' . $device['id']),
-      $device['Role']['name']);
-    }
-    echo $this->element('Tables/default',array(
-      'columnHeadings' => array('Device','Role'),
-      'data' => $deviceTableData
-    ));
-  ?>
-</div>
-</section>

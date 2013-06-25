@@ -5,7 +5,12 @@ table {
   thead {
     background: $white;
     border-bottom: 1px solid darken($white,5%);
-    th { font-weight: 600 }
+    th {
+      font-weight: 600;
+    }
+    th:last-of-type { //Fix chrome issue
+      border-right: 1px solid darken($white,10%);
+    }
   }
   tbody {
     background: #fcfcfc;
