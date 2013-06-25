@@ -33,34 +33,6 @@ table {
           }
           &.active > li { color: #999 }
         }
-        &[data-status] {
-          position: relative;
-          text-indent: 7px;
-          &:before {
-            content: '';
-            display: table-cell;
-            height: 26px;
-            left: 0;
-            position: absolute;
-            width: 7px; 
-            margin-top: -5px;
-          }
-        }
-        &[data-status=running]:before {
-          background-color: $green;  
-        }
-        &[data-status=error]:before {
-          background-color: $red;  
-        }
-        &[data-status=default]:before {
-          background-color: #ccc;  
-        }
-        &[data-status].activity:before {
-          background-image: url('/img/status.png');
-          background-size: 7px auto;
-          background-position: 0;
-          @include animation(activity 2s infinite linear);
-        }
         &:last-of-type { border: 0 }
         &.blank {
           font-size: 90%;
@@ -72,6 +44,40 @@ table {
             margin-bottom: 5px;
           }
         }  
+      }
+    }
+    tr.status {
+      td:first-of-type {
+        position: relative;
+        text-indent: 7px;
+        &:before {
+          content: '';
+          display: table-cell;
+          height: 26px;
+          left: 0;
+          position: absolute;
+          width: 7px;
+          margin-top: -5px;
+        }
+      }
+    }
+    tr.status-error {
+      td:first-of-type:before {
+        background-color: $red;
+      }
+    }
+    tr.status-active {
+      td:first-of-type:before {
+        background-color: $green;
+      }
+    }
+    tr.status-building,tr.status-resizing,tr.status-deleting {
+      td:first-of-type:before {
+        background-color: orange;
+        background-image: url('/img/status.png');
+        background-size: 7px auto;
+        background-position: 0;
+        @include animation(activity 2s infinite linear);
       }
     }
   }

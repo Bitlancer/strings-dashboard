@@ -23,13 +23,14 @@ class DataTablesHelper extends AppHelper {
 			
 			$outputData = $newOutputData;
 		}
-		
+
+        //Convert to 
 		
 		return json_encode(array(
 			'sEcho' => $dataTable->getEcho(),
 			'iTotalRecords' => $dataTable->getUnfilteredCount(),
 			'iTotalDisplayRecords' => $dataTable->getFilteredCount(),
 			'aaData' => $outputData
-		));	
+		));
 	}
 }

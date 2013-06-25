@@ -365,31 +365,6 @@ table {
             font-size: 80%; }
           table tbody tr td ul.action-menu.active > li {
             color: #999999; }
-        table tbody tr td[data-status] {
-          position: relative;
-          text-indent: 7px; }
-          table tbody tr td[data-status]:before {
-            content: '';
-            display: table-cell;
-            height: 26px;
-            left: 0;
-            position: absolute;
-            width: 7px;
-            margin-top: -5px; }
-        table tbody tr td[data-status=running]:before {
-          background-color: #59b036; }
-        table tbody tr td[data-status=error]:before {
-          background-color: #d94141; }
-        table tbody tr td[data-status=default]:before {
-          background-color: #ccc; }
-        table tbody tr td[data-status].activity:before {
-          background-image: url("/img/status.png");
-          background-size: 7px auto;
-          background-position: 0;
-          -webkit-animation: activity 2s infinite linear;
-          -moz-animation: activity 2s infinite linear;
-          -o-animation: activity 2s infinite linear;
-          animation: activity 2s infinite linear; }
         table tbody tr td:last-of-type {
           border: 0; }
         table tbody tr td.blank {
@@ -400,6 +375,30 @@ table {
             font-weight: 600;
             font-size: 17px;
             margin-bottom: 5px; }
+    table tbody tr.status td:first-of-type {
+      position: relative;
+      text-indent: 7px; }
+      table tbody tr.status td:first-of-type:before {
+        content: '';
+        display: table-cell;
+        height: 26px;
+        left: 0;
+        position: absolute;
+        width: 7px;
+        margin-top: -5px; }
+    table tbody tr.status-error td:first-of-type:before {
+      background-color: #d94141; }
+    table tbody tr.status-active td:first-of-type:before {
+      background-color: #59b036; }
+    table tbody tr.status-building td:first-of-type:before, table tbody tr.status-resizing td:first-of-type:before, table tbody tr.status-deleting td:first-of-type:before {
+      background-color: orange;
+      background-image: url("/img/status.png");
+      background-size: 7px auto;
+      background-position: 0;
+      -webkit-animation: activity 2s infinite linear;
+      -moz-animation: activity 2s infinite linear;
+      -o-animation: activity 2s infinite linear;
+      animation: activity 2s infinite linear; }
   table th, table td {
     padding: 5px;
     text-align: left; }

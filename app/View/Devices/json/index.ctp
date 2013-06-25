@@ -21,5 +21,8 @@
         //Append action menu to last column
         $modifiedOutputRow[count($outputRow)-1] .= $actionMenu;
 
+        //Add device status as a class to tr
+        $modifiedOutputRow['DT_RowClass'] = "status status-$deviceStatus";
+
         return $modifiedOutputRow;
     });

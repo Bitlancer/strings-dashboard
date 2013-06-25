@@ -3,7 +3,7 @@
   <div class="select-option">
     <h2>What would you like to do?</h2>
     <div class="input">
-      <input type="radio" id="new-formation" name="formation-option" />
+      <input type="radio" id="new-formation" name="formation-option" checked/>
       <label for="new-formation">Create a new device and a <strong>new formation</strong></label>
     </div>
     <div class="input">
@@ -17,5 +17,12 @@
 </form>
 </div>
 <script>
-  
+  $('.cta.primary').click(function(){
+    if($('#new-formation').is(':checked')){
+      window.location = '/Formations/wizard';
+    }
+    else {
+      alert('Not implemented');
+    }
+  });
 </script>
