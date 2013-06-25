@@ -397,6 +397,7 @@ class FormationsController extends AppController
                 'Implementation.*'
             ),
             'conditions' => array(
+                'Implementation.organization_id' => $this->Auth->User('organization_id'),
                 'Service.name' => 'infrastructure'
             )
         ));

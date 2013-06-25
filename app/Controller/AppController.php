@@ -21,7 +21,7 @@ class AppController extends Controller {
 		'Auth' => array(
 			'authError' => 'Please login',
 			'authenticate' => array(
-				'Sha1' => array(
+				'Sha1' => array(        //User::login sets scope dynamically - must be updated if this is changed
 					'fields' => array(
 						'username' => 'name',
 						'password' => 'password'
