@@ -129,6 +129,10 @@ class DevicesController extends AppController
         ));
     }
 
+    public function create($id=null){
+
+    }
+
     public function resize($id=null){
 
         $this->loadModel('QueueJob');

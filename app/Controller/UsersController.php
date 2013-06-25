@@ -484,7 +484,7 @@ class UsersController extends AppController {
 			$this->User->Behaviors->unload('OrganizationOwned');	
 
 			//Add additional conditions to login query
-			$this->Auth->authenticate['Form']['scope'] = array(
+			$this->Auth->authenticate['Sha1']['scope'] = array(
 				'User.is_disabled' => '0',
 				'Organization.is_disabled' => '0',
             	'Organization.short_name' => $this->request->data['Organization']['short_name']
