@@ -1,5 +1,5 @@
 <?php
-$this->extend('/Formations/wizard/_formation_wizard');
+$this->extend('/Formations/wizard/create/_template');
 
 $this->assign('stepNumber','1');
 $this->assign('stepTitle','Formation Options');

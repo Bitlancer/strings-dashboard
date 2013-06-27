@@ -2,19 +2,32 @@
 
 class FormationsController extends AppController
 {
+
+    public $wizardActions = array('create','addDevice');
+
     public function beforeFilter(){
 
-        /*
-         * Formation creation wizard settings
-         */
+        //Setup wizard settings if necessary for this action
+        if(in_array($this->action,$this->wizardActions)){
+            $setupMethod = "_setupWizard" . ucfirst($this->action);
+            $this->$setupMethod();
+        }
+    }
+
+    /**
+     * beforeFilter() wizard settings for Formation creation
+     */
+    protected function _setupWizardCreate(){
+
         $this->Wizard->steps = array(
             'formationSettings',
             'selectBlueprint',
             'deviceCounts',
             'configureDevices'
         );
+        $this->Wizard->action = $this->action;              //Root action method for tieing the steps together
         $this->Wizard->lockdown = true;                     //Prevent user from navigating between steps
-        $this->Wizard->nestedViews = true;                  //Store view fields within wizard/
+        $this->Wizard->nestedViews = true;                  //Store view fields within action sub-folder
         $this->Wizard->completeUrl = '/Formations/';        //User is redirected here after wizard completion
         $this->Wizard->cancelUrl = '/Formations/';          //User is redirected here on wizard cancellation
     }
@@ -218,10 +231,8 @@ class FormationsController extends AppController
             )
         ));
 
-        if(empty($formation)){
-            $this->setFlash('This formation does not exist.');
-            $this->redirect(array('action' => 'index'));
-        } 
+        if(empty($formation))
+            throw new NotFoundException('Formation does not exist');
 
         $devicesTableColumns = array(
             'Device' => array(
@@ -261,6 +272,36 @@ class FormationsController extends AppController
         }
     }
 
+    public function deleteDevice($formationId=null,$deviceId=null){
+
+        $formation = $this->Formation->find('first',array(
+            'contain' => array(
+                'Blueprint' => array(
+                    'BlueprintPart'
+                ),
+                'Device'
+            ),
+            'conditions' => array(
+                'Formation.id' => $id,
+            )
+        ));
+
+        if(empty($formation))
+            throw new NotFoundException('Formation does not exist');
+
+        $devices = Hash::combine($formation['Device'],'{n}.id','{n}');
+
+        $blueprintPartCounts = Hash::reduce($devices,'{n}.blueprint_part_id',function(){
+        });
+
+        //Verify we can delete this device from the formation
+        //Check min and max requirements
+
+         
+
+
+    }
+
     protected function redirectIfNotActive($formation){
 
         if($device['Formation']['status'] != 'active'){
@@ -272,7 +313,7 @@ class FormationsController extends AppController
 /**
  * Formation creation wizard
  */
-    public function wizard($step=null){
+    public function create($step=null){
 
         $this->set('title_for_layout', 'Create Formation');
         $this->Wizard->process($step);
@@ -531,6 +572,7 @@ class FormationsController extends AppController
                     $devices[] = array(
                         'psuedoId' => $nextDevicePsuedoId++,
                         'deviceTypeId' => $blueprintPart['DeviceType']['id'],
+                        'blueprintPartId' => $blueprintPart['BlueprintPart']['id'],
                         'roleId' => $blueprintPart['Role']['id'],
                         'name' => $name,
                         'blueprintPartName' => $blueprintPart['BlueprintPart']['name'],
@@ -579,6 +621,7 @@ class FormationsController extends AppController
 
             $psuedoId = $device['psuedoId'];
             $name = $device['name'];
+            $blueprintPartId = $device['blueprintPartId'];
             $roleId = $device['roleId'];
             $deviceTypeId = $device['deviceTypeId'];
 
@@ -586,6 +629,7 @@ class FormationsController extends AppController
             $deviceObject = array(
                 'Device' => array(
                     'implementation_id' => $implementationId,
+                    'blueprint_part_id' => $blueprintPartId,
                     'role_id' => $roleId,
                     'device_type_id' => $deviceTypeId,
                     'name' => $name
@@ -654,6 +698,7 @@ class FormationsController extends AppController
 
         $formation = array(
             'Formation' => array(
+                'blueprint_id' => $this->Wizard->read('selectBlueprint.Blueprint.id'),
                 'name' => $this->Wizard->read('formationSettings.Formation.name')
             ),
             'Device' => $deviceObjects

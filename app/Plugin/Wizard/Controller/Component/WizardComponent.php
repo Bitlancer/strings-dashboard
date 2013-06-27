@@ -72,7 +72,7 @@ class WizardComponent extends Component {
  * @var string
  * @access public
  */
-	public $action = 'wizard';
+	public $action = null;
 /**
  * Url to be redirected to after the wizard has been completed.
  * Controller::afterComplete() is called directly before redirection.
@@ -184,10 +184,11 @@ class WizardComponent extends Component {
  */
 	public function initialize(Controller $controller) {
 		$this->controller = $controller;
+        $this->action = $controller->action;
 		
-		$this->_sessionKey	= $this->controller->Session->check('Wizard.complete') ? 'Wizard.complete' : 'Wizard.' . $controller->name;
-		$this->_configKey 	= 'Wizard.config';
-		$this->_branchKey	= 'Wizard.branches.' . $controller->name;
+		$this->_sessionKey	= $this->controller->Session->check('Wizard.complete') ? 'Wizard.complete' : 'Wizard.' . $controller->name . "." . $this->action;
+		$this->_configKey 	= 'Wizard.config.' . $this->action;
+		$this->_branchKey	= 'Wizard.branches.' . $controller->name . '.' . $this->action;
 	}
 /**
  * Component startup method.
@@ -195,7 +196,8 @@ class WizardComponent extends Component {
  * @param object $controller A reference to the instantiating controller object
  * @access public
  */	
-	public function startup(Controller $controller) {		
+	public function startup(Controller $controller) {
+
 		$this->steps = $this->_parseSteps($this->steps);
 		
 		$this->config('action', $this->action);
@@ -288,11 +290,11 @@ class WizardComponent extends Component {
 				}
 				
 				$this->config('activeStep', $this->_currentStep);
-				
-				if ($this->nestedViews) {
-					$this->controller->viewPath .= '/' . $this->action;
-				}
 		
+				if ($this->nestedViews) {
+					$this->controller->viewPath .= DS . 'wizard' . DS . $this->action;
+				}
+
 				return $this->controller->autoRender ? $this->controller->render($this->_currentStep) : true;
 			} else {
 				$this->redirect();
