@@ -26,7 +26,7 @@ $this->end();
 </section>
 
 <section>
-<h2>Modules</h2>
+<h2>Components</h2>
   <?php
     $modulesTableData = array();
     foreach($modules as $module){
