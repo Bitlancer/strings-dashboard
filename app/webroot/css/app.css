@@ -155,7 +155,7 @@ body {
     background: white url("/img/loading-white.gif") center no-repeat; }
   body span.null:after {
     color: gray;
-    content: '(null)'; }
+    content: 'N/A'; }
 
 body > header {
   background: #222222 url("/img/dark_stripes.png");
