@@ -155,7 +155,7 @@ body {
     background: white url("/img/loading-white.gif") center no-repeat; }
   body span.null:after {
     color: gray;
-    content: '(null)'; }
+    content: 'N/A'; }
 
 body > header {
   background: #222222 url("/img/dark_stripes.png");
@@ -342,8 +342,6 @@ table {
     border-bottom: 1px solid #e3e3e3; }
     table thead th {
       font-weight: 600; }
-    table thead th:last-of-type {
-      border-right: 1px solid #d6d6d6; }
   table tbody {
     background: #fcfcfc; }
     table tbody tr {
