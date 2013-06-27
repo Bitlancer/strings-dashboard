@@ -12,7 +12,7 @@ $this->end();
 
 <!-- Main content -->
 <section>
-<h2>Module Details</h2>
+<h2>Component Details</h2>
 <div id="module-details">
   <?php
     echo $this->element('Tables/info',array(
