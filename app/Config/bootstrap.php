@@ -196,7 +196,7 @@ define('STRINGS_API_URL','http://localhost:8081');
 define('CRM_EMAIL','mjuszczak@bitlancer.com');
 
 //Default date format
-define('DEFAULT_DATE_FORMAT','F j, Y, g:i a');
+define('DEFAULT_DATE_FORMAT','F j, Y, g:i a e');
 
 //Default number of rows that are displayed in each table
 define('DEFAULT_TABLE_PAGE_LENGTH','15');
