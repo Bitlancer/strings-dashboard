@@ -12,7 +12,7 @@ $this->end();
 //Main content
 echo $this->element('Datatables/default',array(
     'model' => 'formation',
-    'columnHeadings' => $formationTableColumns,
+    'columnHeadings' => $this->DataTables->getColumnHeadings(),
     'ctaSrc' => '/Formations/wizard',
     'ctaModal' => false,
     'ctaDisabled' => $createCTADisabled

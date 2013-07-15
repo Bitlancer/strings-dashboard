@@ -31,44 +31,42 @@ class DevicesController extends AppController
 			$this->Session->setFlash(__('Please setup an infrastructure provider <a href="#">here</a>.'),'default',array(),'error');
 		}
 
-        $deviceTableColumns = array(
-            'Name' => array(
+        $this->DataTables->setColumns(array(
+             'Name' => array(
                 'model' => 'Device',
                 'column' => 'name'
             ),
-			'Formation' => array(
-				'model' => 'Formation',
-				'column' => 'name'
-			),
-			'Role' => array(
-				'model' => 'Role',
-				'column' => 'name'
-			)
-        );
+            'Formation' => array(
+                'model' => 'Formation',
+                'column' => 'name'
+            ),
+            'Role' => array(
+                'model' => 'Role',
+                'column' => 'name'
+            )
+        ));
 
         if($this->request->isAjax()){
 
-            //Datatables
-            $findParameters = array(
-                'contain' => array(
-                    'Formation',
-                    'Role'
-                ),
-                'fields' => array(
-                    'Device.*','Formation.*','Role.name'
+            $this->DataTables->process(
+                array(
+                    'contain' => array(
+                        'Formation',
+                        'Role'
+                    ),
+                    'fields' => array(
+                        'Device.*','Formation.*','Role.name'
+                    )
                 )
             );
-
-            $dataTable = $this->DataTables->getDataTable($deviceTableColumns,$findParameters);
+ 
 
             $this->set(array(
-                'dataTable' => $dataTable,
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
         }
         else {
             $this->set(array(
-                'deviceTableColumns' => array_keys($deviceTableColumns),
                 'createCTADisabled' => true, //!$isInfraProviderConfigured || !$this->Auth->User('is_admin'),
             ));
         }

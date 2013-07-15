@@ -117,6 +117,13 @@ var strings = {
             "bProcessing": $(this).attr('data-processing') === undefined ? false: ($(this).attr('data-processing') == 'true'),
             "bServerSide": ($(this).attr("data-src") === undefined || $(this).attr('data-src') == 'false' ? false: true),
             "sAjaxSource": ($(this).attr("data-src") === undefined || $(this).attr("data-src") == 'false' ? null: $(this).attr("data-src")),
+            /*
+            "fnServerParams": function(aoData){
+              if($(this).attr("data-src-params") !== undefined){
+                aoData.push({"params": $(this).attr("data-src-params")});
+              }
+            },
+            */
             "fnInitComplete": function(oSettings) {
               var parent = $(this).parents('.dataTables_wrapper');
               if($(this).attr('data-cta')) {

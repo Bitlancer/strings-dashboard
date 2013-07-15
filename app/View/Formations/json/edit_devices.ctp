@@ -1,6 +1,6 @@
 <?php
 
-    echo $this->DataTables->output($dataTable,
+    echo $this->DataTables->render(
         function($view,$outputRow,$rawRow) use($isAdmin){
 
         $actionMenu = $view->element('../Formations/_devices_action_menu',array(

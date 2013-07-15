@@ -12,6 +12,6 @@ $this->end();
 //Main content
 echo $this->element('Datatables/default',array(
     'model' => 'profile',
-    'columnHeadings' => $columnHeadings,
+    'columnHeadings' => $this->DataTables->getColumnHeadings(),
     'noCta' => true
 ));

@@ -1,6 +1,6 @@
 <?php
 
-    echo $this->DataTables->output($dataTable,
+    echo $this->DataTables->render(
         function($view,$outputRow,$rawRow) use($isAdmin){
 
         $formationId = $rawRow['Formation']['id'];

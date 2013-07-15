@@ -46,33 +46,28 @@ class UsersController extends AppController {
 	 */
 	public function index() {
 
-		$userTableColumns = array(
-			'Name' => array( 
-				'model' => 'User',
-				'column' => 'full_name'
-			)
-		);
+        $this->DataTables->setColumns(array(
+            'Name' => array(
+                'model' => 'User',
+                'column' => 'full_name'
+            )
+        ));
 
-		if($this->request->isAjax()){
+        if($this->request->isAjax()){ //Datatables request
 
-			//Datatables
-			$findParameters = array(
-				'fields' => array(
-					'User.id','User.organization_id','User.name','User.full_name',
-					'User.first_name','User.last_name','User.is_disabled'
-				)
-            );
+            $this->DataTables->process(array(
+                'contain' => array(),
+                'field' => array(
+                    'User.*'
+                )
+            ));
 
-			$dataTable = $this->DataTables->getDataTable($userTableColumns,$findParameters);
-
-			$this->set(array(
-				'dataTable' => $dataTable,
-				'isAdmin' => $this->Auth->User('is_admin')
-			));
+            $this->set(array(
+                'isAdmin' => $this->Auth->User('is_admin')
+            ));
         }
         else{
             $this->set(array(
-            	'userTableColumns' => array_keys($userTableColumns),
                 'createCTADisabled' => !$this->Auth->User('is_admin') && !$this->Auth->User('can_create_user'),
             ));
         }
@@ -327,36 +322,34 @@ class UsersController extends AppController {
 
         $this->redirectIfDisabled($user);
 
-        $tableColumns = array(
+        $this->DataTables->setColumns(array(
             'Name' => array(
                 'model' => 'UserKey',
                 'column' => 'name'
             )
-        );
+        ));
 
         if($this->request->isAjax()){ //Datatables request
 
-            //Datatables
-            $findParameters = array(
-                'fields' => array(
-                    'UserKey.*'
+            $this->DataTables->process(
+                array(
+                    'fields' => array(
+                        'UserKey.*',
+                    ),
+                    'conditions' => array(
+                        'UserKey.user_id' => $userId
+                    )
                 ),
-                'conditions' => array(
-                    'UserKey.user_id' => $userId
-                )
+                $this->User->UserKey
             );
 
-            $dataTable = $this->DataTables->getDataTable($tableColumns,$findParameters,$this->User->UserKey);
-
             $this->set(array(
-                'dataTable' => $dataTable,
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
         }
         else{ //First load
             $this->set(array(
                 'user' => $user,
-                'tableColumns' => array_keys($tableColumns),
             ));
         }
     }

@@ -13,6 +13,6 @@ $this->end();
 echo $this->element('Datatables/default',array(
     'tableId' => 'applications',
     'model' => 'application',
-    'columnHeadings' => $applicationTableColumns,
+    'columnHeadings' => $this->DataTables->getColumnHeadings(),
     'ctaDisabled' => $createCTADisabled
 ));
