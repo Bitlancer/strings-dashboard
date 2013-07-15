@@ -12,6 +12,6 @@ $this->end();
 //Main content
 echo $this->element('Datatables/default',array(
 	'model' => 'user',
-	'columnHeadings' => $userTableColumns,
+	'columnHeadings' => $this->DataTables->getColumnHeadings(),
     'ctaDisabled' => $createCTADisabled
 ));

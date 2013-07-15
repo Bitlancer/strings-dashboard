@@ -1,12 +1,5 @@
 <?php
-/*
-Generate the datatables output for editing a teams sudo roles
-
-@param $dataTable object The datatable object
-*/
-?>
-<?php
-    echo $this->DataTables->output($dataTable,
+    echo $this->DataTables->render(
         function($view,$outputRow,$rawRow) {
 
         $sudoRoleId = $rawRow['SudoRole']['id'];

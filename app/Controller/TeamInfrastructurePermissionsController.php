@@ -2,7 +2,7 @@
 
 class TeamInfrastructurePermissionsController extends AppController {
 
-    public $uses = array();
+    public $uses = false;
 
     /*
      * The models specified below are the only which a user may edit
@@ -188,26 +188,26 @@ class TeamInfrastructurePermissionsController extends AppController {
 
         $modelTeamId = empty($teamModelObject) ? 0 : $teamModelObject[$teamModel]['id'];
 
-        $teamModelSudoTableColumns = array(
+        $this->DataTables->setColumns(array(
             'Name' => array(
                 'model' => 'SudoRole',
                 'column' => 'name'
             )
-        );
+        ));
 
-        $findParameters = array(
-            'contain' => array(
-                'SudoRole'
+        $this->DataTables->process(
+            array(
+                'contain' => array(
+                    'SudoRole'
+                ),
+                'conditions' => array(
+                    "$teamModelSudo.$teamModelSudoFK" => $modelTeamId
+                )
             ),
-            'conditions' => array(
-                "$teamModelSudo.$teamModelSudoFK" => $modelTeamId
-            )
+            $this->$teamModelSudo
         );
-
-        $dataTable = $this->DataTables->getDataTable($teamModelSudoTableColumns,$findParameters,$this->$teamModelSudo);
 
         $this->set(array(
-            'dataTable' => $dataTable,
             'isAdmin' => $this->Auth->User('is_admin')
         ));
     }

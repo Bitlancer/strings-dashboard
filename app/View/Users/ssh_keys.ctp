@@ -16,7 +16,7 @@ $this->end();
     'model' => 'UserKey',
     'title' => 'SSH Keys',
     'tableId' => 'keys',
-    'columnHeadings' => $tableColumns,
+    'columnHeadings' => $this->DataTables->getColumnHeadings(),
     'processing' => true,
     'ctaModal' => true,
     'ctaSrc' => '/Users/addSshKey/' . $user['User']['id'],

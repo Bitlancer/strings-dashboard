@@ -5,54 +5,93 @@ App::uses('Component', 'Controller');
 class DataTablesComponent extends Component
 {
 
+    /**
+     * Table columns
+     */
+    public $columns = array();
+
+    /**
+     * Find parameters
+     */
+     public $findParameters = array();
+
+    /**
+     * Model that will be used for retrieving the data
+     */
+    public $model = null;
+
 	/**
 	 * Constructor
 	 */
-	function initialize(&$controller, $settings = array()) {
+	public function initialize(&$controller, $settings = array()) {
 
 		//Set controller
-        $this->controller=$controller;
+        $this->controller = $controller;
         
         //Set model
         $model = $this->controller->modelClass;
-        $this->model = $this->controller->$model;
+        if(!empty($model))
+            $this->model = $this->controller->$model;
         
         //Set request
         $this->request = $this->controller->request;
     }
-	
-	/**
-	 * Get a DataTables request object
-	 */
-	public function getDataTable($columns,$additionalFindParameters=array(),$model=false){
 
-		if($model === false)
-			$model = $this->model;
-		else
-			$model = $model;
+    public function setColumns($columns,$view='default'){
 
-		//Set request based on method
-        if($this->request->isPost())
+        $controller = $this->controller;
+
+        if(!isset($controller->helpers['DataTables.DataTables'][$view]))
+            $controller->helpers['DataTables.DataTables'][$view] = array();
+
+        $this->columns[$view] = $columns;
+        $controller->helpers['DataTables.DataTables'][$view]['dataTable']['columns'] = $columns;
+    }
+
+    public function process($findParameters=array(),$model=false,$view='default'){
+
+        $controller = $this->controller;
+
+        $columns = $this->columns[$view];
+        if($model === false)
+            $model = $this->model;
+
+		//Set request data based on method
+        if($this->request->is('post'))
             $request = $this->request->data;
         else
             $request = $this->request->query;
 
-		$dataTablesRequest = new DataTablesRequest($columns,$request);
+        //Is this a datatables request?
+        if(!isset($request['sEcho'])){
+            throw new BadRequestException('Request does not contain parameter sEcho');
+        }
+        else {
 
-		$findParameters = array_merge_recursive($dataTablesRequest->getFindParameters(),$additionalFindParameters);
+            $dataTablesRequest = new DataTablesRequest($columns,$request);
 
-        //Get data
-        $data = $model->find('all',$findParameters);
+            $defaultFindParameters = $findParameters;
+            $filteredFindParameters = array_merge_recursive($dataTablesRequest->getFindParameters(),$findParameters);
 
-        //Get filtered count
-        unset($findParameters['limit']);
-        unset($findParameters['offset']);
-        $filteredCount = $model->find('count',$findParameters);
+            //Get data
+            $data = $model->find('all',$filteredFindParameters);
 
-        //Get unfiltered count
-        $unfilteredCount = $model->find('count',$additionalFindParameters);
+            //Get filtered count
+            unset($filteredFindParameters['limit']);
+            unset($filteredFindParameters['offset']);
+            $filteredCount = $model->find('count',$filteredFindParameters);
 
-        return new DataTable($dataTablesRequest,$data,$unfilteredCount,$filteredCount);
+            //Get unfiltered count
+            $unfilteredCount = $model->find('count',$defaultFindParameters);
+
+            $controller->helpers['DataTables.DataTables'][$view]['dataTable'] = array(
+                'echo' => $dataTablesRequest->getEcho(),
+                'columns' => $columns,
+                'data' => $data,
+                'filteredCount' => $filteredCount,
+                'unfilteredCount' => $unfilteredCount,
+            );
+        }
 	}
 }
 
@@ -63,7 +102,7 @@ class DataTablesRequest
 		$this->columns = $columns;
 		$this->request = $request;
 	}
-	
+
 	public function getColumns(){
 		return $this->columns;
 	}
@@ -143,57 +182,5 @@ class DataTablesRequest
 		);
 
 		return $findParameters;
-	}
-}
-
-class DataTable
-{
-	public function __construct($request,$data,$unfilteredCount,$filteredCount){
-		$this->request = $request;
-		$this->data = $data;
-		$this->unfilteredCount = $unfilteredCount;
-		$this->filteredCount = $filteredCount;
-	}
-
-	public function getEcho(){
-		return $this->request->getEcho();
-	}
-
-	public function getColumns(){
-		return $this->request->getColumns();
-	}
-	
-	public function getFlattenedData(){
-
-		$columns = $this->request->getColumns();
-
-		$flattenedResults = array();
-		foreach($this->data as $row){
-			$flattenedResult = array();
-			foreach($columns as $column){
-				if(!isset($row[$column['model']]) || !isset($row[$column['model']][$column['column']]))
-					$flattenedResult[] = null;
-				else
-					$flattenedResult[] = $row[$column['model']][$column['column']];
-			}
-			$flattenedResults[] = $flattenedResult;
-		}
-		return $flattenedResults;
-	}
-
-	public function getData(){
-		return $this->data;
-	}
-
-	public function setData($data){
-		$this->data = $data;
-	}
-
-	public function getUnfilteredCount(){
-		return $this->unfilteredCount;
-	}
-
-	public function getFilteredCount(){
-		return $this->filteredCount;
 	}
 }

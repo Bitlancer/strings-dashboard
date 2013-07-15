@@ -12,7 +12,7 @@ $this->end();
 //Main content
 echo $this->element('Datatables/default',array(
     'model' => 'device',
-    'columnHeadings' => $devicesTableColumns,
+    'columnHeadings' => $this->DataTables->getColumnHeadings(),
     'ctaEnabled' => true,
     'ctaSrc' => '/Formations/addDevice',
     'ctaModal' => false,

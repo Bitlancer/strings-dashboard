@@ -61,32 +61,30 @@ class FormationsController extends AppController
             $this->setFlash('Please setup an infrastructure provider.');
         }
 
-        $formationTableColumns = array(
+        $this->DataTables->setColumns(array(
             'Name' => array(
                 'model' => 'Formation',
                 'column' => 'name'
             )
-        );
+        ));
 
         if($this->request->isAjax()){
 
-            //Datatables
-            $findParameters = array(
-                'fields' => array(
-                    'Formation.id','Formation.name','Formation.status'
+            $this->DataTables->process(
+                array(
+                    'contain' => array(),
+                    'fields' => array(
+                        'Formation.*'
+                    )
                 )
             );
 
-            $dataTable = $this->DataTables->getDataTable($formationTableColumns,$findParameters);
-
             $this->set(array(
-                'dataTable' => $dataTable,
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
         }
         else {
             $this->set(array(
-                'formationTableColumns' => array_keys($formationTableColumns),
                 'createCTADisabled' => !$isInfraProviderConfigured || !$this->Auth->User('is_admin'),
             ));
         }
@@ -234,8 +232,8 @@ class FormationsController extends AppController
         if(empty($formation))
             throw new NotFoundException('Formation does not exist');
 
-        $devicesTableColumns = array(
-            'Device' => array(
+        $this->DataTables->setColumns(array(
+             'Device' => array(
                 'model' => 'Device',
                 'column' => 'name'
             ),
@@ -243,30 +241,28 @@ class FormationsController extends AppController
                 'model' => 'Role',
                 'column' => 'name'
             ),
-        );
+        ));
 
         if($this->request->isAjax()){
 
-            //Datatables
-            $findParameters = array(
-                'contain' => array(
-                    'Role'
+            $this->DataTables->process(
+                array(
+                    'contain' => array(
+                        'Role'
+                    ),
+                    'fields' => array(
+                        'Device.*','Role.*'
+                    )
                 ),
-                'fields' => array(
-                    'Device.id','Device.name','Device.status','Device.formation_id','Role.name'
-                )
-            );
-
-            $dataTable = $this->DataTables->getDataTable($devicesTableColumns,$findParameters,$this->Formation->Device);
-
+                $this->Formation->Devices
+            ); 
+ 
             $this->set(array(
-                'dataTable' => $dataTable,
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
         }
         else {
             $this->set(array(
-                'devicesTableColumns' => array_keys($devicesTableColumns),
                 'formation' => $formation
             ));
         }
@@ -321,28 +317,27 @@ class FormationsController extends AppController
 
     public function _prepareSelectBlueprint(){
 
-        $blueprintTableColumns = array(
+        $this->loadModel('Blueprint');
+
+        $this->DataTables->setColumns(array(
             'Blueprint' => array(
                 'model' => 'Blueprint',
                 'column' => 'name'
             ),
-        );
+        ));
 
         if($this->request->is('ajax')){
 
-            $this->loadModel('Blueprint');
-
-            //Datatables
-            $findParameters = array(
-                'fields' => array(
-                    'Blueprint.id','Blueprint.name','Blueprint.short_description'
+            $this->DataTables->process(
+                array(
+                    'fields' => array(
+                        'Blueprint.id','Blueprint.name','Blueprint.short_description'
+                    ),
                 ),
+                $thia->Blueprint
             );
 
-            $dataTable = $this->DataTables->getDataTable($blueprintTableColumns,$findParameters,$this->Blueprint);
-
             $this->set(array(
-                'dataTable' => $dataTable,
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
 

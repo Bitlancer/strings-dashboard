@@ -27,32 +27,28 @@ class SudoRolesController extends AppController {
 
 	public function index() {
 
-        $sudoTableColumns = array(
+        $this->DataTables->setColumns(array(
             'Name' => array(
                 'model' => 'SudoRole',
                 'column' => 'name'
             )
-        );
+        ));
 
-        if($this->request->isAjax()){
+        if($this->request->isAjax()){ //Datatables request
 
-            //Datatables
-            $findParameters = array(
+            $this->DataTables->process(array(
+                'contain' => array(),
                 'fields' => array(
-                    'SudoRole.id','SudoRole.name'
+                    'SudoRole.*'
                 )
-            );
-
-            $dataTable = $this->DataTables->getDataTable($sudoTableColumns,$findParameters);
+            ));
 
             $this->set(array(
-                'dataTable' => $dataTable,
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
         }
         else {
             $this->set(array(
-                'sudoTableColumns' => array_keys($sudoTableColumns),
                 'createCTADisabled' => !$this->Auth->User('is_admin'),
             ));
         }

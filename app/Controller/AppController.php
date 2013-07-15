@@ -31,17 +31,17 @@ class AppController extends Controller {
 			'authorize' => array('Controller'),
             'unauthorizedRedirect' => false,
 		),
+        'DataTables.DataTables',
 		'RequestHandler',
-		'DataTables.DataTables',
         'Wizard.Wizard',
 	);
 
 	//View Helpers
 	public $helpers = array(
+        'DataTables.DataTables',
 		'Strings.Strings',
 		'Strings.StringsTable',
 		'Strings.StringsActionMenu',
-		'DataTables.DataTables',
         'Form',
 		'Time',
         'Gravatar'
@@ -86,6 +86,16 @@ class AppController extends Controller {
 
         $vendorLibPath = APP . 'Vendor' . DS . $vendorLibrary;
         set_include_path(get_include_path() . PATH_SEPARATOR . $vendorLibPath);
+    }
+
+    /**
+     * Load Datatables Component & Helper on the fly
+     */
+    protected function loadDataTablesComponent($settings=array()){
+
+        $this->DataTables = $this->Components->load('DataTables.DataTables');
+        $this->DataTables->initialize($this,$settings);
+        $this->helpers[] = 'DataTables.DataTables';
     }
 
     /**
