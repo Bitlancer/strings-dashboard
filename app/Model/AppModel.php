@@ -5,6 +5,12 @@ App::uses('CakeSession', 'Model/Datasource');
 
 class AppModel extends Model {
 
+    /**
+     * Most models with a name attribute will use the following validation variables
+     */
+    const VALID_MODEL_NAME_REGEX = '/^[A-Za-z0-9]{3,}$/';
+    const VALID_MODEL_NAME_MSG = '%%f is limited to uppercase and lowercase letters, numbers, hypens and spaces and must be at least 3 characters long';
+
 	public $actsAs = array(
 		'Containable',
 		'Linkable',
@@ -12,7 +18,7 @@ class AppModel extends Model {
         'AuditLog.Auditable' => array(
             'ignore' => array('created','updated')
         )
-	); 
+	);
 
 	/**
 	 * Validate relationship (foreign_key) between this model and belongsTo model

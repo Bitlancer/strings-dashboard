@@ -93,10 +93,10 @@ class Device extends AppModel {
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'
             ),
-			'validHostname' => array(
-				'rule' => array('custom', '/^(?![0-9]+$)(?!-)[a-zA-Z0-9-]{,63}(?<!-)$/'),
-				'message' => 'Please enter a valid hostname'
-			),
+            'validName' => array(
+                'rule' => AppModel::VALID_MODEL_NAME_REGEX,
+                'message' => AppModel::VALID_MODEL_NAME_MSG
+            ),
 			'checkMultiKeyUniqueness' => array(
                 'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
                 'message' => 'This %%f is already taken'

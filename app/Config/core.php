@@ -130,7 +130,14 @@
  * Turn off all caching application-wide.
  *
  */
-	//Configure::write('Cache.disable', true);
+    switch(CODE_ENVIRONMENT){
+        case 'development':
+          Configure::write('Cache.disable', true);
+          break;
+        case 'production':
+        default:
+          Configure::write('Cache.disable', false);
+    }
 
 /**
  * Enable cache checking.
