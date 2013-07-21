@@ -2,7 +2,7 @@
 
     $visibleDescriptionLen = '150';     //Number of characters of the description that will be visible
 
-    echo $this->DataTables->output($dataTable,
+    echo $this->DataTables->render(
         function($view,$outputRow,$rawRow) use($visibleDescriptionLen){
 
         $blueprintName = $outputRow[0];

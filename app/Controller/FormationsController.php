@@ -334,18 +334,13 @@ class FormationsController extends AppController
                         'Blueprint.id','Blueprint.name','Blueprint.short_description'
                     ),
                 ),
-                $thia->Blueprint
+                $this->Blueprint
             );
 
             $this->set(array(
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
 
-        }
-        else {
-            $this->set(array(
-                'blueprintTableColumns' => array_keys($blueprintTableColumns),
-            ));
         }
     }
 

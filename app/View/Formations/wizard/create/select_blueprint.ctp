@@ -94,7 +94,7 @@ $('.select').live('click', function() {
 <?php
     echo $this->element('Datatables/basic',array(
       'tableId' => 'blueprint',
-      'columnHeadings' => $blueprintTableColumns,
+      'columnHeadings' => $this->DataTables->getColumnHeadings(),
   ));
 ?>
 <div id="blueprint-summary">
