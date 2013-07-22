@@ -183,11 +183,18 @@ class WizardComponent extends Component {
  * @return void
  */
 	public function initialize(Controller $controller) {
+
 		$this->controller = $controller;
         $this->action = $controller->action;
+
+        //Call wixard setup method if one exists
+        $setupMethod = "_setupWizard" . ucfirst($this->action);
+        if(method_exists($controller,$setupMethod)){
+            call_user_func(array($controller,$setupMethod));
+        }
 		
 		$this->_sessionKey	= $this->controller->Session->check('Wizard.complete') ? 'Wizard.complete' : 'Wizard.' . $controller->name . "." . $this->action;
-		$this->_configKey 	= 'Wizard.config.' . $this->action;
+		$this->_configKey 	= 'Wizard.config.' . $controller->name . "." . $this->action;
 		$this->_branchKey	= 'Wizard.branches.' . $controller->name . '.' . $this->action;
 	}
 /**

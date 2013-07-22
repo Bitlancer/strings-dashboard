@@ -1,7 +1,6 @@
 <?php
 $this->extend('/Formations/wizard/create/_template');
 
-$this->assign('stepNumber','2');
 $this->assign('stepTitle','Select a Blueprint');
 
 //Styling

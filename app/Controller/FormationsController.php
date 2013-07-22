@@ -3,21 +3,10 @@
 class FormationsController extends AppController
 {
 
-    public $wizardActions = array('create','addDevice');
-
-    public function beforeFilter(){
-
-        //Setup wizard settings if necessary for this action
-        if(in_array($this->action,$this->wizardActions)){
-            $setupMethod = "_setupWizard" . ucfirst($this->action);
-            $this->$setupMethod();
-        }
-    }
-
     /**
      * beforeFilter() wizard settings for Formation creation
      */
-    protected function _setupWizardCreate(){
+    public function _setupWizardCreate(){
 
         $this->Wizard->steps = array(
             'formationSettings',
@@ -25,7 +14,7 @@ class FormationsController extends AppController
             'deviceCounts',
             'configureDevices'
         );
-        $this->Wizard->action = $this->action;              //Root action method for tieing the steps together
+
         $this->Wizard->lockdown = true;                     //Prevent user from navigating between steps
         $this->Wizard->nestedViews = true;                  //Store view fields within action sub-folder
         $this->Wizard->completeUrl = '/Formations/';        //User is redirected here after wizard completion
@@ -233,7 +222,7 @@ class FormationsController extends AppController
             throw new NotFoundException('Formation does not exist');
 
         $this->DataTables->setColumns(array(
-             'Device' => array(
+            'Device' => array(
                 'model' => 'Device',
                 'column' => 'name'
             ),
@@ -254,7 +243,7 @@ class FormationsController extends AppController
                         'Device.*','Role.*'
                     )
                 ),
-                $this->Formation->Devices
+                $this->Formation->Device
             ); 
  
             $this->set(array(

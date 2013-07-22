@@ -28,7 +28,7 @@
   </style>
   <section>
   </style>
-  <h2><?php echo $this->fetch('stepNumber') . ". " . $this->fetch('stepTitle'); ?></h2>
+  <h2><?php echo $this->Wizard->stepNumber() . ". " . $this->fetch('stepTitle'); ?></h2>
   <?php echo $this->Form->create('Formation',array(
     'url' => $this->here,
   ));
@@ -37,7 +37,7 @@
     <div class="submit">
       <a class="cta primary disabled"><?php echo $this->fetch('forwardButtonText','Next step'); ?></a>
       <a class="cta wizard quit"><?php echo $this->fetch('backButtonText','Cancel'); ?></a>
-    <div class="step-description">Step <?php echo $this->fetch('stepNumber'); ?> of 4</div>
+    <div class="step-description">Step <?php echo $this->Wizard->stepNumber(); ?> of <?php echo $this->Wizard->stepTotal(); ?></div>
   <?php echo $this->Form->end(); ?>
   <script>
     $('.cta.wizard.quit').click('live',function(){
