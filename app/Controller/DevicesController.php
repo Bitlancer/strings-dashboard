@@ -67,7 +67,7 @@ class DevicesController extends AppController
         }
         else {
             $this->set(array(
-                'createCTADisabled' => true, //!$isInfraProviderConfigured || !$this->Auth->User('is_admin'),
+                'createCTADisabled' => !$isInfraProviderConfigured || !$this->Auth->User('is_admin'),
             ));
         }
     }
@@ -129,6 +129,12 @@ class DevicesController extends AppController
 
     public function create($id=null){
 
+        $formations = $this->Device->Formation->find('all',array(
+            'contain' => array(),
+            'fields' => array('Formation.*')
+        ));
+
+        $this->set('formations', $formations);
     }
 
     public function resize($id=null){

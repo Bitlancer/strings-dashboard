@@ -4,24 +4,6 @@ class FormationsController extends AppController
 {
 
     /**
-     * beforeFilter() wizard settings for Formation creation
-     */
-    public function _setupWizardCreate(){
-
-        $this->Wizard->steps = array(
-            'formationSettings',
-            'selectBlueprint',
-            'deviceCounts',
-            'configureDevices'
-        );
-
-        $this->Wizard->lockdown = true;                     //Prevent user from navigating between steps
-        $this->Wizard->nestedViews = true;                  //Store view fields within action sub-folder
-        $this->Wizard->completeUrl = '/Formations/';        //User is redirected here after wizard completion
-        $this->Wizard->cancelUrl = '/Formations/';          //User is redirected here on wizard cancellation
-    }
-
-    /**
      * Authorization logic
      */
     public function isAuthorized($user){
@@ -282,9 +264,6 @@ class FormationsController extends AppController
         //Verify we can delete this device from the formation
         //Check min and max requirements
 
-         
-
-
     }
 
     protected function redirectIfNotActive($formation){
@@ -296,8 +275,35 @@ class FormationsController extends AppController
     }
 
 /**
+ * Add a device to a formation
+ */
+    public function _setupWizardAddDevice(){
+
+    }
+
+    public function addDevice($step=null){
+
+    }
+
+/**
  * Formation creation wizard
  */
+
+    public function _setupWizardCreate(){
+
+        $this->Wizard->steps = array(
+            'formationSettings',
+            'selectBlueprint',
+            'deviceCounts',
+            'configureDevices'
+        );
+
+        $this->Wizard->lockdown = true;                     //Prevent user from navigating between steps
+        $this->Wizard->nestedViews = true;                  //Store view fields within action sub-folder
+        $this->Wizard->completeUrl = '/Formations/';        //User is redirected here after wizard completion
+        $this->Wizard->cancelUrl = '/Formations/';          //User is redirected here on wizard cancellation
+    }
+ 
     public function create($step=null){
 
         $this->set('title_for_layout', 'Create Formation');
