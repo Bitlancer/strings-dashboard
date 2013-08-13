@@ -13,7 +13,8 @@ class Device extends AppModel {
         'DeviceType',
 		'Implementation',
 		'Formation',
-		'Role'
+		'Role',
+        'BlueprintPart'
 	);
 
 	public $hasMany = array(

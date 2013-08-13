@@ -14,9 +14,9 @@
 
     $actionMenu = $this->StringsActionMenu->create($title,$width,$align);
 
-    $actionMenu .= $this->Strings->modalLink('Edit Device',"/Devices/edit/$deviceId",true);
-    $actionMenu .= $this->Strings->modalLink('Resize Device',"/Devices/resize/$deviceId",$actionsDisabled);
-    $actionMenu .= $this->Strings->modalLink('Delete',"/Formations/deleteDevice/$formationId",$actionsDisabled);
+    $actionMenu .= $this->Strings->modalLink('Edit',"/Devices/edit/$deviceId",true,"Edit Device");
+    $actionMenu .= $this->Strings->modalLink('Resize',"/Devices/resize/$deviceId",$actionsDisabled,"Resize Device");
+    $actionMenu .= $this->Strings->modalLink('Delete',"/Formations/deleteDevice/$deviceId",$actionsDisabled,"Delete Device");
 
     $actionMenu .= $this->StringsActionMenu->close();
 

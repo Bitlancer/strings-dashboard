@@ -34,3 +34,16 @@ $this->end();
   ?>
 </div> <!-- /formation-details -->
 </section>
+<section id="devies">
+<?php
+echo $this->element('Datatables/default',array(
+    'model' => 'device',
+    'columnHeadings' => $this->DataTables->getColumnHeadings('devices'),
+    'dataSrc' => '/Formations/devices/' . $formation['Formation']['id'],
+    'ctaDisabled' => $formation['Formation']['status'] != 'active',
+    'ctaSrc' => '/Formations/addDevice/' . $formation['Formation']['id'],
+    'ctaModal' => false,
+    'pageLength' => 5,
+));
+?>
+</section>

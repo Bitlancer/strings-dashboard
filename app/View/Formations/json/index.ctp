@@ -17,7 +17,7 @@
         //Append action menu to last column
         $outputRow[count($outputRow)-1] .= $actionMenu;
 
-        //Add device status as a class
+        //Add formation status as a class
         $outputRow['DT_RowClass'] = "status status-$formationStatus";
 
         return $outputRow;

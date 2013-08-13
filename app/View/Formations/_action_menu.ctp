@@ -14,7 +14,7 @@
 
     $actionMenu = $this->StringsActionMenu->create($title,$width,$align);
 
-    $actionMenu .= $this->Strings->link('Devices',"/Formations/editDevices/$formationId",$actionsDisabled);
+    $actionMenu .= $this->Strings->link('Devices',"/Formations/view/$formationId#devices",$actionsDisabled);
     $actionMenu .= $this->Strings->modalLink('Unix Privileges',"/TeamInfrastructurePermissions/edit/Formation/$formationId",$actionsDisabled);
     $actionMenu .= $this->Strings->modalLink('Rename',"/Formations/edit/$formationId",$actionsDisabled);
     $actionMenu .= $this->Strings->modalLink('Delete',"/Formations/delete/$formationId",$actionsDisabled);

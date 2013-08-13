@@ -75,6 +75,17 @@ class FormationsController extends AppController
             $this->redirect(array('action' => 'index'));
         }
 
+        $this->DataTables->setColumns(array(
+            'Device' => array(
+                'model' => 'Device',
+                'column' => 'name'
+            ),
+            'Role' => array(
+                'model' => 'Role',
+                'column' => 'name'
+            ),
+        ),'devices');
+
         $this->set(array(
             'formation' => $formation,
             'isAdmin' => $this->Auth->User('is_admin')
@@ -94,40 +105,68 @@ class FormationsController extends AppController
             )
         ));
 
-        if(empty($formation)){
-            $this->setFlash('Formation does not exist.');
-            $this->redirect(array('action' => 'index'));
-        }
+        if(empty($formation))
+            throw new NotFoundException('Formation does not exist.');
 
         if($this->request->is('post')){
 
+            $this->autoRender = false;
+
+            $isError = false;
+            $message = "";
+            $redirectUri = false;
+
             $formationName = $formation['Formation']['name'];
 
-            $devices = array();
-            foreach($formation['Device'] as $device){
-                $devices[] = array(
-                    'id' => $device['id'],
-                    'status' => 'deleting'
-                );
+            if(!isset($this->request->data['confirm'])){
+                $isError = true;
+                $message = "Please confirm you would like to delete $formationName.";
             }
-
-            $formationAndDevices = array(
-                'Formation' => array(
-                    'id' => $id,
-                    'status' => 'deleting'
-                ),
-                'Device' => $devices
-            );
-
-            if($this->Formation->saveAll($formationAndDevices)){
-                $this->QueueJob->addJob(STRINGS_API_URL . '/Formations/delete/' . $id);
-                $this->setFlash("Formation $formationName has been marked for deletion",'success');
+            elseif($this->request->data['confirm'] != $formationName){
+                $isError = true;
+                $message = "Incorrect formation name. Please enter <strong>$formationName</strong> to delete this formation.";
             }
             else {
-                $this->setFlash("Unable to delete formation.");
+
+                $devices = array();
+                foreach($formation['Device'] as $device){
+                    $devices[] = array(
+                        'id' => $device['id'],
+                        'status' => 'deleting'
+                    );
+                }
+
+                $formationAndDevices = array(
+                    'Formation' => array(
+                        'id' => $id,
+                        'status' => 'deleting'
+                    ),
+                    'Device' => $devices
+                );
+
+                if($this->Formation->saveAll($formationAndDevices)){
+                    $this->QueueJob->addJob(STRINGS_API_URL . '/Formations/delete/' . $id);
+                    $message = "Formation $formationName has been scheduled for deletion.";
+                    $redirectUri = '/Formations';
+                }
+                else {
+                    $isError = true;
+                    $message = "Unable to delete formation.";
+                }
             }
 
-            $this->redirect($this->referer(array('action' => 'index')));
+            if($isError){
+                echo json_encode(array(
+                    'isError' => $isError,
+                    'message' => $message
+                ));
+            }
+            else {
+                $this->setFlash($message,'success');
+                echo json_encode(array(
+                    'redirectUri' => $redirectUri
+                ));
+            }
         }
 
         $this->set(array(
@@ -190,8 +229,8 @@ class FormationsController extends AppController
             ));
         }
     }
-
-    public function editDevices($id=null){
+    
+    public function devices($id=null){
 
          $formation = $this->Formation->find('first',array(
             'contain' => array(),
@@ -223,6 +262,9 @@ class FormationsController extends AppController
                     ),
                     'fields' => array(
                         'Device.*','Role.*'
+                    ),
+                    'conditions' => array(
+                        'Device.formation_id' => $id
                     )
                 ),
                 $this->Formation->Device
@@ -238,32 +280,92 @@ class FormationsController extends AppController
             ));
         }
     }
+    
 
-    public function deleteDevice($formationId=null,$deviceId=null){
+    public function deleteDevice($deviceId=null){
 
-        $formation = $this->Formation->find('first',array(
+        $this->loadModel('QueueJob');
+
+        $device = $this->Formation->Device->find('first',array(
             'contain' => array(
-                'Blueprint' => array(
-                    'BlueprintPart'
-                ),
-                'Device'
+                'BlueprintPart'
             ),
             'conditions' => array(
-                'Formation.id' => $id,
+                'Device.id' => $deviceId
             )
         ));
 
-        if(empty($formation))
-            throw new NotFoundException('Formation does not exist');
+        if(empty($device))
+            throw new NotFoundException('Device does not exist.');
 
-        $devices = Hash::combine($formation['Device'],'{n}.id','{n}');
+        $deviceName = $device['Device']['name'];
 
-        $blueprintPartCounts = Hash::reduce($devices,'{n}.blueprint_part_id',function(){
-        });
+        if($this->request->is('post')){
 
-        //Verify we can delete this device from the formation
-        //Check min and max requirements
+            $this->autoRender = false;
 
+            $isError = false;
+            $message = "";
+            $redirectUri = false;
+
+            //Validate confirmation text
+            if(!isset($this->request->data['confirm'])){
+                $isError = true;
+                $message = "Please confirm you would like to delete $deviceName";
+            }
+            elseif($this->request->data['confirm'] != $deviceName){
+                $isError = true;
+                $message = "Incorrect device name. Please enter <strong>$deviceName</strong> to delete this device.";
+            }
+            else {
+
+                //Verify we can delete this device from the formation, 
+                //check min requirement for its blueprint part id
+                $formationId = $device['Device']['formation_id'];
+                $blueprintPartId = $device['Device']['blueprint_part_id'];
+                $blueprintPartMin = $device['BlueprintPart']['minimum'];
+                $blueprintPartCount = $this->Formation->Device->find('count',array(
+                    'conditions' => array(
+                        'Device.formation_id' => $formationId,
+                        'Device.blueprint_part_id' => $blueprintPartId,
+                        'Device.status' => 'active'
+                    )
+                ));
+
+                if(($blueprintPartCount - 1) < $blueprintPartMin){
+                    $blueprintPartName = $device['BlueprintPart']['name'];
+                    $isError = true;
+                    $message = "You cannot delete this device. The Blueprint that this Formation was created from requires at least $blueprintPartMin $blueprintPartName(s).";
+                }
+                else {
+                    $this->Formation->Device->id = $deviceId;
+                    if($this->Formation->Device->saveField('status','deleting')){
+                        $this->QueueJob->addJob(STRINGS_API_URL . '/Devices/delete/' . $deviceId);
+                        $message = "Device $deviceName has been scheduled for deletion.";
+                        $redirectUri = '/Formations';
+                    }
+                    else {
+                        $isError = true;
+                        $message = 'Unable to delete this device.';
+                    }
+                }
+            }
+
+            if($isError){
+                echo json_encode(array(
+                    'isError' => $isError,
+                    'message' => $message
+                ));
+            }
+            else {
+                $this->setFlash($message,'success');
+                echo json_encode(array(
+                    'redirectUri' => $redirectUri
+                ));
+            }
+        }
+
+        $this->set('device',$device);
     }
 
     protected function redirectIfNotActive($formation){
@@ -279,9 +381,152 @@ class FormationsController extends AppController
  */
     public function _setupWizardAddDevice(){
 
+        $this->Wizard->steps = array(
+            'deviceCounts',
+            'configureDevices'
+        );
+
+        $this->Wizard->lockdown = true;                     //Prevent user from navigating between steps
+        $this->Wizard->nestedViews = true;                  //Store view fields within action sub-folder
+        $this->Wizard->completeUrl = '/Formations/';        //User is redirected here after wizard completion
+        $this->Wizard->cancelUrl = '/Formations/';          //User is redirected here on wizard cancellation 
     }
 
     public function addDevice($step=null){
+
+        //First call to this method includes the formation's
+        //ID. Get the formation and add to users session
+        if(preg_match('/^[0-9]+$/',$step)){
+
+            $formationId = $step;
+
+            $formation = $this->Formation->find('first',array(
+                'contain' => array(),
+                'conditions' => array(
+                    'Formation.id' => $formationId
+                )
+            ));
+
+            if(empty($formation))
+                throw new NotFoundException('Formation does not exist.');
+
+            $this->Wizard->save('_formation',$formation,true);
+        }
+
+        //Set title
+        $formation = $this->Wizard->read('_formation');
+        if(empty($formation))
+            throw new InternalErrorException('Session does not contain formation details.');
+        $this->set('title_for_layout', $formation['Formation']['name']);
+
+        //Process wizard step
+        $this->Wizard->process($step);
+    }
+
+    public function _prepareAddDeviceDeviceCounts(){
+
+        $this->loadModel('Device');
+
+        $formationId = $this->Wizard->read('_formation.Formation.id');
+
+        //Get blueprint part counts for each blueprint part
+        $existingBlueprintPartCounts = $this->Device->find('all',array(
+            'contain' => array(),
+            'fields' => array(
+                'blueprint_part_id',
+                'count(blueprint_part_id)',
+            ),
+            'conditions' => array(
+                'Device.formation_id' => $formationId,
+            ),
+            'group' => 'Device.blueprint_part_id'
+        ));
+
+        $existingBlueprintPartCounts = Hash::combine($existingBlueprintPartCounts,'{n}.Device.blueprint_part_id','{n}.{n}.count(blueprint_part_id)');
+
+        //Get list of blueprints
+        $formation = $this->Formation->find('first',array(
+            'contain' => array(
+                'Blueprint' => array(
+                    'BlueprintPart' => array(
+                        'Role'
+                    )
+                )
+            ),
+            'conditions' => array(
+                'Formation.id' => $formationId
+            )
+        ));
+
+        if(empty($formation))
+            throw new NotFoundException('Formation does not exist.');
+
+        $blueprintParts = $formation['Blueprint']['BlueprintPart'];
+
+        //Update blueprint min and max
+        $updatedBlueprintParts = array();
+        foreach($blueprintParts as $part){
+
+            $partId = $part['id'];
+            $partMin = $part['minimum'];
+            $partMax = $part['maximum'];
+            $currentDeviceCount = $existingBlueprintPartCounts[$partId];
+            
+            //Min
+            $partMin = $currentDeviceCount >= $partMin ? 0 : $partMin;
+
+            //Max
+            $partMax = $currentDeviceCount >= $partMax ? 0 : $partMax - $currentDeviceCount;
+
+            $part['maximum'] = $partMax;
+            $part['minimum'] = $partMin;
+
+            $updatedBlueprintParts[] = $part;
+        }
+
+        $this->Wizard->save('_deviceCounts.BlueprintParts',$updatedBlueprintParts);
+        $this->set('blueprintParts',$updatedBlueprintParts);
+    }
+
+    public function _processAddDeviceDeviceCounts(){
+
+        $blueprintParts = $this->Wizard->read('_deviceCounts.BlueprintParts');
+        $blueprintParts = Hash::combine($blueprintParts,'{n}.id','{n}');
+
+        $blueprintPartCounts = $this->request->data['blueprintPartCounts'];
+
+        //Validate count for each part & ensure at least one device is being spun up
+        $totalDeviceCount = 0;
+        foreach($blueprintPartCounts as $partId => $count){
+
+            $blueprintPart = $blueprintParts[$partId];
+            $min = $blueprintPart['minimum'];
+            $max = $blueprintPart['maximum'];
+            $name = $blueprintPart['name'];
+
+            if($count > $max || $count < $min){
+                $this->setFlash("Invalid count supplied for $name.");
+                return false;
+            }
+
+            $totalDeviceCount += $count;
+        }
+        if($totalDeviceCount == 0){
+            $this->setFlash("You don't want to add a new device?");
+            return false;
+        }
+
+        return true;
+    }
+
+    public function _prepareAddDeviceConfigureDevices(){
+
+        
+
+    }
+
+    public function _processAddDeviceConfigureDevices(){
+
 
     }
 
@@ -303,14 +548,14 @@ class FormationsController extends AppController
         $this->Wizard->completeUrl = '/Formations/';        //User is redirected here after wizard completion
         $this->Wizard->cancelUrl = '/Formations/';          //User is redirected here on wizard cancellation
     }
- 
+
     public function create($step=null){
 
         $this->set('title_for_layout', 'Create Formation');
         $this->Wizard->process($step);
     }
 
-    public function _prepareSelectBlueprint(){
+    public function _prepareCreateSelectBlueprint(){
 
         $this->loadModel('Blueprint');
 
@@ -339,7 +584,7 @@ class FormationsController extends AppController
         }
     }
 
-    public function _processSelectBlueprint(){
+    public function _processCreateSelectBlueprint(){
 
         $this->loadModel('Blueprint');
 
@@ -351,32 +596,12 @@ class FormationsController extends AppController
         return false;
     }
 
-    public function _prepareDeviceCounts(){
+    public function _prepareCreateDeviceCounts(){
 
         $this->loadModel('BlueprintPart');
 
         $blueprintId = $this->Wizard->read('selectBlueprint.Blueprint.id');
 
-        $blueprintParts = $this->BlueprintPart->find('all',array(
-            'contain' => array(
-                'Role'
-            ),
-            'conditions' => array(
-                'BlueprintPart.blueprint_id' => $blueprintId
-            )
-        ));
-
-        $this->set(array(
-            'blueprintParts' => $blueprintParts
-        ));
-    }
-
-    public function _processDeviceCounts(){
-
-        $this->loadModel('BlueprintPart');
-
-        //Get blueprint parts
-        $blueprintId = $this->Wizard->read('selectBlueprint.Blueprint.id');
         $blueprintParts = $this->BlueprintPart->find('all',array(
             'contain' => array(),
             'conditions' => array(
@@ -384,14 +609,22 @@ class FormationsController extends AppController
             )
         ));
 
-        //Re-index array by id
-        $blueprintParts = Hash::combine($blueprintParts,'{n}.BlueprintPart.id','{n}');
+        $blueprintParts = Hash::extract($blueprintParts,'{n}.BlueprintPart');
+
+        $this->Wizard->write('_deviceCounts.blueprintParts',$blueprintParts);
+        $this->set('blueprintParts',$blueprintParts);
+    }
+
+    public function _processCreateDeviceCounts(){
+
+        $blueprintParts = $this->Wizard->read('_deviceCounts.blueprintParts');
+        $blueprintParts = Hash::combine($blueprintParts,'{n}.id','{n}');
 
         //Validate count for each blueprint part and build count data structure
         $countsValid = true;
         $partCounts = $this->request->data['blueprintPartCounts'];
         foreach($partCounts as $id => $count){
-            $blueprintPart = $blueprintParts[$id]['BlueprintPart'];
+            $blueprintPart = $blueprintParts[$id];
             $expectedMin = $blueprintPart['minimum'];
             $expectedMax = $blueprintPart['maximum'];
             if($count < $expectedMin || $count > $expectedMax){
@@ -404,7 +637,7 @@ class FormationsController extends AppController
         return $countsValid;
     }
 
-    public function _prepareFormationSettings(){
+    public function _prepareCreateFormationSettings(){
 
         $this->loadModel('Implementation');
         $this->loadModel('Dictionary');
@@ -435,7 +668,7 @@ class FormationsController extends AppController
         ));
     }
 
-    public function _processFormationSettings(){
+    public function _processCreateFormationSettings(){
 
         $this->loadModel('Implementation');
         $this->loadModel('Dictionary');
@@ -490,7 +723,7 @@ class FormationsController extends AppController
         return true;
     }
 
-    public function _prepareConfigureDevices(){
+    public function _prepareCreateConfigureDevices(){
 
         $this->loadModel('Implementation');
         $this->loadModel('DictionaryWord');
@@ -578,7 +811,7 @@ class FormationsController extends AppController
         $this->set($data);
     }
 
-    public function _processConfigureDevices(){
+    public function _processCreateConfigureDevices(){
 
         $this->loadModel('Device');
         $this->loadModel('Implementation');

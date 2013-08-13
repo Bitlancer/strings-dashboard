@@ -259,7 +259,7 @@ class WizardComponent extends Component {
 				if (!empty($this->controller->data) && !isset($this->controller->request->data['Previous'])) { 
 					$proceed = false;
 					
-					$processCallback = '_' . Inflector::variable('process_' . $this->_currentStep);
+					$processCallback = '_' . Inflector::variable('process_' . $this->action . '_' . $this->_currentStep);
 					if (method_exists($this->controller, $processCallback)) {
 						$proceed = $this->controller->$processCallback();
 					} elseif ($this->autoValidate) {
@@ -291,7 +291,7 @@ class WizardComponent extends Component {
 					$this->controller->data = $this->read($this->_currentStep);
 				}
 			
-				$prepareCallback = '_' . Inflector::variable('prepare_' . $this->_currentStep);
+				$prepareCallback = '_' . Inflector::variable('prepare_' . $this->action . '_' . $this->_currentStep);
 				if (method_exists($this->controller, $prepareCallback)) {
 					$this->controller->$prepareCallback();
 				}
@@ -299,7 +299,7 @@ class WizardComponent extends Component {
 				$this->config('activeStep', $this->_currentStep);
 		
 				if ($this->nestedViews) {
-					$this->controller->viewPath .= DS . 'wizard' . DS . $this->action;
+					$this->controller->viewPath .= DS . 'wizard' . DS . Inflector::underscore($this->action);
 				}
 
 				return $this->controller->autoRender ? $this->controller->render($this->_currentStep) : true;

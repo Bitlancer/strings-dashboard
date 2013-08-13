@@ -9,7 +9,8 @@ class Formation extends AppModel {
 	);
 
 	public $belongsTo = array(
-		'Organization'
+		'Organization',
+        'Blueprint'
 	);
 
 	public $hasMany = array(
