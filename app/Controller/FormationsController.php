@@ -611,7 +611,7 @@ class FormationsController extends AppController
 
         $blueprintParts = Hash::extract($blueprintParts,'{n}.BlueprintPart');
 
-        $this->Wizard->write('_deviceCounts.blueprintParts',$blueprintParts);
+        $this->Wizard->save('_deviceCounts.blueprintParts',$blueprintParts);
         $this->set('blueprintParts',$blueprintParts);
     }
 
@@ -937,7 +937,7 @@ class FormationsController extends AppController
         $dictionaryWordIds = $this->Wizard->read('_configureDevices.dictionaryWordIds');
         $this->DictionaryWord->markAsUsed($dictionaryWordIds);
 
-        //Add create formation
+        //Add create formation Q job
         if(!$this->QueueJob->addJob(STRINGS_API_URL . '/Formations/create/' . $this->Formation->id)){
             $this->setFlash('We encountered an error while creating a job to build this formation.');
             return true;

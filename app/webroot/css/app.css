@@ -1350,3 +1350,6 @@ body .association.disabled {
   margin-bottom: 10px; }
 #edit-permissions #privileges input {
   margin-bottom: 8px; }
+
+#manage-dns-records #select-device {
+  margin-bottom: 10px; }

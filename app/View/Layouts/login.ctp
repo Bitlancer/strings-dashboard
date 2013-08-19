@@ -2,7 +2,7 @@
 <html lang="en-US">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Strings - Sign In | Bitlancer</title>
+  <title>Sign In - Strings | Bitlancer</title>
   <link id="style" rel="stylesheet" type="text/css" href="/css/app.css">
    <?php
 		echo $this->Html->meta('icon');

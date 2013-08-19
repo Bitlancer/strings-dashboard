@@ -6,7 +6,7 @@ $this->assign('title',$application['Application']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('../Applications/_activity_log');
+echo $this->element('../Applications/_elements/activity_log');
 $this->end();
 ?>
 
@@ -15,10 +15,10 @@ $this->end();
 <h2 class="float-left">Application Details</h2>
 <h2 class="float-right">
   <?php
-    echo $this->element('../Applications/_action_menu',array(
+    echo $this->element('../Applications/_elements/action_menu',array(
       'applicationId' => $application['Application']['id'],
       'actionsDisabled' => !$isAdmin,
-      'reload' => true
+      'reloadOnClose' => true
     ));
   ?>
 </h2>
@@ -54,7 +54,7 @@ $this->end();
 </section>
 
 <section>
-<h2>User Privileges</h2>
+<h2>Team Privileges</h2>
   <?php
   $permissionsTableData = array();
   foreach($permissions as $permission){
@@ -73,8 +73,25 @@ $this->end();
     $permissionsTableData[] = array($team,implode(',',$sudoRoles));
   }
   echo $this->element('Tables/default',array(
-    'columnHeadings' => array('Teams','Sudo Roles'),
+    'columnHeadings' => array('Team','Sudo Role'),
     'data' => $permissionsTableData
   ));
 ?>
+</section>
+
+<section>
+  <?php echo $this->element('Datatables/default',array(
+    'model' => 'deviceDns',
+    'title' => 'DNS',
+    'columnHeadings' => array('Device','DNS Record'),
+    'noCta' => true,
+    'ctaButtonText' => 'Manage DNS records',
+    'ctaTitle' => 'Manage DNS records',
+    'dataSrc' => '/Applications/dns/' . $application['Application']['id'],
+    'ctaDisabled' => false,
+    'ctaSrc' => '/Applications/manageDnsRecords/' . $application['Application']['id'],
+    'ctaModal' => true,
+    'pageLength' => 5,
+  ));
+  ?>
 </section>

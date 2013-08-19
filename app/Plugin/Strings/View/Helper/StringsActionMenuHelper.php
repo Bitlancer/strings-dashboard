@@ -43,7 +43,7 @@ class StringsActionMenuHelper extends StringsAppHelper {
      */
     public function create($title,$width=120,$align='right'){
 
-        $src = "<ul class=\"action-menu\" data-width=\"$width\" data-align=\"$align\">";
+        $src = "<ul class='action-menu' data-width='$width' data-align='$align'>";
         $src .= "<li>$title</li>";
         $src .= "<span>";
 

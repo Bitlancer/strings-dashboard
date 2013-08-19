@@ -114,6 +114,7 @@ class StringsTableHelper extends StringsAppHelper {
             'data-empty-table' => 'No data available',
             'data-processing' => 'false',
             'data-title' => 'false',
+            'data-raw-title' => 'false',
             'data-search' => 'false',
             'data-processing' => 'false',
         );

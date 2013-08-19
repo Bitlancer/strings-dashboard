@@ -25,7 +25,7 @@ class StringsHelper extends StringsAppHelper {
 		return $flattenedRecords;
 	}
 
-	public function modalLink($text,$source,$disabled=false,$title=false,$width=360,$additionalClasses=array()){
+	public function oldModalLink($text,$source,$disabled=false,$title=false,$width=360,$additionalClasses=array()){
 
         $class ="modal";
         if($disabled)
@@ -43,10 +43,42 @@ class StringsHelper extends StringsAppHelper {
 			'data-width' => $width
 		);
 
-        $src = "<a " . self::buildElementAttributes($modalAttrs) . ">$text</a>";
+        $src = "<a " . self::buildElementAttributes($modalAttrs,"'") . ">$text</a>";
    
         return $src;
     }
+
+    public function modalLink($text,$source,$modalOptions,$additionalClasses=array()){
+
+        //Set and merge default modal options
+        $defaultModalOptions = array(
+            'disabled' => false,
+            'title' => $text,
+            'width' => 360,
+            'reloadOnClose' => false,
+        );
+        $modalOptions = array_merge($defaultModalOptions,$modalOptions);
+
+        //Set classes on element
+        $classes = array();
+        $classes[] = $modalOptions['disabled'] ? 'disabled' : 'modal';
+        if($modalOptions['reloadOnClose'])
+            $classes[] = "reload";
+        if(!empty($additionalClasses))
+            $classes = array_unique(array_merge($classes,$additionalClasses));
+
+        //Set element attributes
+        $modalAttrs = array(
+            'class' => implode(" ",$classes),
+            'data-src' => $source,
+            'data-title' => $modalOptions['title'],
+            'data-width' => $modalOptions['width']
+        );
+
+        $src = "<a " . self::buildElementAttributes($modalAttrs,"'") . ">$text</a>"; 
+        return $src;
+    }
+
 
 	public function link($text,$destination,$disabled=false,$target='_parent'){
 
@@ -62,7 +94,7 @@ class StringsHelper extends StringsAppHelper {
             );
         }
 
-        $src ="<a " . self::buildElementAttributes($attributes) . ">$text</a>";
+        $src ="<a " . self::buildElementAttributes($attributes,"'") . ">$text</a>";
         return $src;
     }
 }

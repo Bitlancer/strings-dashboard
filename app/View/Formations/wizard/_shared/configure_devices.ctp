@@ -39,7 +39,7 @@ $this->assign('forwardButtonText','Complete');
   <tr>
     <td><?php echo $name; ?></td>
     <td><?php echo $blueprintPartName; ?></td>
-    <td><?php echo $this->Strings->modalLink('Configure',"#device-$psuedoId",false,"Configure - $name",500,array('action')); ?></td>
+    <td><?php echo $this->Strings->oldModalLink('Configure',"#device-$psuedoId",false,"Configure - $name",500,array('action')); ?></td>
   </tr>
 <?php } ?>
 </tbody>

@@ -117,21 +117,19 @@ var strings = {
             "bProcessing": $(this).attr('data-processing') === undefined ? false: ($(this).attr('data-processing') == 'true'),
             "bServerSide": ($(this).attr("data-src") === undefined || $(this).attr('data-src') == 'false' ? false: true),
             "sAjaxSource": ($(this).attr("data-src") === undefined || $(this).attr("data-src") == 'false' ? null: $(this).attr("data-src")),
-            /*
-            "fnServerParams": function(aoData){
-              if($(this).attr("data-src-params") !== undefined){
-                aoData.push({"params": $(this).attr("data-src-params")});
-              }
-            },
-            */
             "fnInitComplete": function(oSettings) {
               var parent = $(this).parents('.dataTables_wrapper');
               if($(this).attr('data-cta')) {
                 parent.find('.top').prepend($(this).attr('data-cta'))
               }
-              if($(this).attr('data-title')) { 
+              if($(this).attr('data-title') && $(this).attr('data-title') != 'false') {
                 parent.find('.top').prepend('<h2>'+$(this).attr('data-title')+'</h2>');
                 if(!$(this).attr('data-cta')) parent.find('h2').css('display','inline');
+              }
+              if($(this).attr('data-raw-title') && $(this).attr('data-raw-title') != 'false') {
+                var element = $($(this).attr('data-raw-title'));
+                parent.find('.top').prepend(element);
+                //if(!$(this).attr('data-cta')) element.css('display','inline');
               }
               if($(this).attr('data-search') === undefined || $(this).attr('data-search') == 'true'){ 
                 parent.find('.dataTables_filter input').attr('placeholder','Search');

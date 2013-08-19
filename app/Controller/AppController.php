@@ -99,6 +99,14 @@ class AppController extends Controller {
     }
 
     /**
+     * Raw debug function
+     */
+    protected function debug($o){
+
+        die(print_r($o,true));
+    }
+
+    /**
      * Search for a list of entities with a matching name
      * Used for autocomplete forms
      */

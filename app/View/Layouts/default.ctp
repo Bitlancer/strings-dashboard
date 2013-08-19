@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en-US">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="refresh" content="2700">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="refresh" content="<?php echo Configure::read('Session.timeout') * 60 + 15; ?>" />
   <title> <?php echo $title_for_layout; ?> - Strings | Bitlancer</title>
   <link rel="stylesheet" type="text/css" href="/css/app.css">
   <link rel="stylesheet" type="text/css" href="/css/jquery.ui.theme.css">

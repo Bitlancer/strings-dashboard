@@ -6,7 +6,7 @@ $this->assign('title', 'Applications');
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('../Applications/_activity_log');
+echo $this->element('../Applications/_elements/activity_log');
 $this->end();
 
 //Main content

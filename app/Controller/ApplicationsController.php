@@ -353,7 +353,8 @@ class ApplicationsController extends AppController
             array(
                 'ApplicationFormation.application_id' => $applicationId,
                 'ApplicationFormation.formation_id' => $formationId
-            )
+            ),
+            true    //Cascade
         );
 	}
 
@@ -361,7 +362,242 @@ class ApplicationsController extends AppController
 
     }
 
-    public function dns($id=null){
+    public function dns($applicationId=null) {
 
+        $this->loadModel('DeviceDns');
+
+        $this->DataTables->setColumns(
+            array(
+                'Device' => array(
+                    'model' => 'Device',
+                    'column' => 'name'
+                ),
+                'DNS Record' => array(
+                    'model' => 'DeviceDns',
+                    'column' => 'name'
+                )
+            )
+        );
+        
+        if($this->request->isAjax()){
+
+            $this->DataTables->process(
+                array(
+                    'contain' => array(
+                        'Device',
+                        'ApplicationFormation'
+                    ),
+                    'fields' => array(
+                        'DeviceDns.*','Device.*'
+                    ),
+                    'conditions' => array(
+                        'ApplicationFormation.application_id' => $applicationId
+                    )
+                ),
+                $this->DeviceDns
+            );
+        }
+    }
+
+    public function manageDnsRecords($applicationId=null){
+
+        //Get the application and its associated devices
+        $application = $this->Application->find('first',array(
+            'contain' => array(
+                'ApplicationFormation' => array(
+                    'Formation' => array(
+                        'Device' => array(
+                            'DeviceAttribute',
+                            'conditions' => array(
+                                'Device.status <>' => 'active'
+                            )
+                        )
+                    )
+                )
+            ),
+            'conditions' => array(
+                'Application.id' => $applicationId
+            )
+        ));
+
+        if(empty($application))
+            throw new NotFoundException('Application does not exist.');
+
+        //Get devices
+        $devices = array();
+        foreach($application['ApplicationFormation'] as $appForm){
+            $formation = $appForm['Formation'];
+            foreach($formation['Device'] as $device)
+                $devices[] = $device;
+        }
+
+        $this->set(array(
+            'application' => $application,
+            'devices' => $devices
+        ));
+    }
+
+    public function manageDeviceDnsRecords($applicationId=null,$deviceId=null){
+
+        $this->loadModel('DeviceDns');
+
+        $this->DataTables->setColumns(
+            array(
+                'Record' => array(
+                    'model' => 'DeviceDns',
+                    'column' => 'name'
+                )
+            )
+        );
+
+        if($this->request->isAjax()){
+
+            $this->DataTables->process(
+                array(
+                    'contain' => array(
+                        'ApplicationFormation'
+                    ),
+                    'conditions' => array(
+                        'ApplicationFormation.application_id' => $applicationId,
+                        'DeviceDns.device_id' => $deviceId
+                    )
+                ),
+                $this->DeviceDns
+            );
+        }
+    }
+
+    public function addDnsRecord($applicationId=null,$deviceId=null){
+
+        $this->loadModel('DeviceDns');
+        $this->loadModel('Device');
+        $this->loadModel('Config');
+
+        $this->autoRender = false;
+
+        $isError = false;
+        $message = "";
+       
+        if(!isset($this->request->data['name'])){
+            $isError = true;
+            $message = "Please enter a hostname.";
+        }
+        else {
+            $hostname = isset($this->request->data['name']) ? $this->request->data['name'] : "";
+
+            $appForm = $this->Application->ApplicationFormation->find('first',array(
+                'link' => array(
+                    'Application',
+                    'Formation' => array(
+                        'Device'
+                    )
+                ),
+                'fields' => array(
+                    'ApplicationFormation.*',
+                    'Application.*',
+                    'Device.*'
+                ),
+                'conditions' => array(
+                    'ApplicationFormation.application_id' => $applicationId,
+                    'Device.id' => $deviceId
+                )
+            ));
+
+            if(empty($appForm)){
+                $isError = true;
+                $message = 'This device does not exist or is not associated with this application.';
+            }
+            else {
+
+                //Get the device
+                $device = $this->Device->find('first',array(
+                    'contain' => array(
+                        'DeviceAttribute'
+                    ),
+                    'conditions' => array(
+                        'Device.id' => $deviceId
+                    )
+                ));
+                //This should never occur
+                if(empty($device))
+                    throw new NotFoundException('Device does not exist.');
+
+                $deviceAttributes = Hash::combine($device['DeviceAttribute'],'{n}.var','{n}.val');
+                $implementationId = $device['Device']['implementation_id'];
+                $regionId = $deviceAttributes['implementation.region_id'];
+
+                //Determine FQDN
+                $hostname = strtolower($hostname);
+                $appName = $this->dnsSafeName($appForm['Application']['name']);
+                $datacenter = $this->dnsSafeName(
+                    $this->Device->Implementation->getRegionName($implementationId,$regionId)
+                );
+                $tld = $this->Config->findByVar('dns.internal.domain');
+                $tld = $tld['Config']['val'];
+
+                $fqdn = "$hostname.$appName.$datacenter.$tld";
+
+                $deviceDns = array('DeviceDns' => array(
+                    'application_formation_id' => $appForm['ApplicationFormation']['id'],
+                    'device_id' => $deviceId,
+                    'name' => $fqdn
+                ));
+
+                $this->DeviceDns->create();
+                if(!$this->DeviceDns->save($deviceDns)){
+                    $isError = true;
+                    $message = $this->DeviceDns->validationErrorsAsString();
+                }
+
+            }
+        }
+
+        echo json_encode(array(
+            'isError' => $isError,
+            'message' => __($message)
+        )); 
+
+    }
+
+    private function dnsSafeName($string){
+
+        //Replace spaces with _underscores
+        $string = str_replace(' ','_',$string);
+
+        //Lowercase
+        $string = strtolower($string);
+
+        return $string;
+    }
+
+    public function removeDnsRecord() {
+
+        $this->loadModel('DeviceDns');
+
+        $this->autoRender = false;
+
+        $isError = false;
+        $message = "";
+
+        $deviceDnsId = isset($this->request->data['id']) ? $this->request->data['id'] : 0;
+
+        $result = $this->DeviceDns->deleteAll(array(
+            'DeviceDns.id' => $deviceDnsId
+        ));
+
+        if(!$result){
+            $isError = true;
+            $message = 'Unable to remove record.';
+        }
+
+        if($isError){
+            echo json_encode(array(
+                'isError' => $isError,
+                'message' => __($message)
+            ));
+        }
+        else {
+            echo json_encode(null);
+        }
     }
 }

@@ -19,7 +19,8 @@ class Device extends AppModel {
 
 	public $hasMany = array(
 		'DeviceAttribute',
-		'TeamDevice'
+		'TeamDevice',
+        'DeviceDns'
 	);
 	
 	public $validate = array(
@@ -114,4 +115,25 @@ class Device extends AppModel {
             )
         )
 	);
+
+    public function getCustomerDatacenter($deviceId){
+
+        $implementationAttr = ClassRegistry::init('ImplementationAttribute');
+
+        $regionId = $this->DeviceAttribute->findByVar('implementation.region_id');
+        $regionId = $regionId['DeviceAttribute']['val'];
+        if(empty($regionId))
+            throw new InternalErrorException("Attribute implementation.region_id is not defined.");
+
+        $regions = $implementationAttr->getOverridableAttribute('regions');
+        if(empty($regions))
+            throw new InternalErrorException("Attribute regions is not defined.");
+        $regions = json_decode($regions,true);
+        $regions = Hash::combine($regions,'{n}.id','{n}');
+
+        if(!isset($regions[$regionId]))
+            throw new InternalErrorException("Unrecognized region id.");
+
+        return $regions[$regionId]['name'];
+    }
 }
