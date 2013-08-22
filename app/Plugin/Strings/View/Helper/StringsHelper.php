@@ -48,7 +48,7 @@ class StringsHelper extends StringsAppHelper {
         return $src;
     }
 
-    public function modalLink($text,$source,$modalOptions,$additionalClasses=array()){
+    public function modalLink($text,$source,$modalOptions=array(),$additionalClasses=array()){
 
         //Set and merge default modal options
         $defaultModalOptions = array(

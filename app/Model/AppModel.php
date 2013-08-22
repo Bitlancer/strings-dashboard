@@ -20,6 +20,38 @@ class AppModel extends Model {
         )
 	);
 
+    /**
+     * Override CakePHP's native exists method.
+     *
+     * Most of this App's models behave as "OrganizationOwned" models.
+     * The "OrganizationOwned" behavior takes care of appending organization_id
+     * to each query to securely handle data separation between organizations.
+     * CakePHP's native exists method bypasses this behavior by using a special
+     * query which does not trigger the behavior callbacks. By overriding this
+     * method we can force the callbacks to be executed and enfore the logic
+     * defined by "OrganizationOwned".
+     */
+    public function exists($id=false){
+
+        if($id === false)
+            $id = $this->getID();
+        
+        if($id === false)
+            return false;
+
+        $model = $this->find('first',array(
+            'contain' => array(),
+            'conditions'=> array(
+                'id' => $id
+            )
+        ));
+
+        if(empty($model))
+            return false;
+
+        return true;
+    }
+
 	/**
 	 * Validate relationship (foreign_key) between this model and belongsTo model
  	 */

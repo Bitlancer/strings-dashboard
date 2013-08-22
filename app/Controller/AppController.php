@@ -61,9 +61,28 @@ class AppController extends Controller {
 	public function beforeFilter(){
 
 		//Set default cookie options
-    	$this->Cookie->key = '>qfAHms1U1c{}0wC6SWZjur#!31TaB58LJQqathasGb$@11~_+!@#HKis~#^';
-    	$this->Cookie->httpOnly = true;
+        $this->setCookieOptions();
+
+        //Pass isAdmin flag to every view
+        $this->passIsAdminFlagToView();
 	}
+
+    /**
+     * Set default cookie options
+     */
+    private function setCookieOptions(){
+
+        $this->Cookie->key = '>qfAHms1U1c{}0wC6SWZjur#!31TaB58LJQqathasGb$@11~_+!@#HKis~#^';
+        $this->Cookie->httpOnly = true;
+    }
+
+    /**
+     * Pass isAdmin flag to every view
+     */
+    private function passIsAdminFlagToView(){
+
+        $this->set('isAdmin',$this->Auth->User('is_admin'));
+    }
 
     /**
      * Whether the current request is for json
@@ -78,6 +97,31 @@ class AppController extends Controller {
     public function setFlash($message,$type='error'){
         $this->Session->setFlash(__($message),'default',array(),$type);
     }
+
+    /**
+     * Output generic Ajax form response
+     */
+     public function outputAjaxFormResponse($message,$isError=false,$redirectUri=null){
+
+        $this->autoRender = false;
+
+        if(empty($redirectUri)){
+            $message = __($message);
+        }
+        else {
+            if(!empty($message)){
+                $messageType = $isError ? 'error' : 'success';
+
+                $this->setFlash($message,$messageType);
+            }
+        }
+
+        echo json_encode(array(
+            'isError' => $isError,
+            'message' => __($message),
+            'redirectUri' => $redirectUri
+        ));
+     }
 
     /**
      * Add a Vendor library to the php path

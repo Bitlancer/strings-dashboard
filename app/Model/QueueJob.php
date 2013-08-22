@@ -14,7 +14,10 @@ class QueueJob extends AppModel
     );
 
 	public $hasMany = array(
-		'QueueJobLog'
+		'QueueJobLog' => array(
+            'foreignKey' => 'job_id',
+            'dependent' => true
+        )
 	);
 
 	public $validate = array(

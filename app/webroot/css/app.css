@@ -16,6 +16,8 @@ html {
   width: 100%; }
   html * {
     line-height: 1; }
+  html pre {
+    white-space: pre-wrap; }
   html body {
     height: 100%;
     width: 100%; }
@@ -377,7 +379,7 @@ table {
             margin-bottom: 5px; }
     table tbody tr.status td:first-of-type {
       position: relative;
-      text-indent: 7px; }
+      padding-left: 12px; }
       table tbody tr.status td:first-of-type:before {
         content: '';
         display: table-cell;
@@ -712,6 +714,9 @@ form fieldset {
       border: 0;
       margin: 0;
       padding: 0; }
+  form fieldset p.help {
+    margin-bottom: 5px;
+    font-size: 90%; }
 form hr {
   border: 1px solid #eee;
   background: transparent;

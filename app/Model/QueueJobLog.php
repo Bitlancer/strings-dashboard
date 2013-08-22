@@ -2,9 +2,11 @@
 
 class QueueJobLog extends AppModel
 {
-	public $useTable = 'queued_job';
+	public $useTable = 'queued_job_log';
 
     public $belongsTo = array(
-        'QueueJob'
+        'QueueJob' => array(
+            'foreignKey' => 'job_id'
+        )
     );
 }

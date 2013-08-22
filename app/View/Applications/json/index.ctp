@@ -3,7 +3,7 @@
     echo $this->DataTables->render(
         function($view,$outputRow,$rawRow) use($isAdmin){
 
-        $actionMenu = $view->element('../Applications/_elements/action_menu',array(
+        $actionMenu = $view->element('../Applications/elements/action_menu',array(
             'applicationId' => $rawRow['Application']['id'],
             'actionsDisabled' => !$isAdmin
         ));

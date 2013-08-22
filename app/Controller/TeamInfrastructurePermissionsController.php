@@ -5,7 +5,7 @@ class TeamInfrastructurePermissionsController extends AppController {
     public $uses = false;
 
     /*
-     * The models specified below are the only which a user may edit
+     * The models specified below are the only which a user may 
      * edit infrastructure permissions for
      */
     protected $validModels = array('Application','Formation','Role','Device');

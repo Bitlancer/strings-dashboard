@@ -18,7 +18,14 @@ class Application extends AppModel {
         ),
         'ApplicationFormation' => array(
             'dependent' => true
-        )
+        ),
+        'Script' => array(
+            'foreignKey' => 'foreign_key_id',
+            'conditions' => array(
+                'Script.model' => 'application',
+            ),
+            'dependent' => true
+        ),
 	);
 
 	public $hasAndBelongsToMany = array();

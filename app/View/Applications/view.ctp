@@ -6,7 +6,7 @@ $this->assign('title',$application['Application']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('../Applications/_elements/activity_log');
+echo $this->element('../Applications/elements/activity_log');
 $this->end();
 ?>
 
@@ -15,7 +15,7 @@ $this->end();
 <h2 class="float-left">Application Details</h2>
 <h2 class="float-right">
   <?php
-    echo $this->element('../Applications/_elements/action_menu',array(
+    echo $this->element('../Applications/elements/action_menu',array(
       'applicationId' => $application['Application']['id'],
       'actionsDisabled' => !$isAdmin,
       'reloadOnClose' => true
@@ -88,9 +88,24 @@ $this->end();
     'ctaButtonText' => 'Manage DNS records',
     'ctaTitle' => 'Manage DNS records',
     'dataSrc' => '/Applications/dns/' . $application['Application']['id'],
-    'ctaDisabled' => false,
     'ctaSrc' => '/Applications/manageDnsRecords/' . $application['Application']['id'],
     'ctaModal' => true,
+    'pageLength' => 5,
+  ));
+  ?>
+</section>
+
+<section>
+  <?php echo $this->element('Datatables/default',array(
+    'model' => 'script',
+    'title' => 'Deploy Scripts',
+    'columnHeadings' => array('Script'),
+    'ctaButtonText' => 'Add script',
+    'ctaTitle' => 'Add deploy script',
+    'dataSrc' => '/Scripts/index/Application/' . $application['Application']['id'],
+    'ctaSrc' => '/Scripts/create/Application/' . $application['Application']['id'],
+    'ctaModal' => true,
+    'ctaWidth' => '500',
     'pageLength' => 5,
   ));
   ?>

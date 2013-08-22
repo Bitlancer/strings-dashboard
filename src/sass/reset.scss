@@ -18,6 +18,9 @@ html {
   }
   //::selection, * ::selection { background: rgba(0,0,0,0) }
   //::-webkit-scrollbar { display: none }
+  pre {
+    white-space: pre-wrap;
+  }
   pre ::selection, code ::selection {
     //background: rgba(30, 143, 226,.5);
   }

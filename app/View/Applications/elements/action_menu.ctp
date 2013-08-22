@@ -20,13 +20,9 @@
     $actionMenu = $this->StringsActionMenu->create($title,$width,$align);
 
     //Menu items
-    $actionMenu .= $this->Strings->modalLink(
+    $actionMenu .= $this->Strings->link(
         'Deploy',
-        "/Applications/deploy/$applicationId",
-        array(
-            'disabled' => true,
-            'reloadOnClose' => $reloadOnClose
-        )
+        "/Applications/view/$applicationId#script"
     );
 
     $actionMenu .= $this->Strings->modalLink(

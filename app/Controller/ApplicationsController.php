@@ -112,33 +112,20 @@ class ApplicationsController extends AppController
 
 		if($this->request->is('post')){
 
-            $this->autoRender = false;
-
             $isError = false;
-            $message = "";
+            $message = null;
+            $redirectUri = null;
 
             if($this->Application->save($this->request->data,true,array('name'))){
             	$message = 'Created new application ' . $this->request->data['Application']['name'] . '.';
+                $redirectUri = '/Applications/view/' . $this->Application->id;
             }
             else {
                 $isError = true;
                 $message = $this->Application->validationErrorsAsString();
             }
 
-            if($isError){
-                $response = array(
-                    'isError' => $isError,
-                    'message' => __($message)
-                );
-            }
-            else {
-                $this->Session->setFlash(__($message),'default',array(),'success');
-                $response = array(
-                    'redirectUri' => '/Applications/view/' . $this->Application->id
-                );
-            }
-
-            echo json_encode($response);
+            $this->outputAjaxFormResponse($message,$isError,$redirectUri);
         }
 	}
 
@@ -153,42 +140,27 @@ class ApplicationsController extends AppController
             )
         ));
 
-        if(empty($app)){
-            $this->Session->setFlash(__('This application does not exist.'),'default',array(),'error');
-            $this->redirect(array('action' => 'index'));
-        }
+        if(empty($app))
+            throw new NotFoundException('Application does not exist.');
 
         if($this->request->is('post')){
 
-            $this->autoRender = false;
-
             $isError = false;
-            $message = "";
+            $message = null;
+            $redirectUri = null;
 
             $validFields = array('name');
             $this->Application->id = $id;
             if($this->Application->save($this->request->data,true,$validFields)){
                 $message = 'Updated application ' . $app['Application']['name'] . '.';
+                $redirectUri = $this->referer(array('action' => 'index'));
             }
             else {
                 $isError = true;
                 $message = $this->Application->validationErrorsAsString();
             }
 
-            if($isError){
-                $response = array(
-                    'isError' => $isError,
-                    'message' => __($message)
-                );
-            }
-            else {
-                $this->Session->setFlash(__($message),'default',array(),'success');
-                $response = array(
-                    'redirectUri' => $this->referer(array('action' => 'index'))
-                );
-            }
-
-            echo json_encode($response);
+            $this->outputAjaxFormResponse($message,$isError,$redirectUri);
         }
         else {
             $this->set(array(
@@ -200,15 +172,14 @@ class ApplicationsController extends AppController
 	public function delete($id=null){
 
         $app = $this->Application->find('first',array(
+            'contain' => array(),
             'conditions' => array(
                 'Application.id' => $id,
             )
         ));
 
-        if(empty($app)){
-            $this->Session->setFlash(__('This application does not exist.'),'default',array(),'error');
-            $this->redirect(array('action' => 'index'));
-        }
+        if(empty($app))
+            throw new NotFoundException('Application does not exist.');
 
         if($this->request->is('post')){
 
@@ -278,19 +249,15 @@ class ApplicationsController extends AppController
 
 	public function addFormation($id=null){
 
-		$this->autoRender = false;
+        $this->loadModel('Formation');
+
+        $this->autoRender = false;
 
 		$isError = false;
-		$message = "";
-		$memberId = 0;
+		$message = null;
+        $redirectUri = null;
 
-		$formationName = "";
-        if($this->request->is('post'))
-            $formationName = $this->request->data['name'];
-        else
-            $formationName = $this->request->query['name'];
-
-        $this->loadModel('Formation');
+		$formationName = $this->request->is('post') ? $this->request->data['name'] : $this->request->query['name'];
 
 		$formation = $this->Formation->find('first',array(
 			'fields' => array(
@@ -301,10 +268,8 @@ class ApplicationsController extends AppController
 			)
 		));
 
-		if(empty($formation)){
-			$isError = true;
-			$message = 'No such formation found';
-		}
+		if(empty($formation))
+            throw new NotFoundException('Formation does not exist.');
 		else {
 			$formationId = $formation['Formation']['id'];
 
@@ -322,46 +287,43 @@ class ApplicationsController extends AppController
                         'formation_id' => $formationId
                     )
                 );
-				if($this->Application->ApplicationFormation->save($appFormation))
-					$memberId = $formationId;
-				else {
+				if(!$this->Application->ApplicationFormation->save($appFormation)) {
 					$isError = true;
-					$message = 'Unable to add this formation to this application';
-                    $message = $this->Application->ApplicationFormation->validationErrorsAsString();
+					$message = 'Unable to add this formation to this application.';
 				}
 			}
 		}
 
-		echo json_encode(array(
-    		'isError' => $isError,
-			'message' => __($message),
-    		'id' => $memberId
-		));
+        $this->outputAjaxFormResponse($message,$isError,$redirectUri);
 	}
 
 	public function removeFormation($applicationId=null){
 
 		$this->autoRender = false;
 
-		$formationId = 0;
-        if($this->request->is('post'))
-            $formationId = $this->request->data['id'];
-        else
-            $formationId = $this->request->query['id'];	
+        $isError = false;
+        $message = null;
+        $redirectUri = null;
 
-		$this->Application->ApplicationFormation->deleteAll(
+		$formationId = $this->request->is('post') ? $this->request->data['id'] : $this->request->query['id'];
+
+		$isError = $this->Application->ApplicationFormation->deleteAll(
             array(
                 'ApplicationFormation.application_id' => $applicationId,
                 'ApplicationFormation.formation_id' => $formationId
             ),
             true    //Cascade
         );
+
+        if($isError)
+            $message = 'Unabled to remove this association.';
+
+        $this->outputAjaxFormResponse($message,$isError,$redirectUri);
 	}
 
-    public function deploy($id=null){
-
-    }
-
+/**
+ * DNS
+ */
     public function dns($applicationId=null) {
 
         $this->loadModel('DeviceDns');
@@ -476,7 +438,8 @@ class ApplicationsController extends AppController
         $this->autoRender = false;
 
         $isError = false;
-        $message = "";
+        $message = null;
+        $redirectUri = null;
        
         if(!isset($this->request->data['name'])){
             $isError = true;
@@ -552,11 +515,7 @@ class ApplicationsController extends AppController
             }
         }
 
-        echo json_encode(array(
-            'isError' => $isError,
-            'message' => __($message)
-        )); 
-
+        $this->outputAjaxFormResponse($message,$isError,$redirectUri);
     }
 
     private function dnsSafeName($string){
@@ -577,7 +536,8 @@ class ApplicationsController extends AppController
         $this->autoRender = false;
 
         $isError = false;
-        $message = "";
+        $message = null;
+        $redirectUri = null;
 
         $deviceDnsId = isset($this->request->data['id']) ? $this->request->data['id'] : 0;
 
@@ -590,14 +550,13 @@ class ApplicationsController extends AppController
             $message = 'Unable to remove record.';
         }
 
-        if($isError){
-            echo json_encode(array(
-                'isError' => $isError,
-                'message' => __($message)
-            ));
-        }
-        else {
-            echo json_encode(null);
-        }
+        $this->outputAjaxFormResponse($message,$isError,$redirectUri);
+    }
+
+/**
+ * Deploy
+ */
+    public function deploy($id=null){
+
     }
 }

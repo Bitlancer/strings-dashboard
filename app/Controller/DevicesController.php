@@ -28,7 +28,7 @@ class DevicesController extends AppController
 		//Verify this organization has setup one or more infrastructure providers
 		$isInfraProviderConfigured = $this->Device->Implementation->hasOrganizationConfiguredServiceProvider($this->Auth->user('organization_id'),'infrastructure');
 		if(!$isInfraProviderConfigured){
-			$this->Session->setFlash(__('Please setup an infrastructure provider <a href="#">here</a>.'),'default',array(),'error');
+			$this->setFlash('Please setup an infrastructure provider <a href="#">here</a>.');
 		}
 
         $this->DataTables->setColumns(array(

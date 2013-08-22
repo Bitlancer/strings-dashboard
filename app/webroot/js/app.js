@@ -189,7 +189,7 @@ var strings = {
 			url: $(this).attr('action'),
 			data: $(this).serialize(),
 			success: function(data, textStatus){
-			  if(data.redirectUri !== undefined){
+			  if(data.redirectUri !== undefined && data.redirectUri !== null && data.redirectUri !== false){
 			    window.location.href = data.redirectUri;
 			  }
 			  else {
@@ -204,6 +204,7 @@ var strings = {
 		    }
 		  })
 		  .error(function(jqXHR,textStatus){
+            strings.notifications.alert('We encountered an unexpected error.');
 		    console.log(textStatus);
 		  });
 		});
