@@ -4,7 +4,7 @@
 	$dashboardControllers = array('dashboard');
 	$devicesControllers = array('devices');
 	$formationsControllers = array('formations');
-	$applicationsControllers = array('applications');
+	$applicationsControllers = array('applications','scripts');
     $configMgmtControllers = array('roles','profiles','components');
 	$usersControllers = array('users','teams','sudoroles');
 ?>

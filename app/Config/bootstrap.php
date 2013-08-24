@@ -190,7 +190,7 @@ CakeLog::config('error', array(
  */
 
 //Strings API URL
-define('STRINGS_API_URL','http://localhost:8081');
+define('STRINGS_API_URL','http://localhost:8080');
 
 //CRM emails are sent to this address
 define('CRM_EMAIL','mjuszczak@bitlancer.com');

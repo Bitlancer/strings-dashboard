@@ -154,7 +154,7 @@ class ScriptsController extends AppController
         ));
 
         if(empty($script))
-            throw new NotFoundException('Application does not exist.');
+            throw new NotFoundException('Script does not exist.');
 
         if($this->request->is('post')){
 
@@ -174,5 +174,91 @@ class ScriptsController extends AppController
         $this->set(array(
             'script' => $script
         ));
+    }
+
+    public function run($scriptId=null){
+
+        $this->loadModel('QueueJob');
+
+        $script = $this->Script->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'Script.id' => $scriptId,
+            )
+        ));
+
+        if(empty($script))
+            throw new NotFoundException('Script does not exist.');
+
+        $qJob = array(
+            'QueueJob' => array(
+                'http_method' => 'post',
+                'url' => STRINGS_API_URL . '/RemoteExecution/run/' . $scriptId,
+                'timeout_secs' => 60 * 15,
+                'remaining_retries' => 1,
+                'retry_delay_secs' => 0
+            )
+        );
+
+        if(!$this->QueueJob->save($qJob)){
+            die($this->QueueJob->validationErrorsAsString());
+            throw new InternalErrorException('Failed to schedule queue job to run this script');
+        }
+
+        $qJobId = $this->QueueJob->id;
+        $this->redirect(array('action' => 'status',$qJobId));
+    }
+
+    public function status($jobId=null){
+
+        $this->loadModel('QueueJob');
+
+        $job = $this->QueueJob->find('first',array(
+            'contain' => array(
+                'QueueJobLog' => array(
+                    'limit' => 1
+                )
+            ),
+            'conditions' => array(
+                'QueueJob.id' => $jobId
+            )
+        ));
+
+        if(empty($job))
+            throw new NotFoundException('Job does not exist.');
+
+        //Determine the status msg and output
+        $hasCompleted = false;
+        $status = "Checking job status, please wait.";
+        $output = "";
+        if(empty($job['QueueJob']['last_started_at'])){
+            $status = 'Waiting for job to execute.';
+        }
+        elseif(empty($job['QueueJob']['last_response']))
+            $status = 'Executing script on jump server.';
+        else {
+            $hasCompleted = true;
+            $apiResponse = json_decode($job['QueueJob']['last_response'],true);
+            $rawOutput = $apiResponse['data'];
+            if($rawOutput['pre-exec']['status'] != 0){
+                $status = 'The pre-execution script encountered an error.';
+                $output = implode('\n',$rawOutput['pre-exec']['output']);
+            }
+        }
+
+        if($this->request->is('ajax')){
+            $this->autoRender = false;
+            echo json_encode(array(
+                'hasCompleted' => $hasCompleted,
+                'status' => $status,
+                'output' => $output
+            ));
+        }
+        else {
+            $this->set(array(
+                'status' => $status,
+                'output' => $output
+            ));
+        }
     }
 }

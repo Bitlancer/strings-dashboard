@@ -16,8 +16,8 @@
   ?>
 </head>
 <body class="loading">
-  <header><?php echo $this->element('Layouts/header'); ?></header>
-  <nav><?php echo $this->element('Layouts/nav'); ?></nav>
+  <header><?php echo $this->element('../Layouts/Elements/header'); ?></header>
+  <nav><?php echo $this->element('../Layouts/Elements/nav'); ?></nav>
   <section> <!-- Content -->
     <?php echo $this->fetch('content'); ?>
   </section> <!-- /Content -->

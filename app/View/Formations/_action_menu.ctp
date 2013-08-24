@@ -16,7 +16,7 @@
 
     $actionMenu .= $this->Strings->link('Devices',"/Formations/view/$formationId#devices",$actionsDisabled);
     $actionMenu .= $this->Strings->oldModalLink('Unix Privileges',"/TeamInfrastructurePermissions/edit/Formation/$formationId",$actionsDisabled);
-    $actionMenu .= $this->Strings->oldModalLink('Rename',"/Formations/edit/$formationId",$actionsDisabled);
+    //$actionMenu .= $this->Strings->oldModalLink('Rename',"/Formations/edit/$formationId",$actionsDisabled);
     $actionMenu .= $this->Strings->oldModalLink('Delete',"/Formations/delete/$formationId",$actionsDisabled);
 
     $actionMenu .= $this->StringsActionMenu->close();

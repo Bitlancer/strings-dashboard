@@ -53,6 +53,7 @@
         )
     );
 
+    /*
     $actionMenu .= $this->Strings->modalLink(
         'Rename',
         "/Applications/edit/$applicationId",
@@ -61,6 +62,7 @@
             'reloadOnClose' => $reloadOnClose
         )
     );
+    */
 
     $actionMenu .= $this->Strings->modalLink(
         'Delete',
