@@ -150,24 +150,18 @@ class Device extends AppModel {
 
     public function afterFind($results,$primary = false){
 
-        if($primary !== false){
+        //ucwords(name)
+        if(isset($results['name'])){
+            $results['name'] = ucwords($results['name']);
+        }
+        else {
             foreach($results as $key => $result){
-
-                //ucwords() the name
                 if(isset($result[$this->alias]['name'])) {
                     $name = ucwords($result[$this->alias]['name']);
                     $results[$key][$this->alias]['name'] = $name;
                 }
             }
         }
-        else {
-
-            //ucwords() the name
-            if(isset($results['name'])){
-                $results['name'] = ucwords($results['name']);
-            }
-        }
-
         return $results;
     }
 }
