@@ -9,7 +9,8 @@
         ));
 
 		//Info link on name column
-        $outputRow[0] = $view->Strings->link($outputRow[0],"/Applications/view/" . $rawRow['Application']['id']);
+        $name = $outputRow[0];
+        $outputRow[0] = $view->Strings->link($name,"/Applications/view/" . $rawRow['Application']['id']);
 
         //Append action menu to last column
         $outputRow[count($outputRow)-1] .= $actionMenu;

@@ -2,7 +2,11 @@
   <form class="ajax" method="POST" action="<?php echo $_SERVER['REQUEST_URI']; ?>.json" >
     <ul id="notice"></ul>
     <fieldset class="info">
-      <p>You are about to <strong>delete <?php echo $device['Device']['name']; ?></strong>. <strong>This operation cannot be undone.</strong></p>
+      <p>
+        You are about to delete the device 
+        <strong><?php echo $device['Device']['name']; ?></strong>.
+        Please proceed with caution since this operation cannot be undone.
+      </p>
     </fieldset>
     <fieldset>
       <legend>Enter the device name to confirm</legend>

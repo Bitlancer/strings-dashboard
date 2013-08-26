@@ -12,7 +12,8 @@
         ));
 
 		//Info link on name column
-        $outputRow[0] = $view->Strings->link($outputRow[0],"/Formations/view/$formationId");		
+        $name = $outputRow[0];
+        $outputRow[0] = $view->Strings->link($name,"/Formations/view/$formationId");
 
         //Append action menu to last column
         $outputRow[count($outputRow)-1] .= $actionMenu;

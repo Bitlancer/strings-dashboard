@@ -371,7 +371,7 @@ class ApplicationsController extends AppController
                         'Device' => array(
                             'DeviceAttribute',
                             'conditions' => array(
-                                'Device.status <>' => 'active'
+                                'Device.status' => 'active'
                             )
                         )
                     )

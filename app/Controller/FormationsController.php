@@ -340,9 +340,9 @@ class FormationsController extends AppController
                 else {
                     $this->Formation->Device->id = $deviceId;
                     if($this->Formation->Device->saveField('status','deleting')){
-                        $this->QueueJob->addJob(STRINGS_API_URL . '/Devices/delete/' . $deviceId);
+                        $this->QueueJob->addJob(STRINGS_API_URL . '/Instances/delete/' . $deviceId);
                         $message = "Device $deviceName has been scheduled for deletion.";
-                        $redirectUri = '/Formations';
+                        $redirectUri = '/Devices';
                     }
                     else {
                         $isError = true;

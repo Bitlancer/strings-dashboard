@@ -18,6 +18,7 @@ class QueueJobsController extends AppController {
         return false;
     }
 
+    /*
     public function liveStatus($jobId=null){
 
         $job = $this->QueueJob->find('first',array(
@@ -39,4 +40,5 @@ class QueueJobsController extends AppController {
             'job' => $job
         ));
     }
+    */
 }

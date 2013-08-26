@@ -2,7 +2,12 @@
   <form class="ajax" method="POST" action="<?php echo $_SERVER['REQUEST_URI']; ?>.json" >
     <ul id="notice"></ul>
     <fieldset class="info">
-      <p>You are about to <strong>delete the Formation <?php echo $formation['Formation']['name']; ?></strong> and all of its instances. <strong>This operation cannot be undone.</strong> We highly recommend you run a full backup of each instance before deleting this formation.</p>
+      <p>
+        You are about to delete the formation
+        <strong><?php echo $formation['Formation']['name']; ?></strong> and all
+        of its instances. Please proceed with caution since this operation 
+        cannot be undone.
+      </p>
     </fieldset>
     <fieldset>
       <legend>Enter the formation name to confirm</legend>

@@ -16,7 +16,8 @@
         ));
 
         //Info link on name column
-        $modifiedOutputRow[0] = $view->Strings->link($modifiedOutputRow[0],"/Devices/view/$deviceId");
+        $name = $modifiedOutputRow[0];
+        $modifiedOutputRow[0] = $view->Strings->link($name,"/Devices/view/$deviceId");
 
         //Append action menu to last column
         $modifiedOutputRow[count($outputRow)-1] .= $actionMenu;

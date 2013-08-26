@@ -1,6 +1,6 @@
 <div id="manage-dns-records">
   <ul id="notice"></ul>
-  <form class="ajax" method="POST" action="<?php echo $_SERVER['REQUEST_URI'] . ".json"; ?>" data-app-id="<?php echo $application['Application']['id']; ?>">
+  <form class="disabled" data-app-id="<?php echo $application['Application']['id']; ?>">
     <div id="select-device">
       <label>Manage records for</label>
       <select id="device" name="data[Device][id]">

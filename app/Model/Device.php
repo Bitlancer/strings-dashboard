@@ -136,4 +136,38 @@ class Device extends AppModel {
 
         return $regions[$regionId]['name'];
     }
+
+    public function beforeSave($options = array()){
+
+        $data = $this->data[$this->alias];
+
+        if(isset($data['name'])){
+            $this->data[$this->alias]['name'] = strtolower($data['name']);
+        }
+
+        return true;
+    }
+
+    public function afterFind($results,$primary = false){
+
+        if($primary !== false){
+            foreach($results as $key => $result){
+
+                //ucwords() the name
+                if(isset($result[$this->alias]['name'])) {
+                    $name = ucwords($result[$this->alias]['name']);
+                    $results[$key][$this->alias]['name'] = $name;
+                }
+            }
+        }
+        else {
+
+            //ucwords() the name
+            if(isset($results['name'])){
+                $results['name'] = ucwords($results['name']);
+            }
+        }
+
+        return $results;
+    }
 }
