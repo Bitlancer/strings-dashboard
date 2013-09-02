@@ -12,6 +12,7 @@ var strings = {
       strings.events.clicks();
       strings.events.keypress();
       strings.ui.actionmenu();
+      strings.ui.accordion.attach('.accordion');
       strings.ui.recent_activites();
     },
     include: function() {
@@ -65,8 +66,12 @@ var strings = {
         dialogClass: 'strings-modal',
         height: 'auto',
         open: function() {
-          if(!$('body').hasClass('blur')) $('body').addClass('blur');
-          if($('.ui-dialog .autocomplete').length) $('.ui-dialog input.maininput').blur().parents('.ui-dialog-content').css('overflow','visible');
+          if(!$('body').hasClass('blur')) {
+            $('body').addClass('blur');
+          }
+          if($('.ui-dialog .autocomplete').length) {
+            $('.ui-dialog input.maininput').blur().parents('.ui-dialog-content').css('overflow','visible');
+          }
         },
         close: function() {
           if($('body').hasClass('blur')) $('body').removeClass('blur');
@@ -79,9 +84,10 @@ var strings = {
       };
       var loadCallback = function(rescanDom) {
           rescanDom = typeof rescanDom !== 'undefined' ? rescanDom: true;
-          $(this).dialog("option", "position", ['center', 'center'] );
+          /* $(this).dialog("option", "position", ['center', 'center'] ); */
           if(rescanDom){
             strings.ui.tables.attach('.strings-modal table[data-type="datatable"]:not(.loaded)');
+            strings.ui.accordion.attach('.strings-modal .accordion');
             strings.associations.attach('.association');
             strings.events.forms();
             strings.events.keypress();
@@ -138,6 +144,16 @@ var strings = {
             }
           });
           $(this).addClass('loaded');
+        });
+      }
+    },
+
+    accordion: {
+      attach: function(filter) {
+        $(filter).each(function() {
+          $(this).accordion({
+            heightStyle: "content"
+          });
         });
       }
     },

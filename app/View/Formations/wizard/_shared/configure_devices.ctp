@@ -22,7 +22,6 @@ $this->assign('forwardButtonText','Complete');
     form.submit();
   });
 <?php $this->end(); ?>
-
 <table id="configure-devices">
 <thead>
   <tr>
@@ -51,18 +50,79 @@ foreach($devices as $device){
   $psuedoId = $device['psuedoId'];
 ?>
 <div class="device-modal" id="device-<?php echo $psuedoId; ?>">
-  <?php
-  echo $this->Form->input("Device.$psuedoId.flavor",array(
-    'label' => 'Provider Flavor',
-    'error' => false,
-    'options' => $flavors
-  ));
-  echo $this->Form->input("Device.$psuedoId.region",array(
-    'label' => 'Provider Target',
-    'error' => false,
-    'options' => $regions
-  ));
-  ?>
+  <div class="provider">
+    <h2>Provider</h2>
+    <?php
+    echo $this->Form->input("Device.$psuedoId.flavor",array(
+      'label' => 'Flavor',
+      'error' => false,
+      'options' => $flavors
+    ));
+    echo $this->Form->input("Device.$psuedoId.region",array(
+      'label' => 'Target',
+      'error' => false,
+      'options' => $regions
+    ));
+    ?>
+  </div>
+  <div class="configuration">
+    <h2>Configuration</h2>
+    <div class="filter">
+      <label>Filter Variables
+        <select>
+          <option value="required">Required</option>
+          <option value="all">All</option>
+        </select>
+      </label>
+    </div>
+    <div class="accordion">
+    <h3>NTP</h3>
+    <div class="module">
+      <div class="variable">
+        <label>Server Address
+          <input type="text" />
+        </label>
+      </div>
+      <div class="variable">
+        <label>Server Address
+          <input type="text" />
+        </label>
+      </div>
+      <div class="variable">
+        <label>Server Address
+          <input type="text" />
+        </label>
+      </div>
+      <div class="variable">
+        <label>Server Address
+          <input type="text" />
+        </label>
+      </div>
+    </div>
+    <h3>MySQL</h3>
+    <div class="module">
+      <div class="variable">
+        <label>InnoDB Buffer Pool Size
+          <input type="text" />
+        </label>
+      </div>
+      <div class="variable">
+        <label>Server Address
+          <input type="text" />
+        </label>
+      </div>
+      <div class="variable">
+        <label>Server Address
+          <input type="text" />
+        </label>
+      </div>
+      <div class="variable">
+        <label>Server Address
+          <input type="text" />
+        </label>
+      </div>
+    </div>
+  </div>
 </div>
 <?php } ?>
 <!-- /modals -->

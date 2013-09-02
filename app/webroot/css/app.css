@@ -1221,6 +1221,9 @@ div#result {
     content: 'Instances: ';
     font-weight: 700; }
 
+.accordion .ui-accordion-header .ui-icon {
+  background-image: url(/img/ui-icons_454545_256x240.png); }
+
 body#account {
   background: url("/img/wall3.jpg") center no-repeat; }
   body#account.landscape {

@@ -25,9 +25,13 @@ class FormationsController extends AppController
      */
     public function index() {
 
-		//Verify this organization has setup one or more infrastructure providers
         $this->loadModel('Implementation');
-        $isInfraProviderConfigured = $this->Implementation->hasOrganizationConfiguredServiceProvider($this->Auth->user('organization_id'),'infrastructure');
+
+		//Verify this organization has setup one or more infrastructure providers
+        $isInfraProviderConfigured = $this->Implementation->
+            hasOrganizationConfiguredServiceProvider(
+                $this->Auth->user('organization_id'),'infrastructure');
+
         if(!$isInfraProviderConfigured){
             $this->setFlash('Please setup an infrastructure provider.');
         }
@@ -395,7 +399,7 @@ class FormationsController extends AppController
     public function addDevice($step=null){
 
         //First call to this method includes the formation's
-        //ID. Get the formation and add to users session
+        //ID. Get the formation and add to the wizard's session
         if(preg_match('/^[0-9]+$/',$step)){
 
             $formationId = $step;
