@@ -111,13 +111,13 @@ body {
     -webkit-box-shadow: -10px 0 0 black;
     -moz-box-shadow: -10px 0 0 black;
     box-shadow: -10px 0 0 black; }
-  body .clearfix {
+  body .clearfix, body .clear {
     zoom: 1; }
-    body .clearfix:before {
+    body .clearfix:before, body .clear:before {
       clear: both;
       content: '';
       display: table; }
-    body .clearfix:after {
+    body .clearfix:after, body .clear:after {
       clear: both; }
   body .float-left {
     float: left; }
@@ -790,47 +790,6 @@ textarea {
   line-height: 1.5;
   text-indent: 1px; }
 
-div.form form div.configure {
-  background: #fff;
-  border: 1px solid #eee;
-  border-bottom: 1px solid #e0e0e0;
-  margin-top: 51px;
-  padding: 20px; }
-  div.form form div.configure h3 {
-    font-weight: 600;
-    margin: 15px 0 5px; }
-    div.form form div.configure h3:first-of-type {
-      margin-top: 0; }
-  div.form form div.configure input[type=text], div.form form div.configure input[type=number] {
-    max-width: 60%; }
-  div.form form div.configure nav.tabs {
-    height: 30px;
-    margin: -51px 0 0 -21px;
-    position: absolute; }
-    div.form form div.configure nav.tabs a {
-      background: #f8f8f8;
-      color: #999;
-      display: inline-block;
-      line-height: 30px;
-      margin: 0;
-      padding: 0 10px; }
-      div.form form div.configure nav.tabs a.active {
-        background: #fff;
-        border: 1px solid #eee;
-        border-bottom: 0;
-        color: #444; }
-  div.form form div.configure > span {
-    display: none; }
-    div.form form div.configure > span:first-of-type, div.form form div.configure > span.active {
-      display: block; }
-div.form form div.submit {
-  margin-top: 45px; }
-  div.form form div.submit legend {
-    color: #999;
-    float: right;
-    line-height: 30px;
-    margin-right: 10px; }
-
 .ui-tooltip {
   background: rgba(0, 0, 0, 0.9);
   border: 0;
@@ -1223,6 +1182,57 @@ div#result {
 
 .accordion .ui-accordion-header .ui-icon {
   background-image: url(/img/ui-icons_454545_256x240.png); }
+
+.htab nav a {
+  background: #f8f8f8;
+  color: #999;
+  display: inline-block;
+  line-height: 30px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid #eaeaea;
+  border-bottom: none; }
+  .htab nav a.active {
+    background: #fff;
+    border: 1px solid #eee;
+    border-bottom: 0;
+    color: #444; }
+.htab .tab {
+  display: none;
+  padding: 20px;
+  border: 1px solid #eee;
+  border-top: none;
+  background-color: white; }
+  .htab .tab.active {
+    display: block; }
+
+.vtab nav {
+  float: left;
+  width: 20%;
+  border: 1px solid #ccc;
+  border-right: none;
+  background-color: #f8f8f8; }
+  .vtab nav a {
+    display: block;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    color: #999; }
+    .vtab nav a:first-of-type {
+      border-top: none; }
+    .vtab nav a.active {
+      background-color: white;
+      color: #444; }
+.vtab .tabs {
+  float: left;
+  width: 70%;
+  padding: 2%;
+  border: 1px solid #ccc;
+  border-left: none;
+  background-color: white; }
+  .vtab .tabs .tab {
+    display: none; }
+    .vtab .tabs .tab.active {
+      display: block; }
 
 body#account {
   background: url("/img/wall3.jpg") center no-repeat; }

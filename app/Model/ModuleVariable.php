@@ -34,7 +34,7 @@ class ModuleVariable extends AppModel {
                 'message' => '%%f does not exist'
             )
         ),
-        'hiera_key' => array(
+        'var' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',

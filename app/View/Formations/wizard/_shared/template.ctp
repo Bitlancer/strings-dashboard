@@ -1,5 +1,9 @@
+<?php
+  $sidebarContent = $this->fetch('sidebar');
+  $sidebarEmpty = empty($sidebarContent);
+?>
 <h1><?php echo $title_for_layout; ?></h1>
-<div class="columns">
+<div id="content-wrapper" class="<?php echo !$sidebarEmpty ? "columns" : ""; ?>">
 <div>
   <?php echo $this->element('messages'); ?>
   <style>
@@ -54,7 +58,7 @@
   </section>
 </div>
 <div>
-  <?php echo $this->fetch('sidebar'); ?>
+  <?php echo $sidebarContent ?>
 </div>
 <hr class="clear">
-</div> <!-- /.columns -->
+</div> <!-- /#content-wrapper -->

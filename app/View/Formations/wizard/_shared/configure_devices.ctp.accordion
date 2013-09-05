@@ -5,31 +5,19 @@ $this->assign('stepTitle','Configure Devices');
 $this->assign('forwardButtonText','Complete');
 ?>
 
-<div id="configure-devices" class="vtab">
-  <nav>
-    <?php foreach($devices as $device){
-      $id = $device['psuedoId'];
-      $name = $device['name'];
-      $partName = $device['blueprintPartName'];
-      $inErrorState = isset($errors[$id]);
-      ?>
-      <a class="<?php echo $inErrorState ? "error" : ""; ?>" data-tab="device-<?php echo $id; ?>">
-        <span class="name"><?php echo $name; ?></span>
-        <small><?php echo $partName; ?></small>
-        <span class="status"></span>
-      </a>
-    <?php } ?>
-  </nav>
-  <div class="tabs">
+<div class="accordion">
   <?php foreach($devices as $device){
     $psuedoId = $device['psuedoId'];
     $name = $device['name'];
     $blueprintPartId = $device['blueprintPartId'];
     $blueprintPartName = $device['blueprintPartName'];
     $modulesAndVariables = $blueprintPartModulesAndVariables[$blueprintPartId];
-    $inErrorState = isset($errors[$psuedoId]);
     ?>
-    <div class="tab <?php echo $inErrorState ? 'error' : ''; ?>" data-tab="device-<?php echo $psuedoId; ?>">
+    <h3>
+      <span><?php echo $name; ?></span>
+      <span class="float-right"><?php echo $blueprintPartName; ?></span>
+    </h3>
+    <div id="device-<?php echo $psuedoId; ?>" class="configure-device">
       <div class="provider">
         <h2>Provider</h2>
         <?php
@@ -47,21 +35,27 @@ $this->assign('forwardButtonText','Complete');
       </div> <!-- /.provider -->
       <div class="configuration">
         <h2>Configuration</h2>
-        <div class="accordion">
+        <div class="filter">
+          <label>Filter Variables
+            <select>
+              <option value="required">Required</option>
+              <option value="all">All</option>
+            </select>
+          </label>
+        </div> <!-- /.filter -->
         <?php foreach($modulesAndVariables as $module){
           $moduleId = $module['id'];
           $moduleName = $module['shortName'];
           $variables = $module['variables'];
           ?>
-          <h3><?php echo $moduleName; ?></h3>
-          <div class="module">
+          <fieldset class="module">
+            <legend><?php echo $moduleName; ?></legend>
             <?php foreach($variables as $var){
               $varId = $var['id'];
               $label = $var['name'];
               $description = htmlentities($var['description']);
               $inputName = "Device.$psuedoId.variables.$moduleId.$varId";
               $defaultValue = $var['default_value'];
-              $required = $var['is_required'] ? true : false;
               ?>
               <div class="variable">
                 <?php echo $this->Form->input($inputName,array(
@@ -70,40 +64,35 @@ $this->assign('forwardButtonText','Complete');
                     'class' => 'tooltip',
                     'title' => $description
                   ),
-                  'default' => $defaultValue,
-                  'required' => $required
+                  'default' => $defaultValue
                 )); ?>
               </div>
             <?php } ?>
-          </div> <!-- /.module -->
+          </fieldset>
         <?php } ?>
-        </div> <!-- /.accordion -->
       </div> <!-- /.configuration -->
-    </div> <!-- /tab -->
+    </div> <!-- /.configure-device -->
   <?php } ?>
-  </div> <!-- /.tabs -->
-  <div class="clear"></div>
-</div><!-- /.configure-devices -->
+</div><!-- /.accordion --> 
+
+<?php
+//Sidebar
+$this->start('sidebar'); ?>
+<?php $this->end(); ?>
 
 <?php $this->start('stepStyle'); ?>
-  #configure-devices h2 {
-    padding-bottom: 3px;
+  #configure-devices td {
+    border:none;
+  }
+  .configure-device-modal {
+    display:none;
+  }
+  .configure-device-modal h2 {
+    padding-bottom:5px;
     border-bottom: 1px solid #ccc;
   }
-  #configure-devices .tab > div {
-    margin-bottom: 20px;
-  }
-  #configure-devices .configuration .filter {
-    margin-bottom: 10px; 
-  }
-  #configure-devices nav a .name {
-    display: block;
-  }
-  #configure-devices nav a.good .name:after {
-    content: "\2714"
-  }
-  #configure-devices nav a.error .name:after {
-    content: "\2718"
+  .configure-device-modal .filter {
+    margin: 10px 0px;
   }
 <?php $this->end(); ?>
 

@@ -446,7 +446,10 @@ class FormationsController extends AppController
             'group' => 'Device.blueprint_part_id'
         ));
 
-        $existingBlueprintPartCounts = Hash::combine($existingBlueprintPartCounts,'{n}.Device.blueprint_part_id','{n}.{n}.count(blueprint_part_id)');
+        $existingBlueprintPartCounts = Hash::combine(
+            $existingBlueprintPartCounts,
+            '{n}.Device.blueprint_part_id',
+            '{n}.{n}.count(blueprint_part_id)');
 
         //Get list of blueprints
         $formation = $this->Formation->find('first',array(
@@ -525,13 +528,26 @@ class FormationsController extends AppController
 
     public function _prepareAddDeviceConfigureDevices(){
 
-        
+        $data = $this->Wizard->read('_configureDevices');
+        if(empty($data)){
+            
+            $implementationId = $this->Wizard->read('_formation.Formation.implementation_id');
+            $blueprintPartCounts = $this->Wizard->read('deviceCounts.blueprintPartCounts');
+            $dictionaryId = $this->Wizard->read('_formation.Formation.dictionary_id');
 
+            $data = $this->_prepareGenericConfigureDevices($implementationId,
+                                                          $blueprintPartCounts,
+                                                          $dictionaryId);
+        }
+
+        $this->set($data);
     }
 
     public function _processAddDeviceConfigureDevices(){
 
 
+
+        return false;
     }
 
 /**
@@ -557,6 +573,97 @@ class FormationsController extends AppController
 
         $this->set('title_for_layout', 'Create Formation');
         $this->Wizard->process($step);
+    }
+    
+    public function _prepareCreateFormationSettings(){
+
+        $this->loadModel('Implementation');
+        $this->loadModel('Dictionary');
+
+        //Get a list of infrastructure providers
+        $implementations = $this->Implementation->Provider->find('all',array(
+            'link' => array(
+                'Implementation',
+                'Service'
+            ),
+            'fields' => array(
+                'Implementation.*'
+            ),
+            'conditions' => array(
+                'Implementation.organization_id' => $this->Auth->User('organization_id'),
+                'Service.name' => 'infrastructure'
+            )
+        ));
+        $implementations = Hash::combine($implementations,'{n}.Implementation.id','{n}.Implementation.name');
+
+        //Get a list of dictionaries
+        $dictionaries = $this->Dictionary->find('all',array('contain' => array()));
+        $dictionaries = Hash::combine($dictionaries,'{n}.Dictionary.id','{n}.Dictionary.name');
+
+        $this->set(array(
+            'implementations' => $implementations,
+            'dictionaries' => $dictionaries,
+        ));
+    }
+    
+    public function _processCreateFormationSettings(){
+
+        $this->loadModel('Implementation');
+        $this->loadModel('Dictionary');
+
+        //Validate name
+        if(!isset($this->request->data['Formation']['name']) || empty($this->request->data['Formation']['name'])){
+            $this->setFlash('A formation name is required','error');
+            return false;
+        }
+        $this->Formation->set(array(
+            'Formation' => array(
+                'name' => $this->request->data['Formation']['name']
+            )
+        ));
+        $result = $this->Formation->validates(array(
+            'fieldList' => array(
+                'name'
+            )
+        ));
+        if(!$result){
+            $this->setFlash('Invalid formation name. ' . $this->Formation->validationErrorsAsString(),'error');
+            return false;
+        }
+
+        //Validate implementation
+        if(!isset($this->request->data['Implementation']['id']) || empty($this->request->data['Implementation']['id'])){
+            $this->setFlash('An infrastructure provider required','error');
+            return false;
+        }
+        $implementationId = $this->request->data['Implementation']['id'];
+        $implementation = $this->Implementation->Provider->find('first',array(
+            'link' => array(
+                'Implementation',
+                'Service'
+            ),
+            'conditions' => array(
+                'Implementation.id' => $implementationId,
+                'Service.name' => 'infrastructure'
+            )
+        ));
+        if(empty($implementation)){
+            $this->setFlash('Invalid provider supplied','error');
+            return false;
+        }
+
+        //Validate dictionary
+        if(!isset($this->request->data['Dictionary']['id']) || empty($this->request->data['Dictionary']['id'])){
+            $this->Session->setFlash(__('Infrastructure provider required'),'default',array(),'error');
+            return false;
+        }
+        $dictionaryId = $this->request->data['Dictionary']['id'];
+        if(!$this->Dictionary->exists($dictionaryId)){
+            $this->Session->setFlash(__('Invalid dictionary supplied'),'default',array(),'error');
+            return false;
+        }
+
+        return true;
     }
 
     public function _prepareCreateSelectBlueprint(){
@@ -641,92 +748,6 @@ class FormationsController extends AppController
         return $countsValid;
     }
 
-    public function _prepareCreateFormationSettings(){
-
-        $this->loadModel('Implementation');
-        $this->loadModel('Dictionary');
-
-        //Get a list of infrastructure providers
-        $implementations = $this->Implementation->Provider->find('all',array(
-            'link' => array(
-                'Implementation',
-                'Service'
-            ),
-            'fields' => array(
-                'Implementation.*'
-            ),
-            'conditions' => array(
-                'Implementation.organization_id' => $this->Auth->User('organization_id'),
-                'Service.name' => 'infrastructure'
-            )
-        ));
-        $implementations = Hash::combine($implementations,'{n}.Implementation.id','{n}.Implementation.name');
-
-        //Get a list of dictionaries
-        $dictionaries = $this->Dictionary->find('all',array('contain' => array()));
-        $dictionaries = Hash::combine($dictionaries,'{n}.Dictionary.id','{n}.Dictionary.name');
-
-        $this->set(array(
-            'implementations' => $implementations,
-            'dictionaries' => $dictionaries,
-        ));
-    }
-
-    public function _processCreateFormationSettings(){
-
-        $this->loadModel('Implementation');
-        $this->loadModel('Dictionary');
-
-        //Validate name
-        if(!isset($this->request->data['Formation']['name']) || empty($this->request->data['Formation']['name'])){
-            $this->setFlash('A formation name is required','error');
-            return false;
-        }
-        $this->Formation->set(array(
-            'Formation' => array(
-                'name' => $this->request->data['Formation']['name']
-            )
-        ));
-        if(!$this->Formation->validates()){
-            $this->setFlash('Invalid formation name. ' . $this->Formation->validationErrorsAsString(),'error');
-            return false;
-        }
-
-        //Validate implementation
-        if(!isset($this->request->data['Implementation']['id']) || empty($this->request->data['Implementation']['id'])){
-            $this->setFlash('An infrastructure provider required','error');
-            return false;
-        }
-        $implementationId = $this->request->data['Implementation']['id'];
-        $implementation = $this->Implementation->Provider->find('first',array(
-            'link' => array(
-                'Implementation',
-                'Service'
-            ),
-            'conditions' => array(
-                'Implementation.id' => $implementationId,
-                'Service.name' => 'infrastructure'
-            )
-        ));
-        if(empty($implementation)){
-            $this->setFlash('Invalid provider supplied','error');
-            return false;
-        }
-
-        //Validate dictionary
-        if(!isset($this->request->data['Dictionary']['id']) || empty($this->request->data['Dictionary']['id'])){
-            $this->Session->setFlash(__('Infrastructure provider required'),'default',array(),'error');
-            return false;
-        }
-        $dictionaryId = $this->request->data['Dictionary']['id'];
-        if(!$this->Dictionary->exists($dictionaryId)){
-            $this->Session->setFlash(__('Invalid dictionary supplied'),'default',array(),'error');
-            return false;
-        }
-
-        return true;
-    }
-
     public function _prepareCreateConfigureDevices(){
 
         $this->loadModel('Implementation');
@@ -736,78 +757,14 @@ class FormationsController extends AppController
         $data = $this->Wizard->read('_configureDevices');
         if(empty($data)){
 
+            //Get session data needed for processing during this step;
             $implementationId = $this->Wizard->read('formationSettings.Implementation.id');
-
-            //Get list of provider regions
-            $regions = $this->Implementation->getRegions($implementationId);
-            if(empty($regions))
-                throw new InternalErrorException('Regions have not been defined for this provider');
-            $regions = Hash::combine($regions,'{n}.id','{n}.name');
-
-            //Get a list of provider flavors
-            $flavors = $this->Implementation->getFlavors($implementationId);
-            if(empty($flavors))
-                throw new InternalErrorException('Flavors have not been defined for this provider');
-            $flavors = Hash::combine($flavors,'{n}.id','{n}.description');
-
-            //Get list of blueprint parts and associated data
             $blueprintPartCounts = $this->Wizard->read('deviceCounts.blueprintPartCounts');
-            $blueprintPartIds = array_keys($blueprintPartCounts);
-            $blueprintParts = $this->BlueprintPart->find('all',array(
-                'contain' => array(
-                    'Role','DeviceType'
-                ),
-                'fields' => array(
-                    'Role.*','DeviceType.*','BlueprintPart.*'
-                ),
-                'conditions' => array(
-                    'BlueprintPart.id' => $blueprintPartIds
-                )
-            ));
-            $blueprintParts = Hash::combine($blueprintParts,'{n}.BlueprintPart.id','{n}');
-           
-            //Get total device count
-            $deviceCount = 0;
-            foreach($blueprintPartCounts as $id => $count)
-                $deviceCount += $count;
-
-            //Select device names from dictionary and mark as reserved
             $dictionaryId = $this->Wizard->read('formationSettings.Dictionary.id');
-            $dictionaryWords = $this->DictionaryWord->reserve($dictionaryId,$deviceCount);
-            if($dictionaryWords === false)
-                throw new InternalErrorException('Dictionary does not contain enough free words to accomodate this formation');
-            $dictionaryWords = Hash::combine($dictionaryWords,'{n}.DictionaryWord.id','{n}');
-            $dictionaryWordIds = array_keys($dictionaryWords);
 
-            //Devices data structure
-            $devices = array();
-            $nextDevicePsuedoId = 1;
-            $tmpDictionaryWordIds = $dictionaryWordIds;
-            foreach($blueprintPartCounts as $blueprintPartId => $deviceCount){
-                for($x=0;$x<$deviceCount;$x++){
-
-                    $dictionaryWordId = array_shift($tmpDictionaryWordIds);
-                    $name = $dictionaryWords[$dictionaryWordId]['DictionaryWord']['word'];
-
-                    $blueprintPart = $blueprintParts[$blueprintPartId];
-
-                    $devices[] = array(
-                        'psuedoId' => $nextDevicePsuedoId++,
-                        'deviceTypeId' => $blueprintPart['DeviceType']['id'],
-                        'blueprintPartId' => $blueprintPart['BlueprintPart']['id'],
-                        'roleId' => $blueprintPart['Role']['id'],
-                        'name' => $name,
-                        'blueprintPartName' => $blueprintPart['BlueprintPart']['name'],
-                    );
-                }
-            }
-
-            $data = array(
-                'regions' => $regions,
-                'flavors' => $flavors,
-                'devices' => $devices,
-                'dictionaryWordIds' => $dictionaryWordIds
-            );
+            $data = $this->_prepareGenericConfigureDevices($implementationId,
+                                                          $blueprintPartCounts,
+                                                          $dictionaryId);
 
             $this->Wizard->save(null,$data,true);
         }
@@ -817,38 +774,310 @@ class FormationsController extends AppController
 
     public function _processCreateConfigureDevices(){
 
-        $this->loadModel('Device');
-        $this->loadModel('Implementation');
         $this->loadModel('DictionaryWord');
         $this->loadModel('QueueJob');
-        $this->loadModel('Config');
+        $this->loadModel('HieraVariable');
 
         $devices = $this->Wizard->read('_configureDevices.devices');
+        $partsModulesVariables = $this->Wizard->read('_configureDevices.blueprintPartModulesAndVariables');
+        $dictionaryId = $this->Wizard->read('formationSettings.Dictionary.id');
+        $dictionaryWordIds = $this->Wizard->read('_configureDevices.dictionaryWordIds');
         $implementationId = $this->Wizard->read('formationSettings.Implementation.id');
-        $defaultImageId = $this->Implementation->getDefaultImageId($implementationId);
+        $blueprintId = $this->Wizard->read('selectBlueprint.Blueprint.id');
+        $formationName = $this->Wizard->read('formationSettings.Formation.name');
 
+        list($devices,$deviceErrors) = $this->_parseAndValidateDevices($devices,$implementationId);
+
+        list($variables,$varErrors) = $this->_parseAndValidateDeviceVariables($devices,$partsModulesVariables);
+
+        $errors = array_merge($deviceErrors,$varErrors);
+
+        if(!empty($errors)){
+            $this->set('errors',$errors);    
+        }
+        else {
+
+            $formation = array(
+                'Formation' => array(
+                    'implementation_id' => $implementationId,
+                    'blueprint_id' => $blueprintId,
+                    'dictionary_id' => $dictionaryId,
+                    'name' => $formationName
+                ),
+                'Device' => $devices
+            );
+
+            $qJob = array(
+                'QueueJob' => array(
+                    'url' => STRINGS_API_URL . '/Formations/create/',
+                    'body' => '',
+                    'http_method' => 'post',
+                    'timeout_secs' => 60,
+                    'remaining_retries' => 10,
+                    'retry_delay_secs' => 60
+                )
+            ); 
+
+            //Do our best to verify all of the data is valid
+            //before we start saving
+            $this->Formation->set($formation);
+            $this->QueueJob->set($qJob);
+            if(!$this->Formation->validates()){ //This only validates the formation
+                $this->setFlash('We encountered an unexpected error.');
+                $this->sLog("Error encountered while validating formation. " .
+                    $this->Formation->validationErrorsAsString(true));
+            }
+            elseif(!$this->QueueJob->validates()){
+                $this->setFlash('We encountered an unexpected error.');
+                $this->sLog("Error encountered while validating QueueJob. "  .
+                    $this->QueueJob->validationErrorsAsString());
+            }
+            elseif(!$this->HieraVariable->saveAll($variables,array('validate' => 'only'))){
+                $this->setFlash('We encountered an unexpected error.');
+                $this->sLog("Error encountered while validating hiera variables. " .
+                    $this->HieraVariable->validationErrorsAsString(true));
+            }
+            else {
+             
+                //Must turn off validation b/c device validation will fail until
+                //they have not been assigned valid formation_ids, which won't
+                //occur until the formation has been saved.
+                $this->Formation->create();
+                $result = $this->Formation->saveAll($formation,array(
+                    'validate' => false,
+                    'deep' => true,
+                ));
+                if(!$result){
+                    $this->setFlash('We encountered an unexpected error while " .
+                        "creating your formation.');
+                    $this->log("Error encountered while saving formation. " .
+                        $this->Formation->validationErrorsAsString(true));
+                    return false;
+                }
+
+                //Mark dictionary words as used
+                $this->DictionaryWord->markAsUsed($dictionaryWordIds);
+
+                //Add create formation Q job
+                $qJob['QueueJob']['url'] .= $this->Formation->id;
+                $this->QueueJob->create();
+                if(!$this->QueueJob->save($qJob)){
+                    $this->setFlash('We encountered an error while creating a job to build this formation.');
+                    $this->log("Error encountered while saving QueueJob." . 
+                        $this->QueueJob->validationErrorsAsString());
+                }
+
+                //Create variables
+                if(!$this->HieraVariable->saveMany($variables)){
+                    $msg = "Your formation has been scheduled for creation however we " .
+                        "encountered an error while setting one or more device " .
+                        "configuration variables. ";
+                    $this->setFlash($msg);
+
+                    $this->log("Error encountered while saving hiera variables. " .
+                        $this->HieraVariable->validationErrorsAsString(true));
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function _prepareGenericConfigureDevices($implementationId,$blueprintPartCounts,$dictionaryId){
+
+        //Get provider regions and flavors
+        list($regions,$flavors) = $this->_getProviderRegionsAndFlavors($implementationId);
+
+        //Get list of blueprint parts and associated data
+        $blueprintPartIds = array_keys($blueprintPartCounts);
+        $blueprintParts = $this->_getBlueprintPartData($blueprintPartIds);
+
+        //Get variables per blueprint part
+        $blueprintPartModulesAndVariables = array();
+        foreach($blueprintParts as $blueprintPart){
+            $blueprintPartId = $blueprintPart['BlueprintPart']['id'];
+            $blueprintPartModulesAndVariables[$blueprintPartId] =
+                $this->_getBlueprintPartVariablesFromFindResult($blueprintPart); 
+        }
+
+        //Reserve dictionary words
+        $deviceCount = 0;
+        foreach($blueprintPartCounts as $id => $count)
+            $deviceCount += $count;
+        $dictionaryWords = $this->_reserveXWords($dictionaryId,$deviceCount);
+        $dictionaryWordIds = Hash::extract($dictionaryWords,'{n}.DictionaryWord.id');
+
+        //Create devices psuedo structure
+        $devices = $this->_createPsuedoDevicesStructure($blueprintPartCounts,
+                                            $blueprintParts,
+                                            $dictionaryWords);
+        $data = array(
+            'regions' => $regions,
+            'flavors' => $flavors,
+            'blueprintPartModulesAndVariables' => $blueprintPartModulesAndVariables,
+            'devices' => $devices,
+            'dictionaryWordIds' => $dictionaryWordIds
+        );
+
+        return $data;
+    } 
+
+    private function _getProviderRegionsAndFlavors($implementationId){
+
+        $this->loadModel('Implementation');
+        
+        //Get list of provider regions
         $regions = $this->Implementation->getRegions($implementationId);
-        $regions = Hash::combine($regions,'{n}.id','{n}');
+        if(empty($regions))
+            throw new InternalErrorException('Regions have not been defined for this provider');
+        $regions = Hash::combine($regions,'{n}.id','{n}.name');
+        
+        //Get a list of provider flavors
+        $flavors = $this->Implementation->getFlavors($implementationId);
+        if(empty($flavors))
+            throw new InternalErrorException('Flavors have not been defined for this provider');
+        $flavors = Hash::combine($flavors,'{n}.id','{n}.description');
+        
+        return array($regions,$flavors);
+    }
 
-        $internalDnsSuffix = $this->Config->findByVar('dns.internal.domain');
-        $internalDnsSuffix = $internalDnsSuffix['Config']['val'];
+    private function _getBlueprintPartData($blueprintPartIds){
 
-        $externalDnsSuffix = $this->Config->findByVar('dns.external.domain');
-        $externalDnsSuffix = $externalDnsSuffix['Config']['val'];
+        $this->loadModel('BlueprintPart');
+        
+        if(!is_array($blueprintPartIds))
+            $blueprintPartIds = array($blueprintPartIds);
+            
+        $blueprintParts = $this->BlueprintPart->find('all',array(
+            'contain' => array(
+                'DeviceType',
+                'Role' => array(
+                    'RoleProfile' => array(
+                        'Profile' => array(
+                            'ProfileModule' => array(
+                                'Module' => array(
+                                    'ModuleVariable'
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            'conditions' => array(
+                'BlueprintPart.id' => $blueprintPartIds
+            )
+        ));
 
-        //Store device data structures that will be handed to saveMany
-        $deviceObjects = array();
+        $blueprintParts = Hash::combine($blueprintParts,'{n}.BlueprintPart.id','{n}');
+        
+        return $blueprintParts;
+    }
 
+    private function _getBlueprintPartVariablesFromFindResult($blueprintPart){
+        
+        $blueprintPartVariables = array();
+
+        foreach($blueprintPart['Role']['RoleProfile'] as $roleProfile){
+            foreach($roleProfile['Profile']['ProfileModule'] as $profileModule){
+                foreach($profileModule['Module']['ModuleVariable'] as $var){
+
+                    $moduleId = $profileModule['Module']['id'];
+                    $varId = $var['id'];
+
+                    if(!isset($blueprintPartVariables[$moduleId])){
+                        $blueprintPartVariables[$moduleId] = array(
+                            'id' => $moduleId,
+                            'shortName' => $profileModule['Module']['short_name'],
+                            'name' => $profileModule['Module']['name'],
+                            'breadcrumb' => array(
+                                'role' => $blueprintPart['Role']['name'],
+                                'profile' => $roleProfile['Profile']['name'],
+                                'component' => $profileModule['Module']['name']
+                            ),
+                            'variables' => array()
+                        );
+                    }
+
+                    $moduleVariables = $blueprintPartVariables[$moduleId];
+
+                    if(!isset($moduleVariables['variables'][$varId])){
+                        $moduleVariables['variables'][$varId] = $var;
+                    }
+                    
+                    $blueprintPartVariables[$moduleId] = $moduleVariables;
+                }
+            }
+        }
+        
+        return $blueprintPartVariables;
+    }
+
+    private function _reserveXWords($dictionaryId,$count){
+
+        $this->loadModel('DictionaryWord');
+
+        $dictionaryWords = $this->DictionaryWord->reserve($dictionaryId,$count);
+        if($dictionaryWords === false)
+            throw new InternalErrorException('Dictionary does not contain enough free words to accomodate this formation');
+        $dictionaryWords = Hash::combine($dictionaryWords,'{n}.DictionaryWord.id','{n}');
+        
+        return $dictionaryWords;
+    }
+
+    private function _createPsuedoDevicesStructure($blueprintPartCounts,$blueprintParts,$dictionaryWords){
+
+        $devices = array();
+        $nextDevicePsuedoId = 0;
+        foreach($blueprintPartCounts as $blueprintPartId => $deviceCount){
+            for($x=0;$x<$deviceCount;$x++){
+                
+                $dictionaryWord = array_shift($dictionaryWords);
+                $name = $dictionaryWord['DictionaryWord']['word'];
+                
+                $blueprintPart = $blueprintParts[$blueprintPartId];
+                
+                $devices[] = array(
+                    'psuedoId' => $nextDevicePsuedoId++,
+                    'deviceTypeId' => $blueprintPart['DeviceType']['id'],
+                    'blueprintPartId' => $blueprintPart['BlueprintPart']['id'],
+                    'roleId' => $blueprintPart['Role']['id'],
+                    'name' => $name,
+                    'blueprintPartName' => $blueprintPart['BlueprintPart']['name']
+                );
+                
+            }
+        }
+        
+        return $devices;
+    }
+
+    private function _parseAndValidateDevices($devices,$implementationId){
+
+        $this->loadModel('Implementation');
+   
+        $models = array();
+        $errors = array();
+    
+        $defaultImageId = $this->Implementation->getDefaultImageId($implementationId);
+        list($intDnsSuffix,$extDnsSuffix) = $this->_getDnsSuffixes();
+        
+        list($regions,$flavors) = $this->_getProviderRegionsAndFlavors($implementationId);
+        $regionIds = array_keys($regions);
+        $flavorIds = array_keys($flavors);
+        
         foreach($devices as $device){
-
+            
+            $deviceErrors = array();
+            
             $psuedoId = $device['psuedoId'];
             $name = $device['name'];
             $blueprintPartId = $device['blueprintPartId'];
             $roleId = $device['roleId'];
             $deviceTypeId = $device['deviceTypeId'];
-
-            //Create device data structure
-            $deviceObject = array(
+            
+            $deviceModel = array(
                 'Device' => array(
                     'implementation_id' => $implementationId,
                     'blueprint_part_id' => $blueprintPartId,
@@ -856,97 +1085,155 @@ class FormationsController extends AppController
                     'device_type_id' => $deviceTypeId,
                     'name' => $name
                 ),
-                'DeviceAttribute' => array(
-                    array(
-                        'var' => 'implementation.image_id',
-                        'val' => $defaultImageId
-                    )
-                )
+                'DeviceAttribute' => array()
             );
-
-            //Check if device parameters exist - page tampering
-            if(!isset($this->request->data['Device'][$psuedoId]) || empty($this->request->data['Device'][$psuedoId])){
-                $this->setFlash("Device parameters are missing for $name.",'error');
-                return false;
-            }
-
-            $deviceParams = $this->request->data['Device'][$psuedoId];
-
-            //Check for region
-            if(!isset($deviceParams['region']) || empty($deviceParams['region'])){
-                $this->setFlash("Please select a region for device $name.");
-                return false;
+            
+            
+            //Verify input exists for this device
+            if(!isset($this->request->data['Device'][$psuedoId])){
+                $deviceErrors[] = 'Input missing.';
             }
             else {
-
-                $regionId = $deviceParams['region'];
-
-                //Validate region
-                if(!isset($regions[$regionId])){
-                    $this->setFlash("Invalid region specified for device $name.");
-                    return false;
+                
+                $deviceInput = $this->request->data['Device'][$psuedoId];
+                
+                //Image id
+                $deviceModel['DeviceAttribute'][] = array(
+                    'var' => 'implementation.image_id',
+                    'val' => $defaultImageId
+                );
+                
+                //Region & DNS
+                if(!isset($deviceInput['region']) || empty($deviceInput['region']))
+                    $deviceErrors[] = 'Region is required.';
+                elseif(!in_array($deviceInput['region'],$regionIds)){
+                    $deviceErrors[] = 'Invalid region.';
                 }
+                else {
+                    $regionId = $deviceInput['region'];
+                                
+                    $deviceModel['DeviceAttribute'][] = array(
+                        'var' => 'implementation.region_id',
+                        'val' => $regionId
+                    );
+                    
+                    $regionName = $regions[$regionId];
+                    
+                    $deviceModel['DeviceAttribute'][] = array(
+                        'var' => 'dns.internal.fqdn',
+                        'val' => strtolower("$name.$regionName.$intDnsSuffix")
+                    );
+                    
+                    $deviceModel['DeviceAttribute'][] = array(
+                        'var' => 'dns.external.fqdn',
+                        'val' => strtolower("$name.$regionName.$extDnsSuffix")
+                    );
+                }
+                
+                //Flavor
+                if(!isset($deviceInput['flavor']) || empty($deviceInput['flavor']))
+                    $deviceErrors[] = 'Flavor is required.';
+                elseif(!in_array($deviceInput['flavor'],$flavorIds))
+                    $deviceErrors[] = 'Invalid flavor.';
+                else {                  
+                    $deviceModel['DeviceAttribute'][] = array(
+                        'var' => 'implementation.flavor_id',
+                        'val' => $deviceInput['flavor']
+                    );
+                }
+            }
+            
+            if(!empty($deviceErrors))
+                $errors[$psuedoId] = $deviceErrors;
+            
+            $models[$psuedoId] = $deviceModel;
+        }
+        
+        return array($models,$errors);
+    } 
 
-                $deviceObject['DeviceAttribute'][] = array(
-                    'var' => 'implementation.region_id',
-                    'val' => $regionId
-                );
+    private function _parseAndValidateDeviceVariables($devices,$partsModulesVariables){
 
-                $regionName = $regions[$regionId]['name'];
-                $deviceObject['DeviceAttribute'][] = array(
-                    'var' => 'dns.internal.fqdn',
-                    'val' => "$name.$regionName.$internalDnsSuffix"
-                );
-                $deviceObject['DeviceAttribute'][] = array(
-                    'var' => 'dns.external.fqdn',
-                    'val' => "$name.$regionName.$externalDnsSuffix"
-                );
+        $variables = array();
+        $errors = array();
 
+        foreach($devices as $psuedoId => $device){
+
+            $partId = $device['Device']['blueprint_part_id'];
+            
+            //Get external FQDN
+            $deviceFqdn = "";
+            $deviceAttrs = $device['DeviceAttribute'];
+            foreach($deviceAttrs as $attr){
+                if($attr['var'] == 'dns.external.fqdn')
+                    $deviceFqdn = $attr['val'];
+            }
+            if(empty($deviceFqdn))
+                throw new InternalErrorException('Could not determine deivces FQDN.');
+
+            $hieraKey = "fqdn/$deviceFqdn";
+
+            $deviceErrors = array();
+
+            $partVariables = $partsModulesVariables[$partId];
+    
+            $input = $this->request->data['Device'][$psuedoId]['variables'];
+        
+            foreach($partVariables as $moduleId => $module){
+                $moduleShortName = $module['shortName'];
+                foreach($module['variables'] as $varId => $var){
+
+                    $hieraVar = $var['var'];
+                    $varName = $var['name'];
+                    $varFullName = $moduleShortName . "." . $varName;
+                    $varValidationPattern = $var['validation_pattern'];
+                    
+                    //Check if variable is set
+                    if(isset($input[$moduleId]) && isset($input[$moduleId][$varId]) && 
+                       (is_numeric($input[$moduleId][$varId]) || !empty($input[$moduleId][$varId]))){
+                    
+                        $deviceVarVal = $input[$moduleId][$varId];
+                    
+                        //Validate variable value if needed
+                        if(!empty($varValidationPattern) && !preg_match($varValidationPattern,$deviceVarVal))
+                            $deviceErrors[] = "Invalid value supplied for variable $varFullName.";
+                        else {
+                            $variables[] = array(
+                                'hiera_key' => $hieraKey,
+                                'var' => $hieraVar,
+                                'val' => $deviceVarVal
+                            );
+                        }
+                    }
+                    else { //Verify variable is not required
+                        if($var['is_required'])
+                            $deviceErrors[] = "Variable $varFullName is required.";
+                    }
+                }
             }
 
-            //Check for flavor
-            if(!isset($deviceParams['flavor']) || empty($deviceParams['flavor'])){
-                $this->setFlash("Please select a flavor for device $name.",'error');
-            }
-            else {
-                $deviceObject['DeviceAttribute'][] = array(
-                    'var' => 'implementation.flavor_id',
-                    'val' => $deviceParams['flavor']
-                );
-            }
-
-            $deviceObjects[] = $deviceObject;
+            if(!empty($deviceErrors))
+                $errors[$psuedoId] = $deviceErrors;
         }
-
-        $formation = array(
-            'Formation' => array(
-                'blueprint_id' => $this->Wizard->read('selectBlueprint.Blueprint.id'),
-                'name' => $this->Wizard->read('formationSettings.Formation.name')
-            ),
-            'Device' => $deviceObjects
-        );
-
-        $result = $this->Formation->saveAll($formation,array(
-            'validate' => false,
-            'deep' => true,
-        ));
-
-        if(!$result){
-            $this->Formation->validationErrorsAsString(true);
-            $this->setFlash('We encountered an error while creating your formation. ');
-            return false;
-        }
-
-        //Mark dictionary words as used
-        $dictionaryWordIds = $this->Wizard->read('_configureDevices.dictionaryWordIds');
-        $this->DictionaryWord->markAsUsed($dictionaryWordIds);
-
-        //Add create formation Q job
-        if(!$this->QueueJob->addJob(STRINGS_API_URL . '/Formations/create/' . $this->Formation->id)){
-            $this->setFlash('We encountered an error while creating a job to build this formation.');
-            return true;
-        }
-
-        return true;
+    
+        return array($variables,$errors);
     }
+    
+    private function _getDnsSuffixes(){
+
+        $this->loadModel('Config');
+    
+        $internalDnsSuffix = $this->Config->findByVar('dns.internal.domain');
+        if(empty($internalDnsSuffix))
+            throw new InternalErrorException('The dns.internal.domain configuration has not been set');
+        $internalDnsSuffix = $internalDnsSuffix['Config']['val'];
+    
+        $externalDnsSuffix = $this->Config->findByVar('dns.external.domain');
+        if(empty($externalDnsSuffix))
+            throw new InternalErrorException('The dns.external.domain configuration has not been set');
+        $externalDnsSuffix = $externalDnsSuffix['Config']['val'];
+    
+        return array($internalDnsSuffix,$externalDnsSuffix);
+    }
+
 }

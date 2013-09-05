@@ -10,7 +10,9 @@ class Formation extends AppModel {
 
 	public $belongsTo = array(
 		'Organization',
-        'Blueprint'
+        'Implementation',
+        'Blueprint',
+        'Dictionary',
 	);
 
 	public $hasMany = array(
@@ -33,6 +35,66 @@ class Formation extends AppModel {
 	public $hasAndBelongsToMany = array();
 
 	public $validate = array(
+        'implementation_id' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => '%%f is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => '%%f must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => '%%f does not exist'
+            )
+        ),
+        'blueprint_id' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => '%%f is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => '%%f must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => '%%f does not exist'
+            )
+        ),
+        'dictionary_id' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => '%%f is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => '%%f must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => '%%f does not exist'
+            )
+        ),
         'name' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',

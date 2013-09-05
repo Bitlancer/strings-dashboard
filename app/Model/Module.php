@@ -13,6 +13,12 @@ class Module extends AppModel {
         'ModuleSource',
 	);
 
+    public $hasMany = array(
+        'ModuleVariable' => array(
+            'dependent' => true
+        )
+    );
+
 	public $validate = array(
         'module_source_id' => array(
             'requiredOnCreate' => array(

@@ -150,6 +150,18 @@ class AppController extends Controller {
         die(print_r($o,true));
     }
 
+    public function sLog($msg,$type=LOG_ERROR){
+
+        $orgId = $this->Auth->User('organization_id');
+        $orgId = empty($orgId) ? 'Unknown' : $orgId;
+        $userId = $this->Auth->User('id');
+        $userId = empty($userId) ? 'Unknown' : $userId;
+
+        $logMsg = "OrgId:$orgId UserId:$userId $msg";
+
+        $this->log($logMsg,$type);
+    }
+
     /**
      * Search for a list of entities with a matching name
      * Used for autocomplete forms

@@ -17,7 +17,7 @@ body {
       @include box-shadow(-10px 0 0 #000)  
     }
   }
-  .clearfix {
+  .clearfix, .clear {
     zoom: 1;
     &:before {
       clear: both;

@@ -5,31 +5,29 @@ $this->assign('stepTitle','Configure Devices');
 $this->assign('forwardButtonText','Complete');
 ?>
 
-<div id="configure-devices" class="vtab">
+<div id="configure-devices" class="htab">
   <nav>
     <?php foreach($devices as $device){
       $id = $device['psuedoId'];
       $name = $device['name'];
       $partName = $device['blueprintPartName'];
-      $inErrorState = isset($errors[$id]);
       ?>
-      <a class="<?php echo $inErrorState ? "error" : ""; ?>" data-tab="device-<?php echo $id; ?>">
-        <span class="name"><?php echo $name; ?></span>
-        <small><?php echo $partName; ?></small>
-        <span class="status"></span>
+      <a class="" data-tab="device-<?php echo $id; ?>">
+        <span style="display:block; margin: 4px 0px;"><?php echo $name; ?></span>
+        <small style="display:block; margin-bottom:6px; text-align:center;">(<?php echo $partName; ?>)</small>
       </a>
     <?php } ?>
   </nav>
-  <div class="tabs">
   <?php foreach($devices as $device){
     $psuedoId = $device['psuedoId'];
     $name = $device['name'];
     $blueprintPartId = $device['blueprintPartId'];
     $blueprintPartName = $device['blueprintPartName'];
     $modulesAndVariables = $blueprintPartModulesAndVariables[$blueprintPartId];
-    $inErrorState = isset($errors[$psuedoId]);
     ?>
-    <div class="tab <?php echo $inErrorState ? 'error' : ''; ?>" data-tab="device-<?php echo $psuedoId; ?>">
+    <div class="tab" data-tab="device-<?php echo $psuedoId; ?>">
+      <div>
+      </div>
       <div class="provider">
         <h2>Provider</h2>
         <?php
@@ -61,7 +59,6 @@ $this->assign('forwardButtonText','Complete');
               $description = htmlentities($var['description']);
               $inputName = "Device.$psuedoId.variables.$moduleId.$varId";
               $defaultValue = $var['default_value'];
-              $required = $var['is_required'] ? true : false;
               ?>
               <div class="variable">
                 <?php echo $this->Form->input($inputName,array(
@@ -70,8 +67,7 @@ $this->assign('forwardButtonText','Complete');
                     'class' => 'tooltip',
                     'title' => $description
                   ),
-                  'default' => $defaultValue,
-                  'required' => $required
+                  'default' => $defaultValue
                 )); ?>
               </div>
             <?php } ?>
@@ -79,10 +75,10 @@ $this->assign('forwardButtonText','Complete');
         <?php } ?>
         </div> <!-- /.accordion -->
       </div> <!-- /.configuration -->
+      <a class="action next float-right">Next device</a>
+      <hr class="clear" />
     </div> <!-- /tab -->
   <?php } ?>
-  </div> <!-- /.tabs -->
-  <div class="clear"></div>
 </div><!-- /.configure-devices -->
 
 <?php $this->start('stepStyle'); ?>
@@ -96,22 +92,15 @@ $this->assign('forwardButtonText','Complete');
   #configure-devices .configuration .filter {
     margin-bottom: 10px; 
   }
-  #configure-devices nav a .name {
-    display: block;
-  }
-  #configure-devices nav a.good .name:after {
-    content: "\2714"
-  }
-  #configure-devices nav a.error .name:after {
-    content: "\2718"
-  }
 <?php $this->end(); ?>
 
 <?php $this->start('stepScript'); ?>
+  /*
   $('.cta.primary').removeClass('disabled');
   $('.cta.primary').click('live',function(){
     var form = $(this).closest('form');
     $('.device-modal').css('display','none').appendTo(form);
     form.submit();
   });
+  */
 <?php $this->end(); ?>
