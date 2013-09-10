@@ -304,6 +304,7 @@ class DevicesController extends AppController
                             'HieraVariable.val' => $val
                         ),
                         array(
+                            'HieraVariable.organization_id' => $this->Auth->User('organization_id'),
                             'HieraVariable.hiera_key' => $hieraKey,
                             'HieraVariable.var' => $var
                         )
