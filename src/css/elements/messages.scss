@@ -1,4 +1,4 @@
-ul#messages {
+ul#messages, ul.messages {
   > li {
     border-radius: 3px;
     display: block;
@@ -79,7 +79,7 @@ ul#messages {
     }
   }
 }
-ul#notice {
+ul#notice, ul.notice {
   li {
     font-size: 89%;
     list-style: none;
@@ -95,5 +95,15 @@ ul#notice {
       border: 1px solid darken($green, 10%);
       color: white;
     }
+  }
+}
+ul.notice-list {
+  font-size: 89%;
+  margin-bottom: 10px;
+  padding: 5px;
+  &.error {
+    background: lighten($red, 10%);
+    border: 1px solid darken($red, 10%);
+    color: white;
   }
 }

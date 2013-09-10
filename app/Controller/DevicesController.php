@@ -224,6 +224,115 @@ class DevicesController extends AppController
         }
     }
 
+    public function configure($deviceId){
+
+        $this->loadModel('HieraVariable');
+
+        $device = $this->Device->find('first',array(
+            'contain' => array(
+                'DeviceAttribute' => array(
+                    'conditions' => array(
+                        'var' => 'dns.external.fqdn'
+                    )
+                )
+            ),
+            'conditions' => array(
+                'Device.id' => $deviceId
+            )
+        ));
+
+        if(empty($device))
+            throw new NotFoundException('Device does not exist.');
+
+        $roleId = $device['Device']['role_id'];
+        $deviceFqdn = $device['DeviceAttribute'][0]['val'];
+        $hieraKey = "fqdn/$deviceFqdn";
+
+        //Get role variables
+        $variables = $this->Device->Role->getRoleVariables($roleId);
+
+        //Get currently set Hiera variables
+        $existingVarVals = $this->HieraVariable->find('all',array(
+            'contain' => array(),
+            'conditions' => array(
+                'hiera_key' => $hieraKey
+            )
+        ));
+        $existingVarVals = Hash::combine($existingVarVals,'{n}.HieraVariable.var','{n}.HieraVariable.val');
+
+        //Merge existing variables with possible variables
+        //Overwrite default_value with existing variable value
+        foreach($variables as $moduleId => $module){
+            foreach($module['variables'] as $index => $variable){
+                $var = $variable['var'];
+                if(isset($existingVarVals[$var])){
+                    $variables[$moduleId]['variables'][$index]['default_value'] = 
+                        $existingVarVals[$var]; 
+                }
+            }
+        }
+
+        $errors = array();
+
+        if($this->request->is('post')){
+
+            //Validate new variable values
+            $input = $this->request->data['variables'];
+            list($newVariables,$errors) = 
+                $this->HieraVariable->parseAndValidateDeviceVariables($variables,$input,$hieraKey);
+
+            if(!empty($errors))
+                $this->setFlash('One or more variables is invalid or missing.');
+
+            //Store new variables
+            if(empty($errors)){
+                
+                //Convert to key-value (var-value) array so we can diff
+                //against the existing variables
+                $newVarVals = Hash::combine($newVariables,'{n}.var','{n}.val');
+
+                //Diff
+                $diff = array_diff_assoc($newVarVals,$existingVarVals);
+
+                //Apply changes
+                $allChangesApplied = true;
+                foreach($diff as $var => $val){
+
+                    $val = $this->HieraVariable->escapeValue($val);
+                    $result = $this->HieraVariable->updateAll(
+                        array(
+                            'HieraVariable.val' => $val
+                        ),
+                        array(
+                            'HieraVariable.hiera_key' => $hieraKey,
+                            'HieraVariable.var' => $var
+                        )
+                    );
+
+                    if(!$result){
+                        $allChangesApplied = false;
+                        break;
+                    }
+                }
+
+                if(!$allChangesApplied){
+                    $this->setFlash('Failed to apply all variable changes.');
+                    $this->sLog('Failed to apply all variable cahnges. ' .
+                        $this->HieraVariable->validationErrorsAsString(true));
+                }
+                else {
+                    $this->setFlash('Configuration changes applied successfully.','success');
+                }
+            }
+        }
+
+        $this->set(array(
+            'device' => $device,
+            'modulesVariables' => $variables,
+            'errors' => $errors
+        ));
+    }
+
     protected function redirectIfNotActive($device){
     
         if($device['Device']['status'] != 'active'){

@@ -9,7 +9,7 @@
 
         $modifiedOutputRow = $outputRow;
 
-        $actionMenu = $view->element('../Formations/_devices_action_menu',array(
+        $actionMenu = $view->element('../Devices/elements/action_menu',array(
             'deviceId' => $deviceId,
             'formationId' => $formationId,
             'actionsDisabled' => (!$isAdmin || $deviceStatus != 'active')

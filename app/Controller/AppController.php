@@ -150,6 +150,9 @@ class AppController extends Controller {
         die(print_r($o,true));
     }
 
+    /**
+     * Strings specific log msg
+     */
     public function sLog($msg,$type=LOG_ERROR){
 
         $orgId = $this->Auth->User('organization_id');

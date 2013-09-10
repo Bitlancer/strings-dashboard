@@ -6,7 +6,7 @@ $this->assign('title',$device['Device']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('../Devices/_activity_log');
+echo $this->element('../Devices/elements/activity_log');
 $this->end();
 ?>
 
@@ -15,7 +15,7 @@ $this->end();
 <h2 class="float-left">Device Details</h2>
 <h2 class="float-right">
   <?php
-    echo $this->element('../Formations/_devices_action_menu',array(
+    echo $this->element('../Devices/elements/action_menu',array(
         'deviceId' => $device['Device']['id'],
         'formationId' => $device['Device']['formation_id'],
         'actionsDisabled' => (!$isAdmin || $device['Device']['status'] !== 'active')

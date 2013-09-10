@@ -4,7 +4,6 @@ form {
     margin-bottom: 10px;
     padding: 10px;
     position: relative;
-    //@include box-shadow(0 1px 15px #eee);
     legend {
       font-weight: 600;  
       background: #fff;
@@ -45,16 +44,23 @@ form {
   }
   select {
     box-sizing: border-box;
-    width: 50%;  
+    min-width: 50%;  
   }
   div.input {
-    margin-bottom:6px;
+    display: block;
+    margin-bottom: 10px;
     .loading {
       display:inline-block;
       width:16px;
       height:16px;
       background-size:16px;
       vertical-align:text-bottom;
+    }
+    .error-msg {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 90%;
+      color: red;
     }
   }
   div.submit {

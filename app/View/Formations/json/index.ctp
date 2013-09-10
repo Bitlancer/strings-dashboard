@@ -6,7 +6,7 @@
         $formationId = $rawRow['Formation']['id'];
         $formationStatus = $rawRow['Formation']['status'];
 
-        $actionMenu = $view->element('../Formations/_action_menu',array(
+        $actionMenu = $view->element('../Formations/elements/action_menu',array(
             'formationId' => $formationId,
             'actionsDisabled' => (!$isAdmin || $formationStatus !== 'active')
         ));

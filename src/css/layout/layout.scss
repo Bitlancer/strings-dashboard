@@ -31,7 +31,10 @@ body {
   .overflow-hidden { overflow: hidden }
   .block { display: block }
   .arrow {
+    font-weight: bold;
+    font-size: 110%;
     &:after { content: " \00bb" }
+    &.left:after { content: "\00ab" }
     &.block { margin-top: 5px }
   }
   .border-light-grey {

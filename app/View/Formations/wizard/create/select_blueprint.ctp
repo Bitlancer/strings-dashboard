@@ -2,60 +2,28 @@
 $this->extend('/Formations/wizard/create/_template');
 
 $this->assign('stepTitle','Select a Blueprint');
+?>
 
-//Styling
-$this->start('stepStyle'); ?>
-  table#blueprint td .blueprint {
-    margin-bottom:4px;
-  }
-  table#blueprint td .blueprint h3 {
-    width:88%;
-    display:inline;
-    font-weight:bold;
-  }
-  table#blueprint td .blueprint a.action {
-    float:right;
-    width:10%;
-    text-align:right;
-  }
-  table#blueprint td .blueprint-description {
-    margin-right:10%;
-    font-size:13px;
-  }
-  div#blueprint-summary {
-    display:none;
-  }
-  div#blueprint-summary a#back {
-    display:block;
-    margin-bottom:10px;
-  }
-  div#blueprint-summary div#content {
-    min-height:100px;
-    border:1px solid #e3e3e3;
-    background-color:#fcfcfc;
-  }
-  div#blueprint-summary div#content img.loading {
-    display:block;
-    margin-top:45px;
-    margin-left:auto;
-    margin-right:auto;
-  }
-  div#blueprint-summary div#content .title {
-    margin:0;
-    padding:6px;
-    background-color:#f0f0f0;
-  }
-  div#blueprint-summary div#content .title h2 {
-    margin:0;
-  }
-  div#blueprint-summary div#content .description {
-    padding:10px;
-  }
-  div#blueprint-summary div#content p {
-    margin-bottom:10px;
-  }
-<?php $this->end();
+<div id="select-blueprint">
+  <input type="hidden" id="blueprint" name="data[Blueprint][id]" value="" />
+  <?php
+      echo $this->element('Datatables/basic',array(
+        'tableId' => 'blueprint',
+        'columnHeadings' => $this->DataTables->getColumnHeadings(),
+    ));
+  ?>
+  <div id="blueprint-summary">
+    <a id="back">
+      <span class="arrow left"></span>
+      Back to Blueprint list
+    </a>
+    <div id="content">
+      <img class="loading" src="/img/loading.gif" />
+    </div>
+  </div>
+</div> <!-- /#select-blueprint -->
 
+<?php
 //Script
 $this->start('stepScript'); ?>
 $('#back').live('click', function() {
@@ -87,24 +55,3 @@ $('.select').live('click', function() {
     });
 });
 <?php $this->end(); ?>
-
-<?php //Main content ?>
-<input type="hidden" id="blueprint" name="data[Blueprint][id]" value="" />
-<?php
-    echo $this->element('Datatables/basic',array(
-      'tableId' => 'blueprint',
-      'columnHeadings' => $this->DataTables->getColumnHeadings(),
-  ));
-?>
-<div id="blueprint-summary">
-  <a id="back">&#60; Back to Blueprint list</a>
-  <div id="content">
-    <img class="loading" src="/img/loading.gif" />
-  </div>
-</div>
-
-<?php
-//Sidebar
-$this->start('sidebar'); ?>
-<?php $this->end(); ?>
-

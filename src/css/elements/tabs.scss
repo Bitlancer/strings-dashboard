@@ -47,6 +47,20 @@
         background-color: white;
         color: #444;
       }
+      &.error {
+        .title:after {
+          content: " \2718";
+          color: red;
+        }
+      }
+      .title {
+        display: inline-block;
+        margin-bottom:2px;
+      }
+      .subtitle {
+        display: block;
+        font-size: 75%;
+      }
     }
   }
   .tabs {

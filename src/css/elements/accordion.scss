@@ -1,5 +1,9 @@
 .accordion {
   .ui-accordion-header {
+    &.error > .title:after {
+      content: "*";
+      color: red;
+    }
     .ui-icon {
       background-image: url(/img/ui-icons_454545_256x240.png);
     }

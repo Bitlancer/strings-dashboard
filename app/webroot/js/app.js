@@ -158,6 +158,7 @@ var strings = {
       attach: function(filter) {
         $(filter).each(function() {
           $(this).accordion({
+            active: typeof $(this).attr('data-active') != 'undefined' && $(this).attr('data-active') == 'true',
             heightStyle: "content",
             animate: false,
             collapsible: true,

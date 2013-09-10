@@ -5,12 +5,20 @@ App::uses('CakeSession', 'Model/Datasource');
 
 class AppModel extends Model {
 
-    /**
+    /*
      * Most models with a name attribute will use the following validation variables
      */
     const VALID_MODEL_NAME_REGEX = '/^[A-Za-z0-9 -]{3,}$/';
     const VALID_MODEL_NAME_MSG = '%%f is limited to uppercase and lowercase letters, numbers, hypens and spaces and must be at least 3 characters long';
 
+    /*
+     * Stores row ids for any newly created models
+     */
+    private $insertIds = array();
+
+    /*
+     * Behaviors
+     */
 	public $actsAs = array(
 		'Containable',
 		'Linkable',
@@ -20,37 +28,25 @@ class AppModel extends Model {
         )
 	);
 
+/*
+ * Callbacks
+ */
+
     /**
-     * Override CakePHP's native exists method.
-     *
-     * Most of this App's models behave as "OrganizationOwned" models.
-     * The "OrganizationOwned" behavior takes care of appending organization_id
-     * to each query to securely handle data separation between organizations.
-     * CakePHP's native exists method bypasses this behavior by using a special
-     * query which does not trigger the behavior callbacks. By overriding this
-     * method we can force the callbacks to be executed and enfore the logic
-     * defined by "OrganizationOwned".
+     * After save callback
      */
-    public function exists($id=false){
+    public function afterSave($created){
 
-        if($id === false)
-            $id = $this->getID();
-        
-        if($id === false)
-            return false;
-
-        $model = $this->find('first',array(
-            'contain' => array(),
-            'conditions'=> array(
-                'id' => $id
-            )
-        ));
-
-        if(empty($model))
-            return false;
+        if($created) {
+            $this->addInsertId($this->getInsertID());
+        }
 
         return true;
     }
+
+/*
+ * Validation
+ */
 
 	/**
 	 * Validate relationship (foreign_key) between this model and belongsTo model
@@ -113,12 +109,56 @@ class AppModel extends Model {
 		}
     }
 
+/*
+ * Misc
+ */
+
+    /**
+     * Override CakePHP's native exists method.
+     *
+     * Most of this App's models behave as "OrganizationOwned" models.
+     * The "OrganizationOwned" behavior takes care of appending organization_id
+     * to each query to securely handle data separation between organizations.
+     * CakePHP's native exists method bypasses this behavior by using a special
+     * query which does not trigger the behavior callbacks. By overriding this
+     * method we can force the callbacks to be executed and enfore the logic
+     * defined by "OrganizationOwned".
+     */
+    public function exists($id=false){
+
+        if($id === false)
+            $id = $this->getID();
+    
+        if($id === false)
+            return false;
+
+        $model = $this->find('first',array(
+            'contain' => array(),
+            'conditions'=> array(
+                'id' => $id
+            )
+        ));
+
+        if(empty($model))
+            return false;
+
+        return true;
+    }
+
     /**
      * Return the last SQL statement executed
      */
     public function getSQLLog(){
 
         return $this->getDataSource()->getLog(false,false);
+    }
+
+    /**
+     * Manually escape input values
+     */
+    public function escapeValue($value,$type = 'string'){
+
+        return $this->getDataSource()->value($value,$type);
     }
 
     /**
@@ -129,4 +169,19 @@ class AppModel extends Model {
 
         return CakeSession::read('Auth.User');
     }
+
+    /**
+     * Return a list of ids for any newly created models
+     */
+    public function getInsertIds(){
+        return $this->insertIds;
+    }
+
+    /**
+     * Append an id to the list of newly created models
+     */
+    public function addInsertId($id){
+        $this->insertIds[] = $id;
+    }
+
 }
