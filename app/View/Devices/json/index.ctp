@@ -4,16 +4,29 @@
         function($view,$outputRow,$rawRow) use($isAdmin){
 
         $deviceId = $rawRow['Device']['id'];
+        $deviceType = $rawRow['DeviceType']['name'];
         $deviceStatus = $rawRow['Device']['status'];
         $formationId = $rawRow['Device']['formation_id'];
 
         $modifiedOutputRow = $outputRow;
 
-        $actionMenu = $view->element('../Devices/elements/action_menu',array(
-            'deviceId' => $deviceId,
-            'formationId' => $formationId,
-            'actionsDisabled' => (!$isAdmin || $deviceStatus != 'active')
-        ));
+        if($deviceType == 'instance'){
+            $actionMenu = $view->element('../Devices/elements/instance_action_menu',array(
+                'deviceId' => $deviceId,
+                'formationId' => $formationId,
+                'actionsDisabled' => (!$isAdmin || $deviceStatus != 'active')
+            ));
+        }
+        elseif($deviceType = 'load-balancer'){
+            $actionMenu = $view->element('../Devices/elements/loadbalancer_action_menu',array(
+                'deviceId' => $deviceId,
+                'formationId' => $formationId,
+                'actionsDisabled' => (!$isAdmin || $deviceStatus != 'active')
+            ));
+        }
+        else {
+            $actionMenu = '';
+        }
 
         //Info link on name column
         $name = $modifiedOutputRow[0];

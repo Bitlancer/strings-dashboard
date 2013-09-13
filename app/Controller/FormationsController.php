@@ -262,10 +262,11 @@ class FormationsController extends AppController
             $this->DataTables->process(
                 array(
                     'contain' => array(
+                        'DeviceType',
                         'Role'
                     ),
                     'fields' => array(
-                        'Device.*','Role.*'
+                        'Device.*','DeviceType.*','Role.*'
                     ),
                     'conditions' => array(
                         'Device.formation_id' => $id
@@ -578,7 +579,7 @@ class FormationsController extends AppController
                 $devices[$key]['Device']['formation_id'] = $formationId;
 
             //Validate data (best effort) before any saves begin
-            if(!$this->HieraVariable->saveAll($variables,array('validate' => 'only'))){
+            if(!empty($variables) && !$this->HieraVariable->saveAll($variables,array('validate' => 'only'))){
                 $this->setFlash('We encountered an error while saving the device variables.');
                 $this->sLog('Error ecountered while validating the device variables. ' . 
                     $this->HieraVariable->validationErrorsAsString(true));
@@ -601,7 +602,7 @@ class FormationsController extends AppController
                 $this->DictionaryWord->markAsUsed($dictionaryWordIds);
 
                 //Save the device variables
-                if(!$this->HieraVariable->saveAll($variables)){
+                if(!empty($variables) && !$this->HieraVariable->saveAll($variables)){
                     $this->setFlash('We encountered an error while saving the device variables.');
                     $this->sLog('Error encountered while saving the device variables. ' .
                         $this->HieraVariable->validationErrorsAsString(true));
@@ -912,17 +913,17 @@ class FormationsController extends AppController
             $this->Formation->set($formation);
             $this->QueueJob->set($qJob);
             if(!$this->Formation->validates()){ //This only validates the formation
-                $this->setFlash('We encountered an unexpected error.');
+                $this->setFlash('We encountered an error while saving this formation.');
                 $this->sLog("Error encountered while validating formation. " .
                     $this->Formation->validationErrorsAsString(true));
             }
             elseif(!$this->QueueJob->validates()){
-                $this->setFlash('We encountered an unexpected error.');
+                $this->setFlash('We encountered an error while scheduling this formation to be created.');
                 $this->sLog("Error encountered while validating QueueJob. "  .
                     $this->QueueJob->validationErrorsAsString());
             }
-            elseif(!$this->HieraVariable->saveAll($variables,array('validate' => 'only'))){
-                $this->setFlash('We encountered an unexpected error.');
+            elseif(!empty($variables) && !$this->HieraVariable->saveAll($variables,array('validate' => 'only'))){
+                $this->setFlash('We encountered an error while saving your device variables.');
                 $this->sLog("Error encountered while validating hiera variables. " .
                     $this->HieraVariable->validationErrorsAsString(true));
             }
@@ -937,7 +938,7 @@ class FormationsController extends AppController
                     'deep' => true,
                 ));
                 if(!$result){
-                    $this->setFlash('We encountered an unexpected error while " .
+                    $this->setFlash('We encountered an error while " .
                         "creating your formation.');
                     $this->log("Error encountered while saving formation. " .
                         $this->Formation->validationErrorsAsString(true));
@@ -957,7 +958,7 @@ class FormationsController extends AppController
                 }
 
                 //Create variables
-                if(!$this->HieraVariable->saveMany($variables)){
+                if(!empty($variables) && !$this->HieraVariable->saveMany($variables)){
                     $msg = "Your formation has been scheduled for creation however we " .
                         "encountered an error while setting one or more device " .
                         "configuration variables. ";
@@ -1138,15 +1139,9 @@ class FormationsController extends AppController
                 $deviceErrors[] = 'Input missing.';
             }
             else {
-                
+
                 $deviceInput = $this->request->data['Device'][$psuedoId];
-                
-                //Image id
-                $deviceModel['DeviceAttribute'][] = array(
-                    'var' => 'implementation.image_id',
-                    'val' => $defaultImageId
-                );
-                
+
                 //Region & DNS
                 if(!isset($deviceInput['region']) || empty($deviceInput['region']))
                     $deviceErrors[] = 'Region is required.';
@@ -1173,17 +1168,28 @@ class FormationsController extends AppController
                         'val' => strtolower("$name.$regionName.$extDnsSuffix")
                     );
                 }
+
+                //Only applies to instances
+                if($deviceTypeId == 1){
                 
-                //Flavor
-                if(!isset($deviceInput['flavor']) || empty($deviceInput['flavor']))
-                    $deviceErrors[] = 'Flavor is required.';
-                elseif(!in_array($deviceInput['flavor'],$flavorIds))
-                    $deviceErrors[] = 'Invalid flavor.';
-                else {                  
+                    //Flavor
+                    if(!isset($deviceInput['flavor']) || empty($deviceInput['flavor']))
+                        $deviceErrors[] = 'Flavor is required.';
+                    elseif(!in_array($deviceInput['flavor'],$flavorIds))
+                        $deviceErrors[] = 'Invalid flavor.';
+                    else {                  
+                        $deviceModel['DeviceAttribute'][] = array(
+                            'var' => 'implementation.flavor_id',
+                            'val' => $deviceInput['flavor']
+                        );
+                    }
+
+                    //Image id
                     $deviceModel['DeviceAttribute'][] = array(
-                        'var' => 'implementation.flavor_id',
-                        'val' => $deviceInput['flavor']
+                        'var' => 'implementation.image_id',
+                        'val' => $defaultImageId
                     );
+
                 }
             }
             
@@ -1205,8 +1211,18 @@ class FormationsController extends AppController
 
         foreach($devices as $psuedoId => $device){
 
+            $deviceErrors = array();
+
+            //Variables only apply to instances (device_type_id = 1)
+            if($device['Device']['device_type_id'] != 1)
+                continue;
+
             $partId = $device['Device']['blueprint_part_id'];
-            
+
+            //This blueprint part does not have any variables
+            if(!isset($partsModulesVariables[$partId]) || empty($partsModulesVariables[$partId]))
+                continue;
+
             //Get external FQDN
             $deviceFqdn = "";
             $deviceAttrs = $device['DeviceAttribute'];
@@ -1218,8 +1234,6 @@ class FormationsController extends AppController
                 throw new InternalErrorException('Could not determine devices FQDN.');
 
             $hieraKey = "fqdn/$deviceFqdn";
-
-            $deviceErrors = array();
 
             $partVariables = $partsModulesVariables[$partId];
     

@@ -68,9 +68,14 @@ body {
   div.loading.white {
     background: white url('/img/loading-white.gif') center no-repeat;
   }
+  div.empty {
+    text-align: center;
+    color: #aaa;
+    font-style: italic;
+  }
   span.null:after {
-    color: gray;
-    content: 'N/A';
+    color: #aaa;
+    content: 'n/a';
   }
   //::-webkit-scrollbar { display: inherit; width: 12px; }
   //::-webkit-scrollbar-track { background: transparent; border: 0; }

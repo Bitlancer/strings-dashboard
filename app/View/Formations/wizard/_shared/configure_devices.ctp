@@ -24,12 +24,13 @@ $this->assign('forwardButtonText','Complete');
   <?php foreach($devices as $device){
     $id = $device['psuedoId'];
     $name = $device['name'];
+    $deviceTypeId = $device['deviceTypeId'];
     $blueprintPartId = $device['blueprintPartId'];
     $blueprintPartName = $device['blueprintPartName'];
-    $modulesAndVariables = $blueprintPartModulesAndVariables[$blueprintPartId];
     $inErrorState = isset($devicesInErrorState) && in_array($id,$devicesInErrorState);
     $deviceInfraErrors = $inErrorState && isset($infraConfigErrors[$id]) ? $infraConfigErrors[$id] : array();
     $deviceSystemErrors = $inErrorState && isset($systemConfigErrors[$id]) ? $systemConfigErrors[$id] : array();
+    $modulesAndVariables = $deviceTypeId == 1 ? $blueprintPartModulesAndVariables[$blueprintPartId] : array();
     ?>
     <div class="tab <?php echo $inErrorState ? 'error' : ''; ?>" data-tab="device-<?php echo $id; ?>">
       <fieldset class="infrastructure-configuration">
@@ -42,11 +43,13 @@ $this->assign('forwardButtonText','Complete');
           </ul>
         <?php } ?>
         <?php
-        echo $this->Form->input("Device.$id.flavor",array(
-          'label' => 'Flavor',
-          'error' => false,
-          'options' => $flavors
-        ));
+        if($deviceTypeId == 1){ //Flavor is only applicable for instances
+          echo $this->Form->input("Device.$id.flavor",array(
+            'label' => 'Flavor',
+            'error' => false,
+            'options' => $flavors
+          ));
+        }
         echo $this->Form->input("Device.$id.region",array(
           'label' => 'Target',
           'error' => false,
@@ -56,11 +59,23 @@ $this->assign('forwardButtonText','Complete');
       </fieldset> <!-- /.infrastructure-configuration -->
       <fieldset class="system-configuration">
         <legend>System Configuration</legend>
-        <?php echo $this->element('../Devices/elements/configure',array(
-          'modulesAndVariables' => $modulesAndVariables,
-          'variableErrors' => $deviceSystemErrors,
-          'inputPrefix' => "Device.$id"
-        )); ?>
+        <?php
+          if($deviceTypeId != 1){ ?>
+            <div class="empty"><span>Not applicable</span>
+          <?php }
+          elseif(empty($modulesAdnVariables)){ ?>
+            <div class="empty">
+              <span>This device does not require any configuration</span>
+            </div>
+          <?php }
+          else {
+            echo $this->element('../Devices/elements/configure',array(
+              'modulesAndVariables' => $modulesAndVariables,
+              'variableErrors' => $deviceSystemErrors,
+              'inputPrefix' => "Device.$id"
+            ));
+          }
+        ?>
       </fieldset> <!-- /.system-configuration -->
     </div> <!-- /tab -->
   <?php } ?>

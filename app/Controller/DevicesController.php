@@ -51,11 +51,13 @@ class DevicesController extends AppController
             $this->DataTables->process(
                 array(
                     'contain' => array(
+                        'DeviceType',
                         'Formation',
                         'Role'
                     ),
                     'fields' => array(
-                        'Device.*','Formation.*','Role.name'
+                        'Device.*','DeviceType.*',
+                        'Formation.*','Role.name'
                     )
                 )
             );
@@ -76,6 +78,7 @@ class DevicesController extends AppController
 
         $device = $this->Device->find('first',array(
             'contain' => array(
+                'DeviceType',
                 'Implementation' => array(
                     'ImplementationAttribute',
                 ),
@@ -88,10 +91,23 @@ class DevicesController extends AppController
             )
         ));
 
-        if(empty($device)){
-            $this->setFlash('Device does not exist');
-            $this->redirect(array('action' => 'index'));
+        if(empty($device))
+            throw new NotFoundException('Device does not exist.');
+
+        $deviceType = $device['DeviceType']['name'];
+
+        if($deviceType == 'instance'){
+            $this->_viewInstance($device);
         }
+        elseif($deviceType == 'load-balancer'){
+            $this->_viewLoadBalancer($device); 
+        }
+        else {
+            throw new InternalErrorException('Unknown device type.');
+        }
+    }
+
+    private function _viewInstance($device){
 
         //Build re-indexed attributes arrays
         $deviceAttributes = Hash::combine($device['DeviceAttribute'],'{n}.var','{n}.val');
@@ -99,13 +115,15 @@ class DevicesController extends AppController
 
         $implementationId = $device['Implementation']['id'];
 
-        $providerDetails= array(
-            'provider_name' => $device['Implementation']['name'],
-            'region' => $this->Device->Implementation->getRegionName($implementationId,$deviceAttributes['implementation.region_id']),
-            'image' => 'Default',
-            'flavor' => $this->Device->Implementation->getFlavorDescription($implementationId,$deviceAttributes['implementation.flavor_id'])
+        //Provider info
+        $providerInfo = array(
+            'Provider' => $device['Implementation']['name'],
+            'Datacenter' => $this->Device->Implementation->getRegionName($implementationId,$deviceAttributes['implementation.region_id']),
+            'Image' => 'Default',
+            'Flavor' => $this->Device->Implementation->getFlavorDescription($implementationId,$deviceAttributes['implementation.flavor_id'])
         );
 
+        //Address info
         $deviceAddresses = array();
         foreach($deviceAttributes as $var => $val){
             if(strpos($var,'implementation.address') === 0){
@@ -120,9 +138,32 @@ class DevicesController extends AppController
         }
 
         $this->set(array(
-            'isAdmin' => $this->Auth->User('is_admin'),
             'device' => $device,
-            'providerDetails' => $providerDetails,
+            'providerInfo' => $providerInfo,
+            'deviceAddresses' => $deviceAddresses
+        ));
+    }
+
+    private function _viewLoadBalancer($device){
+
+        //Build re-indexed attributes arrays
+        $deviceAttributes = Hash::combine($device['DeviceAttribute'],'{n}.var','{n}.val');
+        $implementationAttributes  = Hash::combine($device['Implementation']['ImplementationAttribute'],'{n}.var','{n}.val');
+
+        $implementationId = $device['Implementation']['id'];
+
+        //Provider info
+        $providerInfo = array(
+            'Provider' => $device['Implementation']['name'],
+            'Datacenter' => $this->Device->Implementation->getRegionName($implementationId,$deviceAttributes['implementation.region_id']),
+        );
+
+        //Device addresses
+        $deviceAddresses = array();
+
+        $this->set(array(
+            'device' => $device,
+            'providerInfo' => $providerInfo,
             'deviceAddresses' => $deviceAddresses
         ));
     }
@@ -226,10 +267,9 @@ class DevicesController extends AppController
 
     public function configure($deviceId){
 
-        $this->loadModel('HieraVariable');
-
         $device = $this->Device->find('first',array(
             'contain' => array(
+                'DeviceType',
                 'DeviceAttribute' => array(
                     'conditions' => array(
                         'var' => 'dns.external.fqdn'
@@ -243,6 +283,21 @@ class DevicesController extends AppController
 
         if(empty($device))
             throw new NotFoundException('Device does not exist.');
+
+        $deviceType = $device['DeviceType']['name'];
+
+        if($deviceType == 'instance'){
+            $this->_configureInstance($device);
+        }
+        elseif($deviceType == 'load-balancer'){
+            $this->_configureLoadBalancer($device);
+        }
+        else {
+            throw new InternalErrorException('Unknown device type.');
+        }
+    }
+
+    private function _configureInstance($device){
 
         $roleId = $device['Device']['role_id'];
         $deviceFqdn = $device['DeviceAttribute'][0]['val'];
@@ -332,6 +387,11 @@ class DevicesController extends AppController
             'modulesVariables' => $variables,
             'errors' => $errors
         ));
+    }
+
+    private function _configureLoadBalancer($device){
+
+        throw InternalErrorException('Not implemented');
     }
 
     protected function redirectIfNotActive($device){

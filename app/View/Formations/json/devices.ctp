@@ -7,7 +7,10 @@
         $formationId = $rawRow['Device']['formation_id'];
         $deviceStatus = $rawRow['Device']['status'];
 
-        $actionMenu = $view->element('../Devices/elements/action_menu',array(
+        $actionMenuElement = '../Devices/elements/instance_action_menu';
+        if($rawRow['DeviceType']['name'] == 'load-balancer')
+            $actionMenuElement = '../Devices/elements/loadbalancer_action_menu';
+        $actionMenu = $view->element($actionMenuElement,array(
             'deviceId' => $deviceId,
             'formationId' => $formationId,
             'actionsDisabled' => (!$isAdmin || $deviceStatus !== 'active')

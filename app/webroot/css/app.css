@@ -160,9 +160,13 @@ body {
     background: #f8f8f8 url("/img/loading.gif") center no-repeat; }
   body div.loading.white {
     background: white url("/img/loading-white.gif") center no-repeat; }
+  body div.empty {
+    text-align: center;
+    color: #aaa;
+    font-style: italic; }
   body span.null:after {
-    color: gray;
-    content: 'N/A'; }
+    color: #aaa;
+    content: 'n/a'; }
 
 body > header {
   background: #222222 url("/img/dark_stripes.png");
