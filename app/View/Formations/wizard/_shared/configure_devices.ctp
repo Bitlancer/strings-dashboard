@@ -63,7 +63,7 @@ $this->assign('forwardButtonText','Complete');
           if($deviceTypeId != 1){ ?>
             <div class="empty"><span>Not applicable</span>
           <?php }
-          elseif(empty($modulesAdnVariables)){ ?>
+          elseif(empty($modulesAndVariables)){ ?>
             <div class="empty">
               <span>This device does not require any configuration</span>
             </div>
