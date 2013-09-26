@@ -14,7 +14,11 @@ class ApplicationFormation extends AppModel
         'Formation'
     );
 
-    public $hasMany = array();
+    public $hasMany = array(
+        'DeviceDns' => array(
+            'dependent' => true
+        )
+    );
 
     public $hasAndBelongsToMany = array();
     

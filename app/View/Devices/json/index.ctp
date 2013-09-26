@@ -1,22 +1,36 @@
 <?php
 
-    echo $this->DataTables->output($dataTable,
+    echo $this->DataTables->render(
         function($view,$outputRow,$rawRow) use($isAdmin){
 
         $deviceId = $rawRow['Device']['id'];
+        $deviceType = $rawRow['DeviceType']['name'];
         $deviceStatus = $rawRow['Device']['status'];
         $formationId = $rawRow['Device']['formation_id'];
 
         $modifiedOutputRow = $outputRow;
 
-        $actionMenu = $view->element('../Formations/_devices_action_menu',array(
-            'deviceId' => $deviceId,
-            'formationId' => $formationId,
-            'actionsDisabled' => (!$isAdmin || $deviceStatus != 'active')
-        ));
+        if($deviceType == 'instance'){
+            $actionMenu = $view->element('../Devices/elements/instance_action_menu',array(
+                'deviceId' => $deviceId,
+                'formationId' => $formationId,
+                'actionsDisabled' => (!$isAdmin || $deviceStatus != 'active')
+            ));
+        }
+        elseif($deviceType = 'load-balancer'){
+            $actionMenu = $view->element('../Devices/elements/loadbalancer_action_menu',array(
+                'deviceId' => $deviceId,
+                'formationId' => $formationId,
+                'actionsDisabled' => (!$isAdmin || $deviceStatus != 'active')
+            ));
+        }
+        else {
+            $actionMenu = '';
+        }
 
         //Info link on name column
-        $modifiedOutputRow[0] = $view->Strings->link($modifiedOutputRow[0],"/Devices/view/$deviceId");
+        $name = $modifiedOutputRow[0];
+        $modifiedOutputRow[0] = $view->Strings->link($name,"/Devices/view/$deviceId");
 
         //Append action menu to last column
         $modifiedOutputRow[count($outputRow)-1] .= $actionMenu;

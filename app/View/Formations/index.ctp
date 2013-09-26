@@ -6,14 +6,14 @@ $this->assign('title', 'Formations');
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('../Formations/_activity_log');
+echo $this->element('../Formations/elements/activity_log');
 $this->end();
 
 //Main content
 echo $this->element('Datatables/default',array(
     'model' => 'formation',
-    'columnHeadings' => $formationTableColumns,
-    'ctaSrc' => '/Formations/wizard',
+    'columnHeadings' => $this->DataTables->getColumnHeadings(),
+    'ctaSrc' => '/Formations/create',
     'ctaModal' => false,
     'ctaDisabled' => $createCTADisabled
 ));

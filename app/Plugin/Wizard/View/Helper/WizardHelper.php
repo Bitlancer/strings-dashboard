@@ -24,10 +24,13 @@ class WizardHelper extends AppHelper {
  * @return mixed data at config key (if key is passed)
  */
 	public function config($key = null) {
+
+        $configPrefix = "Wizard.config.".$this->params['controller'].".".$this->params['action'];
+
 		if ($key == null) {
-			return $this->Session->read('Wizard.config');
+			return $this->Session->read($configPrefix);
 		} else {
-			$wizardData = $this->Session->read('Wizard.config.'.$key);
+			$wizardData = $this->Session->read($configPrefix.".".$key);
 			if (!empty($wizardData)) {
 				return $wizardData;
 			} else {
@@ -38,6 +41,8 @@ class WizardHelper extends AppHelper {
 /**
  * undocumented function
  *
+ * @param string $controller
+ * @param string $action
  * @param string $title 
  * @param string $step 
  * @param string $htmlAttributes 
@@ -49,7 +54,7 @@ class WizardHelper extends AppHelper {
 		if ($step == null) {
 			$step = $title;
 		}
-		$wizardAction = $this->config('wizardAction');
+		$wizardAction = $this->config('action');
 		
 		return $this->Html->link($title, $wizardAction.$step, $htmlAttributes, $confirmMessage, $escapeTitle);
 	}
@@ -66,7 +71,7 @@ class WizardHelper extends AppHelper {
 		}
 		
 		$steps = $this->config('steps');
-		
+
 		if (in_array($step, $steps)) {
 			return array_search($step, $steps) + $shiftIndex;
 		} else {
@@ -93,7 +98,7 @@ class WizardHelper extends AppHelper {
 	public function progressMenu($titles = array(), $attributes = array(), $htmlAttributes = array(), $confirmMessage = false, $escapeTitle = true) {
 		$wizardConfig = $this->config();
 		extract($wizardConfig);	
-                $wizardAction = $this->config('wizardAction');
+        $wizardAction = $this->config('action');
 
 		$attributes = array_merge(array('wrap' => 'div'), $attributes);
 		extract($attributes);

@@ -32,7 +32,7 @@
 <fieldset id="private-key" style="display:none;">
   <legend>Private Key</legend>
   <p>We do not retain your private key. Please import it into your local keychain before submitting this form.</p>
-  <textarea id="private-key-value" class="key" disabled></textarea>
+  <textarea id="private-key-value" class="key"></textarea>
 </fieldset>
 <div class="submit">
   <a class="cta primary submit">Add Key</a>

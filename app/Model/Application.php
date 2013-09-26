@@ -18,7 +18,14 @@ class Application extends AppModel {
         ),
         'ApplicationFormation' => array(
             'dependent' => true
-        )
+        ),
+        'Script' => array(
+            'foreignKey' => 'foreign_key_id',
+            'conditions' => array(
+                'Script.model' => 'application',
+            ),
+            'dependent' => true
+        ),
 	);
 
 	public $hasAndBelongsToMany = array();
@@ -36,8 +43,8 @@ class Application extends AppModel {
                 'message' => '%%f cannot be empty'
             ),
             'validName' => array(
-                'rule' => array('custom','/[A-Za-z0-9-_\. @]{3,}/'),
-                'message' => '%%f is limited to letters, numbers and punctuation and must be at least 3 characters long'
+                'rule' => AppModel::VALID_MODEL_NAME_REGEX,
+                'message' => AppModel::VALID_MODEL_NAME_MSG
             ),
 			'checkMultiKeyUniqueness' => array(
 				'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
@@ -45,4 +52,33 @@ class Application extends AppModel {
 			)
         )
     );
+
+    public function beforeSave($options = array()){
+
+        $data = $this->data[$this->alias];
+
+        if(isset($data['name'])){
+            $this->data[$this->alias]['name'] = strtolower($data['name']);
+        }
+
+        return true;
+    }
+
+    public function afterFind($results,$primary = false){
+
+        //ucwords(name)
+        if(isset($results['name'])){
+            $results['name'] = ucwords($results['name']);
+        }
+        else {
+            foreach($results as $key => $result){
+                if(isset($result[$this->alias]['name'])) {
+                    $name = ucwords($result[$this->alias]['name']);
+                    $results[$key][$this->alias]['name'] = $name;
+                }
+            }
+        }
+        return $results;
+    }
+
 }

@@ -12,6 +12,8 @@ var strings = {
       strings.events.clicks();
       strings.events.keypress();
       strings.ui.actionmenu();
+      strings.ui.accordion.attach('.accordion');
+      strings.ui.tabs.attach('.htab, .vtab');
       strings.ui.recent_activites();
     },
     include: function() {
@@ -64,9 +66,17 @@ var strings = {
         width: obj.attr('data-width') || '360',
         dialogClass: 'strings-modal',
         height: 'auto',
-        open: function() {
-          if(!$('body').hasClass('blur')) $('body').addClass('blur');
-          if($('.ui-dialog .autocomplete').length) $('.ui-dialog input.maininput').blur().parents('.ui-dialog-content').css('overflow','visible');
+        /*
+        draggable: false,
+        resizeable: true,
+        */
+        open: function(event, ui) {
+          if(!$('body').hasClass('blur')) {
+            $('body').addClass('blur');
+          }
+          if($('.ui-dialog .autocomplete').length) {
+            $('.ui-dialog input.maininput').blur().parents('.ui-dialog-content').css('overflow','visible');
+          }
         },
         close: function() {
           if($('body').hasClass('blur')) $('body').removeClass('blur');
@@ -79,10 +89,12 @@ var strings = {
       };
       var loadCallback = function(rescanDom) {
           rescanDom = typeof rescanDom !== 'undefined' ? rescanDom: true;
-          $(this).dialog("option", "position", ['center', 'center'] );
+          modal.dialog("option", "position", ['center', 'center'] );
           if(rescanDom){
             strings.ui.tables.attach('.strings-modal table[data-type="datatable"]:not(.loaded)');
-            strings.associations.attach('.association');
+            strings.ui.accordion.attach('.strings-modal .accordion');
+            strings.ui.tabs.attach('.strings-modal .htab, .strings-modal .vtab');
+            strings.associations.attach('.strings-modal .association');
             strings.events.forms();
             strings.events.keypress();
           }
@@ -122,9 +134,14 @@ var strings = {
               if($(this).attr('data-cta')) {
                 parent.find('.top').prepend($(this).attr('data-cta'))
               }
-              if($(this).attr('data-title')) { 
+              if($(this).attr('data-title') && $(this).attr('data-title') != 'false') {
                 parent.find('.top').prepend('<h2>'+$(this).attr('data-title')+'</h2>');
                 if(!$(this).attr('data-cta')) parent.find('h2').css('display','inline');
+              }
+              if($(this).attr('data-raw-title') && $(this).attr('data-raw-title') != 'false') {
+                var element = $($(this).attr('data-raw-title'));
+                parent.find('.top').prepend(element);
+                //if(!$(this).attr('data-cta')) element.css('display','inline');
               }
               if($(this).attr('data-search') === undefined || $(this).attr('data-search') == 'true'){ 
                 parent.find('.dataTables_filter input').attr('placeholder','Search');
@@ -133,6 +150,46 @@ var strings = {
             }
           });
           $(this).addClass('loaded');
+        });
+      }
+    },
+
+    accordion: {
+      attach: function(filter) {
+        $(filter).each(function() {
+          $(this).accordion({
+            active: typeof $(this).attr('data-active') != 'undefined' && $(this).attr('data-active') == 'true',
+            heightStyle: "content",
+            animate: false,
+            collapsible: true,
+            activate: function(event, ui){
+              var position = ui.newHeader.position();
+              if(typeof position != 'undefined'){
+                window.scrollTo(position.left, position.top);
+              }
+            },
+          });
+        });
+      }
+    },
+
+    tabs: {
+      attach: function(filter) {
+        $(filter).each(function() {
+          var parent = $(this);
+          if(parent.hasClass('vtab')){
+            var navHeight = parent.find('nav').height();
+            parent.find('.tabs').css('min-height',navHeight);
+          }
+          $(this).find('nav a:first-of-type').addClass('active');
+          $(this).find('.tab:first-of-type').addClass('active');
+          $(this).find('nav a').click(function() {
+            var tab = $(this).attr('data-tab');
+            parent.find('nav a.active').removeClass('active');
+            $(this).addClass('active');
+            parent.find(".tab.active").removeClass('active');
+            parent.find("[data-tab='" + tab + "']").addClass('active');
+          });
         });
       }
     },
@@ -150,14 +207,14 @@ var strings = {
   events: {
     clicks: function() {
       // close message boxes
-      $('ul#messages li a.close').live('click', function() { $(this).parent().remove() });
+      $(document).on('click','ul#messages li a.close', function() { $(this).parent().remove() });
       // tooltips
       $('.tooltip').tooltip({ position: { my: "left+2 top+14", at: "left top+14" } });
       // modal windows
-      $('.modal').live('click',function(){strings.ui.modal($(this))});
+      $(document).on('click', '.modal', function(){strings.ui.modal($(this))});
       // form ctas
-      $('form .cta.submit:not(.disable-autosubmit)').live('click',function(){ $(this).closest('form').submit() });
-      $('.recent-activities .cta.refresh').live('click',function() {
+      $(document).on('click', 'form .cta.submit:not(.disable-autosubmit)', function(){ $(this).closest('form').submit() });
+      $(document).on('click', '.recent-activities .cta.refresh', function() {
         var container = $(this).closest('.recent-activities');
         container.find('ul').load(container.attr('data-src'));
       });
@@ -184,7 +241,7 @@ var strings = {
 			url: $(this).attr('action'),
 			data: $(this).serialize(),
 			success: function(data, textStatus){
-			  if(data.redirectUri !== undefined){
+			  if(data.redirectUri !== undefined && data.redirectUri !== null && data.redirectUri !== false){
 			    window.location.href = data.redirectUri;
 			  }
 			  else {
@@ -199,6 +256,7 @@ var strings = {
 		    }
 		  })
 		  .error(function(jqXHR,textStatus){
+            strings.notifications.alert('We encountered an unexpected error.');
 		    console.log(textStatus);
 		  });
 		});

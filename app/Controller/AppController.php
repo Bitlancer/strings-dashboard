@@ -31,17 +31,17 @@ class AppController extends Controller {
 			'authorize' => array('Controller'),
             'unauthorizedRedirect' => false,
 		),
+        'DataTables.DataTables',
 		'RequestHandler',
-		'DataTables.DataTables',
         'Wizard.Wizard',
 	);
 
 	//View Helpers
 	public $helpers = array(
+        'DataTables.DataTables',
 		'Strings.Strings',
 		'Strings.StringsTable',
 		'Strings.StringsActionMenu',
-		'DataTables.DataTables',
         'Form',
 		'Time',
         'Gravatar'
@@ -61,9 +61,28 @@ class AppController extends Controller {
 	public function beforeFilter(){
 
 		//Set default cookie options
-    	$this->Cookie->key = '>qfAHms1U1c{}0wC6SWZjur#!31TaB58LJQqathasGb$@11~_+!@#HKis~#^';
-    	$this->Cookie->httpOnly = true;
+        $this->setCookieOptions();
+
+        //Pass isAdmin flag to every view
+        $this->passIsAdminFlagToView();
 	}
+
+    /**
+     * Set default cookie options
+     */
+    private function setCookieOptions(){
+
+        $this->Cookie->key = '>qfAHms1U1c{}0wC6SWZjur#!31TaB58LJQqathasGb$@11~_+!@#HKis~#^';
+        $this->Cookie->httpOnly = true;
+    }
+
+    /**
+     * Pass isAdmin flag to every view
+     */
+    private function passIsAdminFlagToView(){
+
+        $this->set('isAdmin',$this->Auth->User('is_admin'));
+    }
 
     /**
      * Whether the current request is for json
@@ -80,12 +99,70 @@ class AppController extends Controller {
     }
 
     /**
+     * Output generic Ajax form response
+     */
+     public function outputAjaxFormResponse($message,$isError=false,$redirectUri=null){
+
+        $this->autoRender = false;
+
+        if(empty($redirectUri)){
+            $message = __($message);
+        }
+        else {
+            if(!empty($message)){
+                $messageType = $isError ? 'error' : 'success';
+
+                $this->setFlash($message,$messageType);
+            }
+        }
+
+        echo json_encode(array(
+            'isError' => $isError,
+            'message' => __($message),
+            'redirectUri' => $redirectUri
+        ));
+     }
+
+    /**
      * Add a Vendor library to the php path
      */
     protected function addVendorLibToPHPPath($vendorLibrary){
 
         $vendorLibPath = APP . 'Vendor' . DS . $vendorLibrary;
         set_include_path(get_include_path() . PATH_SEPARATOR . $vendorLibPath);
+    }
+
+    /**
+     * Load Datatables Component & Helper on the fly
+     */
+    protected function loadDataTablesComponent($settings=array()){
+
+        $this->DataTables = $this->Components->load('DataTables.DataTables');
+        $this->DataTables->initialize($this,$settings);
+        $this->helpers[] = 'DataTables.DataTables';
+    }
+
+    /**
+     * Raw debug function
+     */
+    protected function debug($o){
+
+        die(print_r($o,true));
+    }
+
+    /**
+     * Strings specific log msg
+     */
+    public function sLog($msg,$type=LOG_ERROR){
+
+        $orgId = $this->Auth->User('organization_id');
+        $orgId = empty($orgId) ? 'Unknown' : $orgId;
+        $userId = $this->Auth->User('id');
+        $userId = empty($userId) ? 'Unknown' : $userId;
+
+        $logMsg = "OrgId:$orgId UserId:$userId $msg";
+
+        $this->log($logMsg,$type);
     }
 
     /**

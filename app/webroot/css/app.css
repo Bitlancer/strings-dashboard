@@ -16,6 +16,8 @@ html {
   width: 100%; }
   html * {
     line-height: 1; }
+  html pre {
+    white-space: pre-wrap; }
   html body {
     height: 100%;
     width: 100%; }
@@ -109,13 +111,13 @@ body {
     -webkit-box-shadow: -10px 0 0 black;
     -moz-box-shadow: -10px 0 0 black;
     box-shadow: -10px 0 0 black; }
-  body .clearfix {
+  body .clearfix, body .clear {
     zoom: 1; }
-    body .clearfix:before {
+    body .clearfix:before, body .clear:before {
       clear: both;
       content: '';
       display: table; }
-    body .clearfix:after {
+    body .clearfix:after, body .clear:after {
       clear: both; }
   body .float-left {
     float: left; }
@@ -125,10 +127,15 @@ body {
     overflow: hidden; }
   body .block {
     display: block; }
-  body .arrow:after {
-    content: " \00bb"; }
-  body .arrow.block {
-    margin-top: 5px; }
+  body .arrow {
+    font-weight: bold;
+    font-size: 110%; }
+    body .arrow:after {
+      content: " \00bb"; }
+    body .arrow.left:after {
+      content: "\00ab"; }
+    body .arrow.block {
+      margin-top: 5px; }
   body .border-light-grey {
     border: 1px solid #e2e2e2; }
   body ul {
@@ -153,9 +160,13 @@ body {
     background: #f8f8f8 url("/img/loading.gif") center no-repeat; }
   body div.loading.white {
     background: white url("/img/loading-white.gif") center no-repeat; }
+  body div.empty {
+    text-align: center;
+    color: #aaa;
+    font-style: italic; }
   body span.null:after {
-    color: gray;
-    content: 'N/A'; }
+    color: #aaa;
+    content: 'n/a'; }
 
 body > header {
   background: #222222 url("/img/dark_stripes.png");
@@ -377,7 +388,7 @@ table {
             margin-bottom: 5px; }
     table tbody tr.status td:first-of-type {
       position: relative;
-      text-indent: 7px; }
+      padding-left: 12px; }
       table tbody tr.status td:first-of-type:before {
         content: '';
         display: table-cell;
@@ -549,7 +560,7 @@ table {
   100% {
     background-position: 0 27px; } }
 
-ul#messages > li {
+ul#messages > li, ul.messages > li {
   border-radius: 3px;
   display: block;
   line-height: 1.2;
@@ -559,13 +570,13 @@ ul#messages > li {
   padding: 10px 35px 15px 10px;
   position: relative;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4); }
-  ul#messages > li:last-of-type {
+  ul#messages > li:last-of-type, ul.messages > li:last-of-type {
     margin-bottom: 30px; }
-  ul#messages > li > a {
+  ul#messages > li > a, ul.messages > li > a {
     font-weight: 700;
     color: inherit;
     text-decoration: underline; }
-  ul#messages > li > a.close {
+  ul#messages > li > a.close, ul.messages > li > a.close {
     background: url("/img/close.png") 2px 2px no-repeat;
     background-size: 10px 10px;
     display: block;
@@ -579,46 +590,55 @@ ul#messages > li {
     -webkit-box-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3), 1px 1px 0 rgba(255, 255, 255, 0.2), inset 0 1px 8px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3), 1px 1px 0 rgba(255, 255, 255, 0.2), inset 0 1px 8px rgba(0, 0, 0, 0.2);
     box-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3), 1px 1px 0 rgba(255, 255, 255, 0.2), inset 0 1px 8px rgba(0, 0, 0, 0.2); }
-  ul#messages > li.error {
+  ul#messages > li.error, ul.messages > li.error {
     color: #fff;
     border: 1px solid #c12727;
     background: #d94141;
     -webkit-box-shadow: inset 0 -1px 1px #e68181, inset 0 1px 1px #e68181, 0 3px 0 #dddddd, 3px 3px 0 #dddddd;
     -moz-box-shadow: inset 0 -1px 1px #e68181, inset 0 1px 1px #e68181, 0 3px 0 #dddddd, 3px 3px 0 #dddddd;
     box-shadow: inset 0 -1px 1px #e68181, inset 0 1px 1px #e68181, 0 3px 0 #dddddd, 3px 3px 0 #dddddd; }
-  ul#messages > li.success {
+  ul#messages > li.success, ul.messages > li.success {
     color: #fff;
     border: 1px solid #45892a;
     background: #59b036;
     -webkit-box-shadow: inset 0 -1px 1px #73c950, inset 0 1px 1px #73c950, 0 3px 0 #dddddd, 3px 3px 0 #dddddd;
     -moz-box-shadow: inset 0 -1px 1px #73c950, inset 0 1px 1px #73c950, 0 3px 0 #dddddd, 3px 3px 0 #dddddd;
     box-shadow: inset 0 -1px 1px #73c950, inset 0 1px 1px #73c950, 0 3px 0 #dddddd, 3px 3px 0 #dddddd; }
-  ul#messages > li.warning {
+  ul#messages > li.warning, ul.messages > li.warning {
     color: #fff;
     border: 1px solid #ff9f0a;
     background: #ffb33d;
     -webkit-box-shadow: inset 0 -1px 1px #ffd18a, inset 0 1px 1px #ffdba3, 0 3px 0 #dddddd, 3px 3px 0 #dddddd;
     -moz-box-shadow: inset 0 -1px 1px #ffd18a, inset 0 1px 1px #ffdba3, 0 3px 0 #dddddd, 3px 3px 0 #dddddd;
     box-shadow: inset 0 -1px 1px #ffd18a, inset 0 1px 1px #ffdba3, 0 3px 0 #dddddd, 3px 3px 0 #dddddd; }
-  ul#messages > li > span {
+  ul#messages > li > span, ul.messages > li > span {
     display: block;
     font-size: 17px;
     font-weight: 600;
     line-height: 1.5;
     text-transform: capitalize; }
 
-ul#notice li {
+ul#notice li, ul.notice li {
   font-size: 89%;
   list-style: none;
   margin-bottom: 10px;
   padding: 5px; }
-  ul#notice li.error {
+  ul#notice li.error, ul.notice li.error {
     background: #e26b6b;
     border: 1px solid #c12727;
     color: white; }
-  ul#notice li.success {
+  ul#notice li.success, ul.notice li.success {
     background: #73c950;
     border: 1px solid #45892a;
+    color: white; }
+
+ul.notice-list {
+  font-size: 89%;
+  margin-bottom: 10px;
+  padding: 5px; }
+  ul.notice-list.error {
+    background: #e26b6b;
+    border: 1px solid #c12727;
     color: white; }
 
 body .strings-modal {
@@ -712,6 +732,9 @@ form fieldset {
       border: 0;
       margin: 0;
       padding: 0; }
+  form fieldset p.help {
+    margin-bottom: 5px;
+    font-size: 90%; }
 form hr {
   border: 1px solid #eee;
   background: transparent;
@@ -720,15 +743,21 @@ form hr {
     margin: 0 0 5px; }
 form select {
   box-sizing: border-box;
-  width: 50%; }
+  min-width: 50%; }
 form div.input {
-  margin-bottom: 6px; }
+  display: block;
+  margin-bottom: 10px; }
   form div.input .loading {
     display: inline-block;
     width: 16px;
     height: 16px;
     background-size: 16px;
     vertical-align: text-bottom; }
+  form div.input .error-msg {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 90%;
+    color: red; }
 form div.submit {
   margin-top: 15px;
   overflow: hidden;
@@ -784,47 +813,6 @@ textarea {
   font-size: 90%;
   line-height: 1.5;
   text-indent: 1px; }
-
-div.form form div.configure {
-  background: #fff;
-  border: 1px solid #eee;
-  border-bottom: 1px solid #e0e0e0;
-  margin-top: 51px;
-  padding: 20px; }
-  div.form form div.configure h3 {
-    font-weight: 600;
-    margin: 15px 0 5px; }
-    div.form form div.configure h3:first-of-type {
-      margin-top: 0; }
-  div.form form div.configure input[type=text], div.form form div.configure input[type=number] {
-    max-width: 60%; }
-  div.form form div.configure nav.tabs {
-    height: 30px;
-    margin: -51px 0 0 -21px;
-    position: absolute; }
-    div.form form div.configure nav.tabs a {
-      background: #f8f8f8;
-      color: #999;
-      display: inline-block;
-      line-height: 30px;
-      margin: 0;
-      padding: 0 10px; }
-      div.form form div.configure nav.tabs a.active {
-        background: #fff;
-        border: 1px solid #eee;
-        border-bottom: 0;
-        color: #444; }
-  div.form form div.configure > span {
-    display: none; }
-    div.form form div.configure > span:first-of-type, div.form form div.configure > span.active {
-      display: block; }
-div.form form div.submit {
-  margin-top: 45px; }
-  div.form form div.submit legend {
-    color: #999;
-    float: right;
-    line-height: 30px;
-    margin-right: 10px; }
 
 .ui-tooltip {
   background: rgba(0, 0, 0, 0.9);
@@ -1216,6 +1204,72 @@ div#result {
     content: 'Instances: ';
     font-weight: 700; }
 
+.accordion .ui-accordion-header.error > .title:after {
+  content: "*";
+  color: red; }
+.accordion .ui-accordion-header .ui-icon {
+  background-image: url(/img/ui-icons_454545_256x240.png); }
+
+.htab nav a {
+  background: #f8f8f8;
+  color: #999;
+  display: inline-block;
+  line-height: 30px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid #eaeaea;
+  border-bottom: none; }
+  .htab nav a.active {
+    background: #fff;
+    border: 1px solid #eee;
+    border-bottom: 0;
+    color: #444; }
+.htab .tab {
+  display: none;
+  padding: 20px;
+  border: 1px solid #eee;
+  border-top: none;
+  background-color: white; }
+  .htab .tab.active {
+    display: block; }
+
+.vtab nav {
+  float: left;
+  width: 20%;
+  border: 1px solid #ccc;
+  border-right: none;
+  background-color: #f8f8f8; }
+  .vtab nav a {
+    display: block;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    color: #999; }
+    .vtab nav a:first-of-type {
+      border-top: none; }
+    .vtab nav a.active {
+      background-color: white;
+      color: #444; }
+    .vtab nav a.error .title:after {
+      content: " \2718";
+      color: red; }
+    .vtab nav a .title {
+      display: inline-block;
+      margin-bottom: 2px; }
+    .vtab nav a .subtitle {
+      display: block;
+      font-size: 75%; }
+.vtab .tabs {
+  float: left;
+  width: 70%;
+  padding: 2%;
+  border: 1px solid #ccc;
+  border-left: none;
+  background-color: white; }
+  .vtab .tabs .tab {
+    display: none; }
+    .vtab .tabs .tab.active {
+      display: block; }
+
 body#account {
   background: url("/img/wall3.jpg") center no-repeat; }
   body#account.landscape {
@@ -1350,3 +1404,70 @@ body .association.disabled {
   margin-bottom: 10px; }
 #edit-permissions #privileges input {
   margin-bottom: 8px; }
+
+#create-formation .step-description {
+  float: right;
+  margin-right: 10px;
+  line-height: 30px;
+  color: #999; }
+#create-formation #formation-settings {
+  width: 50%; }
+  #create-formation #formation-settings div.input label {
+    display: block; }
+#create-formation #select-blueprint table .blueprint {
+  margin-bottom: 4px; }
+  #create-formation #select-blueprint table .blueprint h3 {
+    width: 88%;
+    display: inline-block;
+    font-weight: bold; }
+  #create-formation #select-blueprint table .blueprint a.action {
+    float: right;
+    width: 10%;
+    text-align: right; }
+#create-formation #select-blueprint table .blueprint-description {
+  margin-right: 10%;
+  font-size: 85%; }
+#create-formation #select-blueprint #blueprint-summary {
+  display: none; }
+  #create-formation #select-blueprint #blueprint-summary a#back {
+    display: block;
+    margin-bottom: 10px; }
+  #create-formation #select-blueprint #blueprint-summary #content {
+    min-height: 100px;
+    border: 1px solid #e3e3e3;
+    background-color: #fcfcfc; }
+  #create-formation #select-blueprint #blueprint-summary img.loading {
+    display: block;
+    margin: 45px auto 0px auto; }
+  #create-formation #select-blueprint #blueprint-summary .title {
+    margin: 0;
+    padding: 6px;
+    background-color: #f0f0f0; }
+    #create-formation #select-blueprint #blueprint-summary .title h2 {
+      margin: 0; }
+  #create-formation #select-blueprint #blueprint-summary .description {
+    padding: 10px; }
+  #create-formation #select-blueprint #blueprint-summary p {
+    margin-bottom: 10px; }
+#create-formation #device-counts .blueprint {
+  margin-bottom: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #d6d6d6; }
+  #create-formation #device-counts .blueprint:first-of-type {
+    border: none; }
+  #create-formation #device-counts .blueprint .input {
+    width: 100%;
+    margin-bottom: 6px; }
+  #create-formation #device-counts .blueprint label {
+    display: inline; }
+  #create-formation #device-counts .blueprint select {
+    float: right;
+    min-width: 25% !important; }
+  #create-formation #device-counts .blueprint p {
+    font-size: 13px;
+    margin-top: 4px; }
+#create-formation #configure-devices div.input label {
+  display: block; }
+
+#manage-dns-records #select-device {
+  margin-bottom: 10px; }

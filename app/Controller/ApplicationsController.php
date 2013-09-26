@@ -25,32 +25,29 @@ class ApplicationsController extends AppController
      */
     public function index() {
 
-        $applicationTableColumns = array(
+        $this->DataTables->setColumns(array(
             'Name' => array(
                 'model' => 'Application',
                 'column' => 'name'
             )
-        );
+        ));
 
         if($this->request->isAjax()){
 
-            //Datatables
-            $findParameters = array(
-                'fields' => array(
-                    'Application.id','Application.name'
-                )
+            $this->DataTables->process(
+                array(
+                    'contain' => array(),
+                    'fields' => array('Application.*')
+                ),
+                $this->Application
             );
 
-            $dataTable = $this->DataTables->getDataTable($applicationTableColumns,$findParameters);
-
             $this->set(array(
-                'dataTable' => $dataTable,
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
         }
         else {
             $this->set(array(
-                'applicationTableColumns' => array_keys($applicationTableColumns),
                 'createCTADisabled' => !$this->Auth->User('is_admin'),
             ));
         }
@@ -115,33 +112,20 @@ class ApplicationsController extends AppController
 
 		if($this->request->is('post')){
 
-            $this->autoRender = false;
-
             $isError = false;
-            $message = "";
+            $message = null;
+            $redirectUri = null;
 
             if($this->Application->save($this->request->data,true,array('name'))){
             	$message = 'Created new application ' . $this->request->data['Application']['name'] . '.';
+                $redirectUri = '/Applications/view/' . $this->Application->id;
             }
             else {
                 $isError = true;
                 $message = $this->Application->validationErrorsAsString();
             }
 
-            if($isError){
-                $response = array(
-                    'isError' => $isError,
-                    'message' => __($message)
-                );
-            }
-            else {
-                $this->Session->setFlash(__($message),'default',array(),'success');
-                $response = array(
-                    'redirectUri' => '/Applications/view/' . $this->Application->id
-                );
-            }
-
-            echo json_encode($response);
+            $this->outputAjaxFormResponse($message,$isError,$redirectUri);
         }
 	}
 
@@ -156,42 +140,27 @@ class ApplicationsController extends AppController
             )
         ));
 
-        if(empty($app)){
-            $this->Session->setFlash(__('This application does not exist.'),'default',array(),'error');
-            $this->redirect(array('action' => 'index'));
-        }
+        if(empty($app))
+            throw new NotFoundException('Application does not exist.');
 
         if($this->request->is('post')){
 
-            $this->autoRender = false;
-
             $isError = false;
-            $message = "";
+            $message = null;
+            $redirectUri = null;
 
             $validFields = array('name');
             $this->Application->id = $id;
             if($this->Application->save($this->request->data,true,$validFields)){
                 $message = 'Updated application ' . $app['Application']['name'] . '.';
+                $redirectUri = $this->referer(array('action' => 'index'));
             }
             else {
                 $isError = true;
                 $message = $this->Application->validationErrorsAsString();
             }
 
-            if($isError){
-                $response = array(
-                    'isError' => $isError,
-                    'message' => __($message)
-                );
-            }
-            else {
-                $this->Session->setFlash(__($message),'default',array(),'success');
-                $response = array(
-                    'redirectUri' => $this->referer(array('action' => 'index'))
-                );
-            }
-
-            echo json_encode($response);
+            $this->outputAjaxFormResponse($message,$isError,$redirectUri);
         }
         else {
             $this->set(array(
@@ -203,15 +172,14 @@ class ApplicationsController extends AppController
 	public function delete($id=null){
 
         $app = $this->Application->find('first',array(
+            'contain' => array(),
             'conditions' => array(
                 'Application.id' => $id,
             )
         ));
 
-        if(empty($app)){
-            $this->Session->setFlash(__('This application does not exist.'),'default',array(),'error');
-            $this->redirect(array('action' => 'index'));
-        }
+        if(empty($app))
+            throw new NotFoundException('Application does not exist.');
 
         if($this->request->is('post')){
 
@@ -241,33 +209,34 @@ class ApplicationsController extends AppController
             )
         ));
 
-        if(empty($application)){
-            $this->setFlash('Application does not exist');
-            $this->redirect(array('action' => 'index'));
-        }
+        if(empty($application))
+            throw new NotFoundException('Application does not exist');
 
-        $formationTableColumns = array(
+        $this->DataTables->setColumns(array(
             'Name' => array(
                 'model' => 'Formation',
                 'column' => 'name'
             )
-        );
+        ));
 
         if($this->isJsonRequest()){
 
-            $findParameters = array(
-                'contain' => array(
-                    'Formation'
+            $this->DataTables->process(
+                array(
+                    'contain' => array(
+                        'Formation'
+                    ),
+                    'fields' => array(
+                        'Formation.*'
+                    ),
+                    'conditions' => array(
+                        'ApplicationFormation.application_id' => $id
+                    )
                 ),
-                'conditions' => array(
-                    'ApplicationFormation.application_id' => $id
-                )
+                $this->Application->ApplicationFormation
             );
 
-            $dataTable = $this->DataTables->getDataTable($formationTableColumns,$findParameters,$this->Application->ApplicationFormation);
-
             $this->set(array(
-                'dataTable' => $dataTable,
                 'isAdmin' => $this->Auth->User('is_admin')
             ));
         }
@@ -280,19 +249,15 @@ class ApplicationsController extends AppController
 
 	public function addFormation($id=null){
 
-		$this->autoRender = false;
+        $this->loadModel('Formation');
+
+        $this->autoRender = false;
 
 		$isError = false;
-		$message = "";
-		$memberId = 0;
+		$message = null;
+        $redirectUri = null;
 
-		$formationName = "";
-        if($this->request->is('post'))
-            $formationName = $this->request->data['name'];
-        else
-            $formationName = $this->request->query['name'];
-
-        $this->loadModel('Formation');
+		$formationName = $this->request->is('post') ? $this->request->data['name'] : $this->request->query['name'];
 
 		$formation = $this->Formation->find('first',array(
 			'fields' => array(
@@ -303,10 +268,8 @@ class ApplicationsController extends AppController
 			)
 		));
 
-		if(empty($formation)){
-			$isError = true;
-			$message = 'No such formation found';
-		}
+		if(empty($formation))
+            throw new NotFoundException('Formation does not exist.');
 		else {
 			$formationId = $formation['Formation']['id'];
 
@@ -324,346 +287,276 @@ class ApplicationsController extends AppController
                         'formation_id' => $formationId
                     )
                 );
-				if($this->Application->ApplicationFormation->save($appFormation))
-					$memberId = $formationId;
-				else {
+				if(!$this->Application->ApplicationFormation->save($appFormation)) {
 					$isError = true;
-					$message = 'Unable to add this formation to this application';
-                    $message = $this->Application->ApplicationFormation->validationErrorsAsString();
+					$message = 'Unable to add this formation to this application.';
 				}
 			}
 		}
 
-		echo json_encode(array(
-    		'isError' => $isError,
-			'message' => __($message),
-    		'id' => $memberId
-		));
+        $this->outputAjaxFormResponse($message,$isError,$redirectUri);
 	}
 
 	public function removeFormation($applicationId=null){
 
 		$this->autoRender = false;
 
-		$formationId = 0;
-        if($this->request->is('post'))
-            $formationId = $this->request->data['id'];
-        else
-            $formationId = $this->request->query['id'];	
+        $isError = false;
+        $message = null;
+        $redirectUri = null;
 
-		$this->Application->ApplicationFormation->deleteAll(
+		$formationId = $this->request->is('post') ? $this->request->data['id'] : $this->request->query['id'];
+
+		$isError = $this->Application->ApplicationFormation->deleteAll(
             array(
                 'ApplicationFormation.application_id' => $applicationId,
                 'ApplicationFormation.formation_id' => $formationId
-            )
+            ),
+            true    //Cascade
         );
+
+        if($isError)
+            $message = 'Unabled to remove this association.';
+
+        $this->outputAjaxFormResponse($message,$isError,$redirectUri);
 	}
 
-	public function editPermissions($id=null){
+/**
+ * DNS
+ */
+    public function dns($applicationId=null) {
 
-        $this->loadModel('Team');
+        $this->loadModel('DeviceDns');
 
-        $application = $this->Application->find('first',array(
-            'conditions' => array(
-                'Application.id' => $id
+        $this->DataTables->setColumns(
+            array(
+                'Device' => array(
+                    'model' => 'Device',
+                    'column' => 'name'
+                ),
+                'DNS Record' => array(
+                    'model' => 'DeviceDns',
+                    'column' => 'name'
+                )
             )
-        ));
+        );
+        
+        if($this->request->isAjax()){
 
-        if(empty($application)){
-            $this->setFlash('Application does not exist.');
-            $this->redirect(array('action' => 'index'));
+            $this->DataTables->process(
+                array(
+                    'contain' => array(
+                        'Device',
+                        'ApplicationFormation'
+                    ),
+                    'fields' => array(
+                        'DeviceDns.*','Device.*'
+                    ),
+                    'conditions' => array(
+                        'ApplicationFormation.application_id' => $applicationId
+                    )
+                ),
+                $this->DeviceDns
+            );
         }
+    }
 
-        $teams = $this->Team->find('all',array(
-            'contain' => array(),
-            'conditions' => array(
-                'Team.is_disabled' => 0,
-            ),
-        ));
+    public function manageDnsRecords($applicationId=null){
 
-        //Get first teams associations
-        $firstTeam = $teams[0];
-        $firstTeamApp = $this->Application->TeamApplication->find('first',array(
+        //Get the application and its associated devices
+        $application = $this->Application->find('first',array(
             'contain' => array(
-                'TeamApplicationSudo'
+                'ApplicationFormation' => array(
+                    'Formation' => array(
+                        'Device' => array(
+                            'DeviceAttribute',
+                            'conditions' => array(
+                                'Device.status' => 'active'
+                            )
+                        )
+                    )
+                )
             ),
             'conditions' => array(
-                'TeamApplication.application_id' => $id,
-                'TeamApplication.team_id' => $firstTeam['Team']['id']
+                'Application.id' => $applicationId
             )
         ));
-        $firstTeam = array_merge($firstTeam,$firstTeamApp);
+
+        if(empty($application))
+            throw new NotFoundException('Application does not exist.');
+
+        //Get devices
+        $devices = array();
+        foreach($application['ApplicationFormation'] as $appForm){
+            $formation = $appForm['Formation'];
+            foreach($formation['Device'] as $device)
+                $devices[] = $device;
+        }
 
         $this->set(array(
             'application' => $application,
-            'teams' => $teams,
-            'firstTeam' => $firstTeam
-        ));
-        
-	}
-
-    public function editTeamPermissions($applicationId=null,$teamId=null){
-
-        $this->loadModel('TeamApplicationSudo');
-
-        $this->autoRender = false;
-
-        $isError = false;
-        $message = "";
-
-        $grantLogin = false;
-        $grantSudo = false;
-
-        $teamApp = $this->Application->TeamApplication->find('first',array(
-            'contain' => array(
-                'TeamApplicationSudo'
-            ),
-            'conditions' => array(
-                'TeamApplication.application_id' => $applicationId,
-                'TeamApplication.team_id' => $teamId
-            )
-        ));
-
-        if($this->request->is('post')){
-
-            $grantLogin = $this->request->data['grantLogin'] == 'true';
-            $grantSudo = $this->request->data['grantSudo'] == 'true';
-            if(!$grantLogin)
-                $grantSudo = false;
-
-            if($grantLogin){
-
-                //Create application team associations
-                if(empty($teamApp)){
-
-                    $newTeamApp = array(
-                        'TeamApplication' => array(
-                            'application_id' => $applicationId,
-                            'team_id' => $teamId
-                        )
-                    );
-                    if(!$this->Application->TeamApplication->save($newTeamApp)){
-                        $isError = true;
-                        $message = "We encountered an error while granting this team login permissions.";
-                        $message = $this->Application->TeamApplication->validationErrorsAsString();
-                    }
-                }
-
-                //Destroy application team sudo associations
-                if(!empty($teamApp) && !$grantSudo){
-                    $result = $this->TeamApplicationSudo->deleteAll(
-                        array(
-                            'TeamApplicationSudo.team_application_id' => $teamApp['TeamApplication']['id']
-                        )
-                    );
-                    if(!$result){
-                        $isError = true;
-                        $message = "We encountered an error while removing this team's privileges.";
-                    }
-                }
-            }
-            else {
-                //Delete all assoications
-                if(!empty($teamApp)){
-                    if(!$this->Application->TeamApplication->delete($teamApp['TeamApplication']['id'])){
-                        $isError = true;
-                        $message = "We encountered an error while removing this team's privileges.";
-                    }
-                }
-            }
-
-            //If error encountered reset flags to original values
-            if($isError){
-                $grantLogin = !$grantLogin;
-                $grantSudo = !$grantSudo;
-            }
-        }
-        else {
-            if(!empty($teamApp)){
-                $grantLogin = true;
-                if(count($teamApp['TeamApplicationSudo']))
-                    $grantSudo = true;
-            }
-        }
-
-        echo json_encode(array(
-            'isError' => $isError,
-            'message' => __($message),
-            'grantLogin' => (bool) $grantLogin,
-            'grantSudo' => (bool) $grantSudo
+            'devices' => $devices
         ));
     }
 
-    public function teamSudoRoles($modelId=null,$teamId=null){
+    public function manageDeviceDnsRecords($applicationId=null,$deviceId=null){
 
-        $associationModel = 'TeamApplication';
+        $this->loadModel('DeviceDns');
 
-        $model = $this->modelClass;
-        $sudoAssociationModel = "{$associationModel}Sudo";
-        $sudoAssociationFK = $this->$model->$associationModel->hasMany[$sudoAssociationModel]['foreignKey'];
-
-        $this->loadModel($sudoAssociationModel);
-
-        $teamAssoc = $this->$model->$associationModel->find('first',array(
-            'contain' => array(),
-            'conditions' => array(
-                "$associationModel.application_id" => $modelId,
-                "$associationModel.team_id" => $teamId,
-            ),
-        ));
-
-        $teamAssocId = empty($teamAssoc) ? 0 : $teamAssoc[$associationModel]['id'];
-
-        $teamAssocSudoTableColumns = array(
-            'Name' => array(
-                'model' => 'SudoRole',
-                'column' => 'name'
-            )
-        );
-
-        $findParameters = array(
-            'contain' => array(
-                'SudoRole'
-            ),
-            'conditions' => array(
-                "$sudoAssociationModel.$sudoAssociationFK" => $teamAssocId
-            )
-        );
-
-        $dataTable = $this->DataTables->getDataTable($teamAssocSudoTableColumns,$findParameters,$this->$sudoAssociationModel);
-
-        $this->set(array(
-            'dataTable' => $dataTable,
-            'isAdmin' => $this->Auth->User('is_admin')
-        ));
-    }
-
-    public function addSudoRoleToTeam($modelId=null,$teamId=null){
-
-        $this->autoRender = false;
-
-        $model = $this->modelClass;
-        $associationModel = 'TeamApplication';
-        $sudoAssociationModel = 'TeamApplicationSudo';
-
-        $this->loadModel('SudoRole');
-        $this->loadModel($sudoAssociationModel);
-
-        //Get association model foreign key
-        $associationModelFK = 'application_id';
-        $sudoAssociationModelFK = 'team_application_id';
-
-        $isError = false;
-        $message = "";
-        $newSudoAssocId = 0;
-
-        //Get the association model id
-        $teamAssoc = $this->$model->$associationModel->find('first',array(
-            'contain' => array(),
-            'conditions' => array(
-                "$associationModel.$associationModelFK" => $modelId,
-                "$associationModel.team_id" => $teamId
-            )
-        ));
-
-        if(empty($teamAssoc)){
-            $isError = true;
-            $message = "This team is not associated with this $model.";
-        }
-        else {
-
-            //Get sudo role by name
-            $sudoRole = $this->SudoRole->findByName($this->request->data['name']);
-            if(empty($sudoRole)){
-                $isError = true;
-                $message = "This sudo role does not exist.";
-            }
-            else {
-
-                $sudoRoleId = $sudoRole['SudoRole']['id'];
-
-                //Check if this sudo role is already associated with this team
-                $existingAssoc = $this->$sudoAssociationModel->findBySudoId($sudoRoleId);
-                if(empty($existingAssoc)){
-
-                    $teamAssocSudo = array(
-                        "$sudoAssociationModel" => array(
-                            "$sudoAssociationModelFK" => $teamAssoc[$associationModel]['id'],
-                            'sudo_id' => $sudoRole['SudoRole']['id']
-                    ));
-                            
-                    if($this->$sudoAssociationModel->save($teamAssocSudo)){
-                        $newSudoAssocId = $this->$sudoAssociationModel->id;
-                    }
-                    else {
-                        $isError = true;
-                        $message = "Failed to associate this sudo role with this team.";
-                    }
-                }
-            }
-        }
-
-        echo json_encode(array(
-            'isError' => $isError,
-            'message' => __($message)
-        ));
-    }
-
-    public function removeSudoRoleFromTeam($modelId=null,$teamId=null){
-
-        $this->autoRender = false;
-
-        $model = $this->modelClass;
-        $associationModel = 'TeamApplication';
-        $sudoAssociationModel = 'TeamApplicationSudo';
-
-        $this->loadModel('SudoRole');
-        $this->loadModel($sudoAssociationModel);
-
-        //Get association model foreign key
-        $associationModelFK = 'application_id';
-        $sudoAssociationModelFK = 'team_application_id';
-
-        $isError = false;
-        $message = "";
-
-        //Get the association model id
-        $teamAssoc = $this->$model->$associationModel->find('first',array(
-            'contain' => array(),
-            'conditions' => array(
-                "$associationModel.$associationModelFK" => $modelId,
-                "$associationModel.team_id" => $teamId
-            )
-        ));
-
-        if(empty($teamAssoc)){
-            $isError = true;
-            $message = "This team is not associated with this $model.";
-        }
-        else {
-            $result = $this->$sudoAssociationModel->deleteAll(
-                array(
-                    "sudo_id" => $this->request->data['id']
+        $this->DataTables->setColumns(
+            array(
+                'Record' => array(
+                    'model' => 'DeviceDns',
+                    'column' => 'name'
                 )
-            );
+            )
+        );
 
-            if(!$result){
+        if($this->request->isAjax()){
+
+            $this->DataTables->process(
+                array(
+                    'contain' => array(
+                        'ApplicationFormation'
+                    ),
+                    'conditions' => array(
+                        'ApplicationFormation.application_id' => $applicationId,
+                        'DeviceDns.device_id' => $deviceId
+                    )
+                ),
+                $this->DeviceDns
+            );
+        }
+    }
+
+    public function addDnsRecord($applicationId=null,$deviceId=null){
+
+        $this->loadModel('DeviceDns');
+        $this->loadModel('Device');
+        $this->loadModel('Config');
+
+        $this->autoRender = false;
+
+        $isError = false;
+        $message = null;
+        $redirectUri = null;
+       
+        if(!isset($this->request->data['name'])){
+            $isError = true;
+            $message = "Please enter a hostname.";
+        }
+        else {
+            $hostname = isset($this->request->data['name']) ? $this->request->data['name'] : "";
+
+            $appForm = $this->Application->ApplicationFormation->find('first',array(
+                'link' => array(
+                    'Application',
+                    'Formation' => array(
+                        'Device'
+                    )
+                ),
+                'fields' => array(
+                    'ApplicationFormation.*',
+                    'Application.*',
+                    'Device.*'
+                ),
+                'conditions' => array(
+                    'ApplicationFormation.application_id' => $applicationId,
+                    'Device.id' => $deviceId
+                )
+            ));
+
+            if(empty($appForm)){
                 $isError = true;
-                $message = "Failed to remove the association between this sudo role and this team.";
+                $message = 'This device does not exist or is not associated with this application.';
+            }
+            else {
+
+                //Get the device
+                $device = $this->Device->find('first',array(
+                    'contain' => array(
+                        'DeviceAttribute'
+                    ),
+                    'conditions' => array(
+                        'Device.id' => $deviceId
+                    )
+                ));
+                //This should never occur
+                if(empty($device))
+                    throw new NotFoundException('Device does not exist.');
+
+                $deviceAttributes = Hash::combine($device['DeviceAttribute'],'{n}.var','{n}.val');
+                $implementationId = $device['Device']['implementation_id'];
+                $regionId = $deviceAttributes['implementation.region_id'];
+
+                //Determine FQDN
+                $hostname = strtolower($hostname);
+                $appName = $this->dnsSafeName($appForm['Application']['name']);
+                $datacenter = $this->dnsSafeName(
+                    $this->Device->Implementation->getRegionName($implementationId,$regionId)
+                );
+                $tld = $this->Config->findByVar('dns.internal.domain');
+                $tld = $tld['Config']['val'];
+
+                $fqdn = "$hostname.$appName.$datacenter.$tld";
+
+                $deviceDns = array('DeviceDns' => array(
+                    'application_formation_id' => $appForm['ApplicationFormation']['id'],
+                    'device_id' => $deviceId,
+                    'name' => $fqdn
+                ));
+
+                $this->DeviceDns->create();
+                if(!$this->DeviceDns->save($deviceDns)){
+                    $isError = true;
+                    $message = $this->DeviceDns->validationErrorsAsString();
+                }
+
             }
         }
 
-        echo json_encode(array(
-            'isError' => $isError,
-            'message' => __($message)
-        )); 
+        $this->outputAjaxFormResponse($message,$isError,$redirectUri);
     }
 
+    private function dnsSafeName($string){
+
+        //Replace spaces with _underscores
+        $string = str_replace(' ','_',$string);
+
+        //Lowercase
+        $string = strtolower($string);
+
+        return $string;
+    }
+
+    public function removeDnsRecord() {
+
+        $this->loadModel('DeviceDns');
+
+        $this->autoRender = false;
+
+        $isError = false;
+        $message = null;
+        $redirectUri = null;
+
+        $deviceDnsId = isset($this->request->data['id']) ? $this->request->data['id'] : 0;
+
+        $result = $this->DeviceDns->deleteAll(array(
+            'DeviceDns.id' => $deviceDnsId
+        ));
+
+        if(!$result){
+            $isError = true;
+            $message = 'Unable to remove record.';
+        }
+
+        $this->outputAjaxFormResponse($message,$isError,$redirectUri);
+    }
+
+/**
+ * Deploy
+ */
     public function deploy($id=null){
-
-    }
-
-    public function dns($id=null){
 
     }
 }

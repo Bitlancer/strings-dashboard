@@ -16,7 +16,7 @@
 
     $actionMenu = $this->StringsActionMenu->create($title,$width,$align);
     
-    $actionMenu .= $this->Strings->modalLink('Unix Privileges',"/TeamInfrastructurePermissions/edit/Role/$roleId",$actionsDisabled);
+    $actionMenu .= $this->Strings->oldModalLink('Unix Privileges',"/TeamInfrastructurePermissions/edit/Role/$roleId",$actionsDisabled);
 
     $actionMenu .= $this->StringsActionMenu->close();
 

@@ -21,32 +21,28 @@ class TeamsController extends AppController {
 
 	public function index(){
 
-		$teamTableColumns = array(
-			'Name' => array( 
-				'model' => 'Team',
-				'column' => 'name'
-			)
-		);
+        $this->DataTables->setColumns(array(
+            'Name' => array(
+                'model' => 'Team',
+                'column' => 'name'
+            )
+        ));
 
-		if($this->request->isAjax()){
+        if($this->request->isAjax()){ //Datatables request
 
-			//Datatables
-			$findParameters = array(
-				'fields' => array(
-					'Team.id','Team.name','Team.is_disabled'
-				)
-            );
+            $this->DataTables->process(array(
+                'contain' => array(),
+                'fields' => array(
+                    'Team.*'
+                )
+            ));
 
-			$dataTable = $this->DataTables->getDataTable($teamTableColumns,$findParameters);
-
-			$this->set(array(
-				'dataTable' => $dataTable,
-				'isAdmin' => $this->Auth->User('is_admin')
-			));
+            $this->set(array(
+                'isAdmin' => $this->Auth->User('is_admin')
+            ));
         }
         else{
             $this->set(array(
-            	'teamTableColumns' => array_keys($teamTableColumns),
                 'createCTADisabled' => !$this->Auth->User('is_admin') && !$this->Auth->User('can_create_user'),
             ));
         }

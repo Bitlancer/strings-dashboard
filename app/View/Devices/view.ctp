@@ -6,7 +6,7 @@ $this->assign('title',$device['Device']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('../Devices/_activity_log');
+echo $this->element('../Devices/elements/activity_log');
 $this->end();
 ?>
 
@@ -15,7 +15,10 @@ $this->end();
 <h2 class="float-left">Device Details</h2>
 <h2 class="float-right">
   <?php
-    echo $this->element('../Formations/_devices_action_menu',array(
+    $actionMenuElement = $device['DeviceType']['name'] == 'load-balancer' ? 
+      '../Devices/elements/loadbalancer_action_menu' :
+      '../Devices/elements/instance_action_menu';
+    echo $this->element($actionMenuElement,array(
         'deviceId' => $device['Device']['id'],
         'formationId' => $device['Device']['formation_id'],
         'actionsDisabled' => (!$isAdmin || $device['Device']['status'] !== 'active')
@@ -42,12 +45,7 @@ $this->end();
 <h2>Provider Details</h2>
   <?php
   echo $this->element('Tables/info',array(
-    'info' => array(
-      'Provider' => $providerDetails['provider_name'],
-      'Datacenter' => $providerDetails['region'],
-      'Image' => $providerDetails['image'],
-      'Flavor' => $providerDetails['flavor'], 
-    )
+    'info' => $providerInfo
   ));
   ?>
 </section>

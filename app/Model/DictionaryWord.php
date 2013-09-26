@@ -75,7 +75,8 @@ class DictionaryWord extends AppModel
             'conditions' => array(
                 'DictionaryWord.dictionary_id' => $dictionaryId,
                 'DictionaryWord.status' => 0,
-            )
+            ),
+            'order' => 'RAND()'
         ));
         if(count($dictionaryWords) !== $count){
             return false;

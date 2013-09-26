@@ -40,7 +40,7 @@ class ModuleSource extends AppModel {
             ),
             'validType' => array(
                 'rule' => array('inList',array('git','forge')),
-                'message' => '%%f is an invalid status'
+                'message' => '%%f is invalid'
             )
         ),
         'url' => array(

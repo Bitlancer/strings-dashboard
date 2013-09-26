@@ -72,7 +72,7 @@ class WizardComponent extends Component {
  * @var string
  * @access public
  */
-	public $action = 'wizard';
+	public $action = null;
 /**
  * Url to be redirected to after the wizard has been completed.
  * Controller::afterComplete() is called directly before redirection.
@@ -183,11 +183,19 @@ class WizardComponent extends Component {
  * @return void
  */
 	public function initialize(Controller $controller) {
+
 		$this->controller = $controller;
+        $this->action = $controller->action;
+
+        //Call wixard setup method if one exists
+        $setupMethod = "_setupWizard" . ucfirst($this->action);
+        if(method_exists($controller,$setupMethod)){
+            call_user_func(array($controller,$setupMethod));
+        }
 		
-		$this->_sessionKey	= $this->controller->Session->check('Wizard.complete') ? 'Wizard.complete' : 'Wizard.' . $controller->name;
-		$this->_configKey 	= 'Wizard.config';
-		$this->_branchKey	= 'Wizard.branches.' . $controller->name;
+		$this->_sessionKey	= $this->controller->Session->check('Wizard.complete') ? 'Wizard.complete' : 'Wizard.' . $controller->name . "." . $this->action;
+		$this->_configKey 	= 'Wizard.config.' . $controller->name . "." . $this->action;
+		$this->_branchKey	= 'Wizard.branches.' . $controller->name . '.' . $this->action;
 	}
 /**
  * Component startup method.
@@ -195,7 +203,8 @@ class WizardComponent extends Component {
  * @param object $controller A reference to the instantiating controller object
  * @access public
  */	
-	public function startup(Controller $controller) {		
+	public function startup(Controller $controller) {
+
 		$this->steps = $this->_parseSteps($this->steps);
 		
 		$this->config('action', $this->action);
@@ -250,7 +259,7 @@ class WizardComponent extends Component {
 				if (!empty($this->controller->data) && !isset($this->controller->request->data['Previous'])) { 
 					$proceed = false;
 					
-					$processCallback = '_' . Inflector::variable('process_' . $this->_currentStep);
+					$processCallback = '_' . Inflector::variable('process_' . $this->action . '_' . $this->_currentStep);
 					if (method_exists($this->controller, $processCallback)) {
 						$proceed = $this->controller->$processCallback();
 					} elseif ($this->autoValidate) {
@@ -282,17 +291,17 @@ class WizardComponent extends Component {
 					$this->controller->data = $this->read($this->_currentStep);
 				}
 			
-				$prepareCallback = '_' . Inflector::variable('prepare_' . $this->_currentStep);
+				$prepareCallback = '_' . Inflector::variable('prepare_' . $this->action . '_' . $this->_currentStep);
 				if (method_exists($this->controller, $prepareCallback)) {
 					$this->controller->$prepareCallback();
 				}
 				
 				$this->config('activeStep', $this->_currentStep);
-				
-				if ($this->nestedViews) {
-					$this->controller->viewPath .= '/' . $this->action;
-				}
 		
+				if ($this->nestedViews) {
+					$this->controller->viewPath .= DS . 'wizard' . DS . Inflector::underscore($this->action);
+				}
+
 				return $this->controller->autoRender ? $this->controller->render($this->_currentStep) : true;
 			} else {
 				$this->redirect();

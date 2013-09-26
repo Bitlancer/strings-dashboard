@@ -50,7 +50,7 @@ class DeviceAttribute extends AppModel {
                 'message' => '%%f cannot be empty'
             ),
 			'checkMultiKeyUniqueness' => array(
-				'rule' => array('checkMultiKeyUniqueness',array('var','organization_id')),
+				'rule' => array('checkMultiKeyUniqueness',array('var','device_id')),
 				'message' => 'This %%f has already been defined'
 			)
         )

@@ -13,7 +13,7 @@ $this->end();
 echo $this->element('Datatables/default',array(
 	'model' => 'sudoRole',
 	'title' => 'Sudo roles',
-    'columnHeadings' => $sudoTableColumns,
+    'columnHeadings' => $this->DataTables->getColumnHeadings(),
 	'ctaTitle' => 'Sudo Role',
 	'ctaButtonText' => 'Create sudo role',
 	'ctaSrc' => '/sudoRoles/create',

@@ -18,7 +18,7 @@
     if(!isset($ctaModal))
         $ctaModal = true;
 
-    if(!isset($title))
+    if(!isset($title) && !isset($rawTitle))
         $title = "Current $modelPlural";
 
     if(!isset($search))
@@ -31,13 +31,18 @@
         $paginate = true;
 
     $dataTableOptions = array(
-        'data-title' => $title,
         'data-length' => $pageLength,
         'data-empty-table' => $emptyTableMsg,
         'data-search' => ($search ? 'true' : 'false'),
         'data-processing' => ($processing ? 'true' : 'false'),
         'data-paginate' => ($paginate ? 'true' : 'false') 
     );
+
+    if(isset($title))
+        $dataTableOptions['data-title'] = $title;
+
+    if(isset($rawTitle))
+        $dataTableOptions['data-raw-title'] = $rawTitle;
 
     if(isset($noCta) && $noCta){
 

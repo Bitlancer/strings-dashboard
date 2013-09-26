@@ -130,7 +130,14 @@
  * Turn off all caching application-wide.
  *
  */
-	//Configure::write('Cache.disable', true);
+    switch(CODE_ENVIRONMENT){
+        case 'development':
+          Configure::write('Cache.disable', true);
+          break;
+        case 'production':
+        default:
+          Configure::write('Cache.disable', false);
+    }
 
 /**
  * Enable cache checking.
@@ -196,10 +203,23 @@
  * the cake shell command: cake schema create Sessions
  *
  */
+
+ /**
+  * Floating timeout
+  *
+  * To achieve a floating timeout, where as long as the user remains active
+  * (executes an action in the last X minutes) the session remains valid,
+  * you must set timeout to the desired inactivity period and cookieTimeout to 0.
+  * With cookieTimeout = 0, the cookie will not expire until the user closes
+  * his/her browser however Cake will timeout the session if the user has not
+  * been active for timeout minutes.
+  */
+
 	Configure::write('Session', array(
         'cookie' => 'strings',
 		'defaults' => 'php',
         'timeout' => '60',
+        'cookieTimeout' => '0'
 	));
 
 /**

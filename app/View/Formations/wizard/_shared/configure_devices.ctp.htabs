@@ -1,0 +1,106 @@
+<?php
+$this->extend('/Formations/wizard/create/_template');
+
+$this->assign('stepTitle','Configure Devices');
+$this->assign('forwardButtonText','Complete');
+?>
+
+<div id="configure-devices" class="htab">
+  <nav>
+    <?php foreach($devices as $device){
+      $id = $device['psuedoId'];
+      $name = $device['name'];
+      $partName = $device['blueprintPartName'];
+      ?>
+      <a class="" data-tab="device-<?php echo $id; ?>">
+        <span style="display:block; margin: 4px 0px;"><?php echo $name; ?></span>
+        <small style="display:block; margin-bottom:6px; text-align:center;">(<?php echo $partName; ?>)</small>
+      </a>
+    <?php } ?>
+  </nav>
+  <?php foreach($devices as $device){
+    $psuedoId = $device['psuedoId'];
+    $name = $device['name'];
+    $blueprintPartId = $device['blueprintPartId'];
+    $blueprintPartName = $device['blueprintPartName'];
+    $modulesAndVariables = $blueprintPartModulesAndVariables[$blueprintPartId];
+    ?>
+    <div class="tab" data-tab="device-<?php echo $psuedoId; ?>">
+      <div>
+      </div>
+      <div class="provider">
+        <h2>Provider</h2>
+        <?php
+        echo $this->Form->input("Device.$psuedoId.flavor",array(
+          'label' => 'Flavor',
+          'error' => false,
+          'options' => $flavors
+        ));
+        echo $this->Form->input("Device.$psuedoId.region",array(
+          'label' => 'Target',
+          'error' => false,
+          'options' => $regions
+        ));
+        ?>
+      </div> <!-- /.provider -->
+      <div class="configuration">
+        <h2>Configuration</h2>
+        <div class="accordion">
+        <?php foreach($modulesAndVariables as $module){
+          $moduleId = $module['id'];
+          $moduleName = $module['shortName'];
+          $variables = $module['variables'];
+          ?>
+          <h3><?php echo $moduleName; ?></h3>
+          <div class="module">
+            <?php foreach($variables as $var){
+              $varId = $var['id'];
+              $label = $var['name'];
+              $description = htmlentities($var['description']);
+              $inputName = "Device.$psuedoId.variables.$moduleId.$varId";
+              $defaultValue = $var['default_value'];
+              ?>
+              <div class="variable">
+                <?php echo $this->Form->input($inputName,array(
+                  'label' => array(
+                    'text' => $label,
+                    'class' => 'tooltip',
+                    'title' => $description
+                  ),
+                  'default' => $defaultValue
+                )); ?>
+              </div>
+            <?php } ?>
+          </div> <!-- /.module -->
+        <?php } ?>
+        </div> <!-- /.accordion -->
+      </div> <!-- /.configuration -->
+      <a class="action next float-right">Next device</a>
+      <hr class="clear" />
+    </div> <!-- /tab -->
+  <?php } ?>
+</div><!-- /.configure-devices -->
+
+<?php $this->start('stepStyle'); ?>
+  #configure-devices h2 {
+    padding-bottom: 3px;
+    border-bottom: 1px solid #ccc;
+  }
+  #configure-devices .tab > div {
+    margin-bottom: 20px;
+  }
+  #configure-devices .configuration .filter {
+    margin-bottom: 10px; 
+  }
+<?php $this->end(); ?>
+
+<?php $this->start('stepScript'); ?>
+  /*
+  $('.cta.primary').removeClass('disabled');
+  $('.cta.primary').click('live',function(){
+    var form = $(this).closest('form');
+    $('.device-modal').css('display','none').appendTo(form);
+    form.submit();
+  });
+  */
+<?php $this->end(); ?>

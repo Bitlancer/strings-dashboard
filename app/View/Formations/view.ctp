@@ -6,7 +6,7 @@ $this->assign('title',$formation['Formation']['name']);
 
 //Set sidebar content
 $this->start('sidebar');
-echo $this->element('../Formations/_activity_log');
+echo $this->element('../Formations/elements/activity_log');
 $this->end();
 ?>
 
@@ -15,7 +15,7 @@ $this->end();
 <h2 class="float-left">Formation Details</h2>
 <h2 class="float-right">
   <?php
-    echo $this->element('../Formations/_action_menu',array(
+    echo $this->element('../Formations/elements/action_menu',array(
       'formationId' => $formation['Formation']['id'],
       'actionsDisabled' => (!$isAdmin || $formation['Formation']['status'] != 'active')
     ));
@@ -34,21 +34,16 @@ $this->end();
   ?>
 </div> <!-- /formation-details -->
 </section>
-
-<section>
-<h2>Devices</h2>
-<div>
-  <?php
-    $deviceTableData = array();
-    foreach($formation['Device'] as $device){
-      $deviceTableData[] = array(
-      $this->Strings->link($device['name'],'/Devices/view/' . $device['id']),
-      $device['Role']['name']);
-    }
-    echo $this->element('Tables/default',array(
-      'columnHeadings' => array('Device','Role'),
-      'data' => $deviceTableData
-    ));
-  ?>
-</div>
+<section id="devies">
+<?php
+echo $this->element('Datatables/default',array(
+    'model' => 'device',
+    'columnHeadings' => $this->DataTables->getColumnHeadings('devices'),
+    'dataSrc' => '/Formations/devices/' . $formation['Formation']['id'],
+    'ctaDisabled' => $formation['Formation']['status'] != 'active',
+    'ctaSrc' => '/Formations/addDevice/' . $formation['Formation']['id'],
+    'ctaModal' => false,
+    'pageLength' => 5,
+));
+?>
 </section>

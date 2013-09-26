@@ -1,6 +1,5 @@
 <div id="edit-formation">
-  <ul id="notice">
-  </ul>
+  <ul id="notice"></ul>
   <form class="ajax" method="POST" action="<?php echo $_SERVER['REQUEST_URI'] . ".json"; ?>">
     <fieldset>
       <legend>Name</legend>

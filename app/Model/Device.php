@@ -13,15 +13,37 @@ class Device extends AppModel {
         'DeviceType',
 		'Implementation',
 		'Formation',
-		'Role'
+		'Role',
+        'BlueprintPart'
 	);
 
 	public $hasMany = array(
 		'DeviceAttribute',
-		'TeamDevice'
+		'TeamDevice',
+        'DeviceDns'
 	);
 	
 	public $validate = array(
+        'implementation_id' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => '%%f is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => '%%f must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => '%%f does not exist'
+            )
+        ), 
         'device_type_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
@@ -43,6 +65,26 @@ class Device extends AppModel {
             )
         ),  
 		'formation_id' => array(
+            'requiredOnCreate' => array(
+                'rule' => 'notEmpty',
+                'on' => 'create',
+                'required' => true,
+                'message' => '%%f is required'
+            ),
+            'notEmpty' => array(
+                'rule' => 'notEmpty',
+                'message' => '%%f cannot be empty'
+            ),
+            'isNumeric' => array(
+                'rule' => 'numeric',
+                'message' => '%%f must be an integer'
+            ),
+            'validForeignKey' => array(
+                'rule' => array('isValidForeignKey'),
+                'message' => '%%f does not exist'
+            )
+        ),
+        'blueprint_part_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',
@@ -93,10 +135,10 @@ class Device extends AppModel {
                 'rule' => 'notEmpty',
                 'message' => '%%f cannot be empty'
             ),
-			'validHostname' => array(
-				'rule' => array('custom', '/^(?![0-9]+$)(?!-)[a-zA-Z0-9-]{,63}(?<!-)$/'),
-				'message' => 'Please enter a valid hostname'
-			),
+            'validName' => array(
+                'rule' => AppModel::VALID_MODEL_NAME_REGEX,
+                'message' => AppModel::VALID_MODEL_NAME_MSG
+            ),
 			'checkMultiKeyUniqueness' => array(
                 'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
                 'message' => 'This %%f is already taken'
@@ -113,4 +155,53 @@ class Device extends AppModel {
             )
         )
 	);
+
+    public function getCustomerDatacenter($deviceId){
+
+        $implementationAttr = ClassRegistry::init('ImplementationAttribute');
+
+        $regionId = $this->DeviceAttribute->findByVar('implementation.region_id');
+        $regionId = $regionId['DeviceAttribute']['val'];
+        if(empty($regionId))
+            throw new InternalErrorException("Attribute implementation.region_id is not defined.");
+
+        $regions = $implementationAttr->getOverridableAttribute('regions');
+        if(empty($regions))
+            throw new InternalErrorException("Attribute regions is not defined.");
+        $regions = json_decode($regions,true);
+        $regions = Hash::combine($regions,'{n}.id','{n}');
+
+        if(!isset($regions[$regionId]))
+            throw new InternalErrorException("Unrecognized region id.");
+
+        return $regions[$regionId]['name'];
+    }
+
+    public function beforeSave($options = array()){
+
+        $data = $this->data[$this->alias];
+
+        if(isset($data['name'])){
+            $this->data[$this->alias]['name'] = strtolower($data['name']);
+        }
+
+        return true;
+    }
+
+    public function afterFind($results,$primary = false){
+
+        //ucwords(name)
+        if(isset($results['name'])){
+            $results['name'] = ucwords($results['name']);
+        }
+        else {
+            foreach($results as $key => $result){
+                if(isset($result[$this->alias]['name'])) {
+                    $name = ucwords($result[$this->alias]['name']);
+                    $results[$key][$this->alias]['name'] = $name;
+                }
+            }
+        }
+        return $results;
+    }
 }

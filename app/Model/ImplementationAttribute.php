@@ -55,4 +55,42 @@ class ImplementationAttribute extends AppModel {
 			)
         )
     );
+
+    public function getOverridableAttribute($implementationId,$attributeName){
+
+        $providerAttr = ClassRegistry::init('ProviderAttribute');
+
+        $attr = $this->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'ImplementationAttribute.implementation_id' => $implementationId,
+                'ImplementationAttribute.var' => $attributeName
+            )
+        ));
+
+        if(!empty($attr)){
+            $attr = $attr['ImplementationAttribute']['val'];
+        }
+        else {
+
+            $implementation = $this->findById($implementationId);
+            $providerId = $implementation['Implementation']['provider_id'];
+
+            $attr = $providerAttr->find('first',array(
+                'contains' => array(),
+                'conditions' => array(
+                    'ProviderAttribute.provider_id' => $providerId,
+                    'ProviderAttribute.var' => $attributeName
+                )
+            ));
+
+            if(empty($attr))
+                return false;
+            else {
+                $attr = $attr['ProviderAttribute']['val'];
+            }
+        }
+
+        return $attr;
+    }
 }
