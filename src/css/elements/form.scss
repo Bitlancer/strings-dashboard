@@ -1,4 +1,14 @@
 form {
+  &.vertical-labels {
+    label {
+      display: block;
+      margin-bottom: 3px;
+      &.checkbox, &.radio, &.radiobutton {
+        display: inline-block;
+        margin: 0;
+      }
+    }
+  }
   fieldset {
     border: 1px solid #eee;
     margin-bottom: 10px;

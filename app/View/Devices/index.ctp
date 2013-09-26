@@ -13,5 +13,5 @@ $this->end();
 echo $this->element('Datatables/default',array(
     'model' => 'device',
     'columnHeadings' => $this->DataTables->getColumnHeadings(),
-    'ctaDisabled' => $createCTADisabled
+    'ctaDisabled' => $createCTADisabled,
 ));

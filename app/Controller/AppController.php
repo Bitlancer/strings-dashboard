@@ -65,6 +65,12 @@ class AppController extends Controller {
 
         //Pass isAdmin flag to every view
         $this->passIsAdminFlagToView();
+
+        //Record a timestamp each time the user
+        //requests a page. This can be used to
+        //determine whether its necessary to
+        //refresh an organization's IaaS data.
+        $this->recordActivityTimestamp();
 	}
 
     /**
@@ -82,6 +88,42 @@ class AppController extends Controller {
     private function passIsAdminFlagToView(){
 
         $this->set('isAdmin',$this->Auth->User('is_admin'));
+    }
+
+    /**
+     * Update strings.last_activity_timestamp in the config table
+     */
+    private function recordActivityTimestamp(){
+
+        $this->loadModel('Config');
+
+        $RECORD_ACTIVITY_INTERVAL = 120;
+
+        $currentTimestamp = time();
+
+        //User is logged in
+        $userId = $this->Auth->User('id');
+        if(empty($userId))
+            return;
+
+        //To reduce load on the DB we'll only update this record
+        //every $RECORD_ACTIVITY_INTERVAL per user
+        $lastActivityTimestamp = $this->Session->read('lastActivityTimestamp');
+        if(empty($lastActivityTimestamp) ||
+           $lastActivityTimestamp + $RECORD_ACTIVITY_INTERVAL <= $currentTimestamp){
+
+            $this->Session->write('lastActivityTimestamp',$currentTimestamp);
+
+            $this->Config->updateAll(
+                array(
+                    'Config.val' => $this->Config->escapeValue(date('Y-m-d H:i:s',$currentTimestamp))
+                ),
+                array(
+                    'Config.var' => 'strings.last_activity_timestamp',
+                    'Config.organization_id' => $this->Auth->User('organization_id')
+                )
+            );
+        }
     }
 
     /**

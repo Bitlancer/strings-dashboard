@@ -25,29 +25,34 @@ $this->assign('forwardButtonText','Complete');
     $id = $device['psuedoId'];
     $name = $device['name'];
     $deviceTypeId = $device['deviceTypeId'];
-    $blueprintPartId = $device['blueprintPartId'];
+    $roleId = $device['roleId'];
     $blueprintPartName = $device['blueprintPartName'];
     $inErrorState = isset($devicesInErrorState) && in_array($id,$devicesInErrorState);
-    $deviceInfraErrors = $inErrorState && isset($infraConfigErrors[$id]) ? $infraConfigErrors[$id] : array();
-    $deviceSystemErrors = $inErrorState && isset($systemConfigErrors[$id]) ? $systemConfigErrors[$id] : array();
-    $modulesAndVariables = $deviceTypeId == 1 ? $blueprintPartModulesAndVariables[$blueprintPartId] : array();
+    $deviceErrors = $inErrorState ? $errors[$id] : array();
+    $hasGeneralError = isset($deviceErrors['general']);
+    $hasInfraError = isset($deviceErrors['infrastructure']);
     ?>
     <div class="tab <?php echo $inErrorState ? 'error' : ''; ?>" data-tab="device-<?php echo $id; ?>">
+      <?php if($hasGeneralError) {
+        echo $this-elements('notice-list',array(
+          'type' => 'error',
+          'errors' => $deviceErrors['general']
+        ));
+      } ?> 
       <fieldset class="infrastructure-configuration">
         <legend>Infrastructure Configuration</legend>
-        <?php if(count($deviceInfraErrors)) { ?>
-          <ul class="notice-list error">
-            <?php foreach($deviceInfraErrors as $error) { ?>
-              <li><?php echo $error; ?></li>
-            <?php } ?>
-          </ul>
-        <?php } ?>
+        <?php if($hasInfraError) {
+          echo $this-elements('notice-list',array(
+            'type' => 'error',
+            'errors' => $deviceErrors['infrastructure']
+          ));
+        } ?>
         <?php
         if($deviceTypeId == 1){ //Flavor is only applicable for instances
           echo $this->Form->input("Device.$id.flavor",array(
             'label' => 'Flavor',
             'error' => false,
-            'options' => $flavors
+            'options' => $instanceFlavors
           ));
         }
         echo $this->Form->input("Device.$id.region",array(
@@ -57,26 +62,54 @@ $this->assign('forwardButtonText','Complete');
         ));
         ?>
       </fieldset> <!-- /.infrastructure-configuration -->
-      <fieldset class="system-configuration">
-        <legend>System Configuration</legend>
+      <?php
+        if($deviceTypeId == 1){
+            $varDefs = isset($instanceVarDefs[$roleId]) ?
+                $instanceVarDefs[$roleId] : array();
+            $variableErrors = isset($deviceErrors['system']) ?
+                $deviceErrors['system'] : array();
+          ?>
+          <fieldset class="system-configuration">
+            <legend>System Configuration</legend>
+            <?php if(empty($varDefs)) { ?>
+              <div class="empty">
+                <span>This device does not require any configuration</span>
+              </div>
+            <?php }
+            else {
+              echo $this->element('../Devices/elements/configure_instance',array(
+                'inputPrefix' => "Device.$id",
+                'variableDefs' => $varDefs,
+                'variableErrors' => $variableErrors,
+              )); 
+            } ?>
+          </fieldset>
         <?php
-          if($deviceTypeId != 1){ ?>
-            <div class="empty"><span>Not applicable</span>
-          <?php }
-          elseif(empty($modulesAdnVariables)){ ?>
-            <div class="empty">
-              <span>This device does not require any configuration</span>
-            </div>
-          <?php }
-          else {
-            echo $this->element('../Devices/elements/configure',array(
-              'modulesAndVariables' => $modulesAndVariables,
-              'variableErrors' => $deviceSystemErrors,
-              'inputPrefix' => "Device.$id"
-            ));
-          }
-        ?>
-      </fieldset> <!-- /.system-configuration -->
+        }
+        elseif($deviceTypeId == 2){ ?>
+          <fieldset class="load-balancer-configuration">
+            <legend>Load-balancer Configuration</legend>
+            <?php if(isset($deviceErrors['load-balancer'])) {
+              echo $this->element('notice-list',array(
+                'type' => 'error',
+                'errors' => $deviceErrors['load-balancer']
+              ));
+            } ?> 
+            <?php
+              echo $this->element('../Devices/elements/configure_loadbalancer',array(
+                'inputPrefix' => "Device.$id",
+                'virtualIpTypes' => $loadBalancerVirtualIpTypes,
+                'protocols' => $loadBalancerProtocols,
+                'protocolPortMap' => $loadBalancerProtocolPortMap,
+                'algorithms' => $loadBalancerAlgorithms
+              ));
+            ?>
+          </fieldset>
+        <?php }
+        else {
+            throw new InteralErrorException('Unexpected device type.');
+        }
+      ?>
     </div> <!-- /tab -->
   <?php } ?>
   </div> <!-- /.tabs -->

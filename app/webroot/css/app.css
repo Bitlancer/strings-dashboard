@@ -707,6 +707,12 @@ body .ui-widget-overlay {
   background: rgba(0, 0, 0, 0.1);
   opacity: 1; }
 
+form.vertical-labels label {
+  display: block;
+  margin-bottom: 3px; }
+  form.vertical-labels label.checkbox, form.vertical-labels label.radio, form.vertical-labels label.radiobutton {
+    display: inline-block;
+    margin: 0; }
 form fieldset {
   border: 1px solid #eee;
   margin-bottom: 10px;
@@ -1468,6 +1474,17 @@ body .association.disabled {
     margin-top: 4px; }
 #create-formation #configure-devices div.input label {
   display: block; }
+
+#configure-device .empty {
+  padding: 20px 10px;
+  background-color: #fcfcfc;
+  border: 1px dashed #ccc; }
+
+#configure-loadbalancer #protocol-port select {
+  min-width: 50%; }
+#configure-loadbalancer #protocol-port input {
+  min-width: 50px !important;
+  width: 10%; }
 
 #manage-dns-records #select-device {
   margin-bottom: 10px; }

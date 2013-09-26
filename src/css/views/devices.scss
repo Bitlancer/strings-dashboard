@@ -1,0 +1,18 @@
+#configure-device {
+  .empty {
+    padding: 20px 10px;
+    background-color: #fcfcfc;
+    border: 1px dashed #ccc;
+  }
+}
+#configure-loadbalancer {
+  #protocol-port {
+    select {
+      min-width: 50%;
+    }
+    input {
+      min-width: 50px !important;
+      width: 10%;
+    }
+  }
+}

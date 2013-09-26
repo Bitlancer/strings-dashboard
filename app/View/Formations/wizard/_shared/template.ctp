@@ -10,6 +10,7 @@
     <h2><?php echo $this->Wizard->stepNumber() . ". " . $this->fetch('stepTitle'); ?></h2>
     <?php echo $this->Form->create('Formation',array(
       'url' => $this->here,
+      'class' => 'vertical-labels'
     ));
     ?>
     <div>

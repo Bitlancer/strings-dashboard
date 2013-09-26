@@ -61,4 +61,31 @@ class Provider extends AppModel {
 			)
         )
     );
+
+    public function getLoadbalancerAttributes($providerId){
+
+        $lbAttrVars = array(
+            'load_balancers.virtual_ip_types',
+            'load_balancers.protocols',
+            'load_balancers.algorithms'
+        );
+
+        $lbAttrs = $this->ProviderAttribute->find('all',array(
+            'contain' => array(),
+            'conditions' => array(
+                'ProviderAttribute.var' => $lbAttrVars,
+                'ProviderAttribute.provider_id' => $providerId
+            )
+        ));
+
+        $lbAttrs = Hash::combine($lbAttrs,'{n}.ProviderAttribute.var','{n}.ProviderAttribute.val');
+
+        //Verify attributes was retrieved
+        foreach($lbAttrVars as $var){
+            if(!isset($lbAttrs[$var]))
+                throw new InternalErrorException("Load-balancer attribute $var has not been defined for this provider");
+        }
+
+        return $lbAttrs;
+    }
 }

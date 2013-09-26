@@ -4,8 +4,8 @@
  * seen anywhere puppet variables are configured.
  */
 
-    if(!isset($modulesAndVariables))
-        $modulesAndVariables = array();
+    if(!isset($variableDefs))
+        $variableDefs = array();
 
     if(!isset($variableErrors))
         $variableErrors = array();
@@ -16,7 +16,7 @@
         $inputPrefix = '';
 ?>
 <div class="accordion" data-active="false">
-<?php foreach($modulesAndVariables as $module){
+<?php foreach($variableDefs as $module){
   $moduleId = $module['id'];
   $moduleName = $module['shortName'];
   $variables = $module['variables'];

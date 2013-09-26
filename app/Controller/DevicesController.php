@@ -3,6 +3,10 @@
 class DevicesController extends AppController
 {
 
+    public $components = array(
+        'FormationsAndDevices'
+    );
+
     /**
      * Authorization logic
      */
@@ -156,6 +160,9 @@ class DevicesController extends AppController
         $providerInfo = array(
             'Provider' => $device['Implementation']['name'],
             'Datacenter' => $this->Device->Implementation->getRegionName($implementationId,$deviceAttributes['implementation.region_id']),
+            'Protocol' => Inflector::humanize(strtolower($deviceAttributes['implementation.protocol'])),
+            'Port' => $deviceAttributes['implementation.port'],
+            'Algorithm' => Inflector::humanize(strtolower($deviceAttributes['implementation.algorithm'])),
         );
 
         //Device addresses
@@ -274,7 +281,10 @@ class DevicesController extends AppController
                     'conditions' => array(
                         'var' => 'dns.external.fqdn'
                     )
-                )
+                ),
+                'Implementation' => array(
+                    'Provider'
+                ),
             ),
             'conditions' => array(
                 'Device.id' => $deviceId
@@ -298,6 +308,8 @@ class DevicesController extends AppController
     }
 
     private function _configureInstance($device){
+
+        $this->loadModel('HieraVariable');
 
         $roleId = $device['Device']['role_id'];
         $deviceFqdn = $device['DeviceAttribute'][0]['val'];
@@ -384,14 +396,122 @@ class DevicesController extends AppController
 
         $this->set(array(
             'device' => $device,
-            'modulesVariables' => $variables,
+            'variables' => $variables,
             'errors' => $errors
         ));
+
+        $this->render('configure_instannce');
     }
 
     private function _configureLoadBalancer($device){
 
-        throw InternalErrorException('Not implemented');
+        $this->loadModel('QueueJob');
+
+        $formData = array();
+
+        $deviceId = $device['Device']['id'];
+        $implementationId = $device['Implementation']['id'];
+
+        $formData['errors'] = array();
+        $formData['device'] = $device;
+
+        //Get load-balancer form data
+        $formData = array_merge(
+            $formData,
+            $this->FormationsAndDevices->_getLoadBalancerFormData($implementationId)
+        );
+
+        //Get load-balancer attributes
+        list($virtualIpType,$protocolName,$port,$algorithmName) =
+            $this->_getLoadBalancerAttributes($device['Device']['id']);
+
+        
+        if($this->request->is('post')){
+
+            list($newAttrs,$errors) = $this->FormationsAndDevices->_parseAndValidateLoadBalancer(
+                array(),
+                $this->request->data['Device'],
+                $implementationId
+            );
+            $newAttrs = $newAttrs['DeviceAttribute'];
+
+            if(!empty($errors)){
+                $formData['errors'] = $errors;
+            }
+            else {
+                foreach($newAttrs as $attr){
+                    $result = $this->Device->DeviceAttribute->updateAll(
+                        array(
+                            'DeviceAttribute.val' => $this->Device->escapeValue($attr['val']),
+                        ),
+                        array(
+                            'DeviceAttribute.var' => $attr['var'],
+                            'DeviceAttribute.device_id' => $deviceId,
+                            'DeviceAttribute.organization_id' => $this->Auth->User('organization_id')
+                        )
+                    );
+                    if($result == false){
+                        $formData['errors'][] = $this->Device->DeviceAttribute->validationErrorsAsString();
+                    }
+                }
+                if(empty($formData['errors'])) {
+
+                    if($this->QueueJob->addJob(STRINGS_API_URL . "/LoadBalancers/update/$deviceId")){
+                        $this->Device->id = $deviceId;
+                        $this->Device->saveField('status','building');
+                        $this->redirect("/Devices/view/$deviceId");
+                    }
+                    else {
+                        $formData['errors'][] = 'Error encountered while scheduling a job to update this load-balancer.'; 
+                    }
+                }
+            }
+        }
+        else {
+            $this->request->data = array(
+                'Device' => array(
+                    'virtualIpType' => $virtualIpType,
+                    'protocol' => $protocolName,
+                    'port' => $port,
+                    'algorithm' => $algorithmName
+                )
+            );
+        }
+
+        $this->set($formData);
+
+        $this->render('configure_loadbalancer');
+    }
+
+    private function _getLoadBalancerAttributes($deviceId){
+
+        $attrVars = array(
+            'implementation.virtual_ip_type',
+            'implementation.protocol',
+            'implementation.port',
+            'implementation.algorithm'
+        );
+
+        $attrs = $this->Device->DeviceAttribute->find('all',array(
+            'contain' => array(),
+            'conditions' => array(
+                'DeviceAttribute.var' => $attrVars,
+                'DeviceAttribute.device_id' => $deviceId
+            )
+        ));
+
+        $attrs = Hash::combine($attrs,'{n}.DeviceAttribute.var','{n}.DeviceAttribute.val');
+
+        foreach($attrVars as $var)
+            if(!isset($attrs[$var]))
+                throw new InternalErrorException("Load-balancer attribute $var is not defined for device $deviceId");
+
+        return array(
+            $attrs['implementation.virtual_ip_type'],
+            $attrs['implementation.protocol'],
+            $attrs['implementation.port'],
+            $attrs['implementation.algorithm']
+        );
     }
 
     protected function redirectIfNotActive($device){
