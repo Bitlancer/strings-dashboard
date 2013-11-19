@@ -20,7 +20,10 @@ class AppExceptionRenderer extends ExceptionRenderer {
         $errorMessage = "";
 
         //Set status code and error message
-        if($exception instanceof MissingControllerException || $exception instanceof MissingActionException){
+        if($exception instanceof NotFoundException || 
+            $exception instanceof MissingControllerException ||
+            $exception instanceof MissingActionException){
+
             $statusCode = 404;
             $errorMessage = 'Not Found';
         }
