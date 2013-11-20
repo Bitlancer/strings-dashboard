@@ -311,6 +311,7 @@ class DevicesController extends AppController
 
         $this->loadModel('HieraVariable');
 
+        $deviceId = $device['Device']['id'];
         $roleId = $device['Device']['role_id'];
         $deviceFqdn = $device['DeviceAttribute'][0]['val'];
         $hieraKey = "fqdn/$deviceFqdn";
@@ -390,6 +391,7 @@ class DevicesController extends AppController
                 }
                 else {
                     $this->setFlash('Configuration changes applied successfully.','success');
+                    $this->redirect("/Devices/view/$deviceId");
                 }
             }
         }

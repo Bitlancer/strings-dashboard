@@ -549,15 +549,25 @@ class UsersController extends AppController {
                 $isError = true;
                 $message = 'Please enter your email address.';
             }
+            elseif(!isset($this->request->data['organization']) || empty($this->request->data['organization'])){
+                $isError = true;
+                $message = 'Please enter your organization name.';
+            }
             else {
 
                 $email = $this->request->data['email'];
+                $organization = $this->request->data['organization'];
 
                 $user = $this->User->find('first',array(
                     'fields' => array(
-                        'id','organization_id'
+                        'User.id','User.organization_id','User.name',
+                        'Organization.short_name'
                     ),
                     'conditions' => array(
+                        'or' => array(
+                            'Organization.short_name' => $organization,
+                            'Organization.name' => $organization
+                        ),
                         'User.email' => $email,
                         'User.is_disabled' => 0
                     )
@@ -565,13 +575,15 @@ class UsersController extends AppController {
 
                 if(empty($user)){
                     $isError = true;
-                    $message = 'The supplied email address is not recognized.';
+                    $message = 'The supplied organization and email address combination is not recognized.';
                 }
                 else {
 
                     $userId = $user['User']['id'];
+                    $userName = $user['User']['name'];
+                    $organization = $user['Organization']['short_name'];
 
-                    $resetToken = $this->generateResetToken(40);
+                    $resetToken = $this->generateResetToken($organization, $userName);
                     
                     if(!$this->User->UserAttribute->saveAttribute($user,'reset_token',$resetToken)){
                         $isError = true;
@@ -694,15 +706,21 @@ class UsersController extends AppController {
     
 
     /**
-     * Generate a URI safe (doesn't need to be urlencoded) token
+     * Generate a reset token
      */
-    private function generateResetToken($tokenLen){
+    private function generateResetToken($organization, $username){
+
+        $str = $organization . "|" . $username . "|" . $this->generateRandomString(20);
+        return sha1($str);
+    }
+
+    private function generateRandomString($length){
 
         $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $numChars = strlen($chars) - 1;
 
         $token = "";
-        for($x=0;$x<$tokenLen;$x++){
+        for($x=0;$x<$length;$x++){
             $token .= $chars[mt_rand(0,$numChars)];
         }
 

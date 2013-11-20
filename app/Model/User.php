@@ -1,5 +1,7 @@
 <?php
 
+App::uses('SecurityEnhanced', 'Utility');
+
 class User extends AppModel {
 
 	public $useTable = 'user';
@@ -136,7 +138,7 @@ class User extends AppModel {
     public function beforeSave($options = array()) {
 
         if(isset($this->data['User']['password']))
-            $this->data['User']['password'] = Security::hash($this->data['User']['password'],'sha1',false);
+            $this->data['User']['password'] = SecurityEnhanced::hash($this->data['User']['password'],'sha1',false,'base64');
 
 		if(isset($this->data['User']['name']))
             $this->data['User']['name'] = strtolower($this->data['User']['name']);

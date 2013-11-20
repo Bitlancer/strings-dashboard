@@ -14,6 +14,7 @@
  */
 
 App::uses('FormAuthenticate', 'Controller/Component/Auth');
+App::uses('SecurityEnhanced', 'Utility');
 
 /**
  * An authentication adapter for AuthComponent. Provides the ability to authenticate using POST data using Sha1
@@ -64,10 +65,11 @@ class Sha1Authenticate extends FormAuthenticate {
 		if (!$user) {
 			return false;
 		}
-		$password = Security::hash(
+		$password = SecurityEnhanced::hash(
 			$request->data[$model][$fields['password']],
 			'sha1',
-	        false	
+	        false,
+            'base64'
 		);
 		if ($password === $user[$fields['password']]) {
 			unset($user[$fields['password']]);

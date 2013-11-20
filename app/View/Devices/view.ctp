@@ -54,7 +54,7 @@ $this->end();
 <h2>Addresses</h2>
   <?php
   foreach($deviceAddresses as $index => $row){
-    $row[1] = "<a href=\"ssh://\"" . $row[1] . "\">" . $row[1] . "</a>";
+    $row[1] = "<a href=\"ssh://" . $row[1] . "\">" . $row[1] . "</a>";
     $deviceAddresses[$index] = $row;
   }
   echo $this->element('Tables/default',array(
