@@ -23,8 +23,10 @@
       </form>
     </div> <!-- /register -->
     <div data-id="password">
-      <p>To reset your password, enter the email address associated with your Strings account.</p>
+      <p>To reset your password, enter your organization's name and the email
+      address associated with your account.</p>
       <form class="ajax" method="post" action="/Users/forgotPassword">
+        <input type="text" name="organization" placeholder="organization" />
         <input type="email" name="email" placeholder="email address" />
         <span class="buttons">
           <a class="cta submit">reset password</a><a class="cta" data-id="login">cancel</a>
