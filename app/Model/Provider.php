@@ -80,7 +80,7 @@ class Provider extends AppModel {
 
         $lbAttrs = Hash::combine($lbAttrs,'{n}.ProviderAttribute.var','{n}.ProviderAttribute.val');
 
-        //Verify attributes was retrieved
+        //Verify attributes were retrieved
         foreach($lbAttrVars as $var){
             if(!isset($lbAttrs[$var]))
                 throw new InternalErrorException("Load-balancer attribute $var has not been defined for this provider");
