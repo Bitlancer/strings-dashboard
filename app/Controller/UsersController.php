@@ -102,26 +102,39 @@ class UsersController extends AppController {
 			$isError = false;
 			$message = "";
 
-			//Verify passwords match
-			if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
-				$isError = true;
-				$message = 'Passwords do not match.';
-			}
-			else
-			{
-				unset($this->request->data['User']['confirm_password']);
+            //Set random password initially. User will be sent a reset link.
+            $this->request->data['User']['password'] = $this->generateRandomString(20);
 
-                $validFields = array('name','password','first_name','last_name','email','is_admin');
-				if($this->User->save($this->request->data,true,$validFields)){
+            $validFields = array('name','password','first_name','last_name','email','is_admin');
+            if($this->User->save($this->request->data,true,$validFields)){
 
-                    //Set posix attributes (uid,shell)
-                    $this->User->setDefaultPosixAttributes($this->User->id);
-				}
-				else {
-					$isError = true;
-					$message = $this->User->validationErrorsAsString();
-				}
-			}
+                $user = $this->User->find('first',array(
+                    'contain' => array(
+                        'Organization'
+                    ),
+                    'conditions' => array(
+                        'User.id' => $this->User->id
+                    )
+                ));
+
+                $resetToken = false;
+                try {
+                    $resetToken = $this->generateAndSetResetToken($user);
+                }
+                catch(Exception $e){
+                    throw $e;
+                    $isError = true;
+                    $message = 'We encountered an unexpected error';
+                }
+
+                if(!$isError){
+                    $this->sendSetPasswordEmail($user, $resetToken);
+                }
+            }
+            else {
+                $isError = true;
+                $message = $this->User->validationErrorsAsString();
+            }
 
 			if($isError){
 				$response = array(
@@ -561,7 +574,6 @@ class UsersController extends AppController {
                 $user = $this->User->find('first',array(
                     'fields' => array(
                         'User.id','User.organization_id','User.name',
-                        'Organization.short_name'
                     ),
                     'conditions' => array(
                         'or' => array(
@@ -573,34 +585,22 @@ class UsersController extends AppController {
                     )
                 ));
 
-                if(empty($user)){
-                    $isError = true;
-                    $message = 'The supplied organization and email address combination is not recognized.';
-                }
-                else {
+                $isError = false;
+                $message = "If your account exists, a link to reset your " .
+                            "password has been emailed to $email.";
 
-                    $userId = $user['User']['id'];
-                    $userName = $user['User']['name'];
-                    $organization = $user['Organization']['short_name'];
-
-                    $resetToken = $this->generateResetToken($organization, $userName);
-                    
-                    if(!$this->User->UserAttribute->saveAttribute($user,'reset_token',$resetToken)){
-                        $isError = true;
-                        $message = 'We encountered an unexpected error. ' . $this->User->UserAttribute->validationErrorsAsString();
+                if(!empty($user)){
+                    $resetToken = false;
+                    try {
+                        $resetToken = $this->generateAndSetResetToken($user);
                     }
-                    else {
+                    catch(Exception $e){
+                        $isError = true;
+                        $message = 'We encountered an unexpected error.';
+                    }
 
-                        $message = "A link to reset your password has been emailed to $email.";
-
-                        $emailMessage = "Please visit the following link to reset your password.\r\n\r\n" .
-                            'https://' . $_SERVER['HTTP_HOST'] . "/Users/resetPassword?token=" . $resetToken;
-       
-                        $mail = new CakeEmail();
-                        $mail->config('default');
-                        $mail->to($email);
-                        $mail->subject('Password Reset Request');
-                        $mail->send($emailMessage);
+                    if(!$isError){
+                        $this->sendForgotPasswordEmail($email, $resetToken);
                     }
                 }
             }
@@ -612,6 +612,7 @@ class UsersController extends AppController {
                 );
             }
             else {
+
                 $this->Session->setFlash(__($message),'default',array(),'success');
                 $response = array(
                     'redirectUri' => '/login'
@@ -623,6 +624,65 @@ class UsersController extends AppController {
         else {
             $this->redirect(array('action' => 'login'));
         }
+    }
+
+    private function generateAndSetResetToken($user){
+
+        $resetToken = $this->generateResetToken($user);
+        if(!$this->User->UserAttribute->saveAttribute($user, 'reset_token', $resetToken)){
+            throw new Exception("Failed to set reset token.");
+        }
+    
+        return $resetToken;
+    }
+
+    private function sendSetPasswordEmail($user, $resetToken){
+
+        if(!isset($user['User']) || !isset($user['Organization']) ||
+            !isset($user['User']['email']) || !isset($user['User']['name']) ||
+            !isset($user['Organization']['short_name'])){
+
+            throw new InvalidArgumentException('User email, name and Organziation short_name are required');
+        }
+
+        $subject = 'Bitlancer Strings - Set your password';
+        $resetLink = $this->getResetLink($resetToken);
+
+        $mail = new CakeEmail();
+        $mail->config('default');
+        $mail->emailFormat('text');
+        $mail->template('welcome','default');
+        $mail->to($user['User']['email']);
+        $mail->viewVars(array(
+            'name' => $user['User']['first_name'],
+            'organization' => $user['Organization']['short_name'],
+            'username' => $user['User']['name'],
+            'setPasswordLink' => $resetLink
+        ));
+        $mail->subject($subject);
+        $mail->send();
+    }
+
+    private function sendForgotPasswordEmail($recipient, $resetToken){
+
+        $subject = 'Bitlancer Strings - Password reset request';
+        $resetLink = $this->getResetLink($resetToken);
+
+        $mail = new CakeEmail();
+        $mail->config('default');
+        $mail->emailFormat('text');
+        $mail->template('forgot_password','default');
+        $mail->to($recipient);
+        $mail->viewVars(array(
+            'resetLink' => $resetLink
+        ));
+        $mail->subject($subject);
+        $mail->send();
+    }
+
+    private function getResetLink($token){
+
+        return 'https://' . $_SERVER['HTTP_HOST'] . "/Users/resetPassword?token=$token";
     }
 
     public function resetPassword(){
@@ -704,13 +764,21 @@ class UsersController extends AppController {
         ));
     }
     
-
     /**
      * Generate a reset token
      */
-    private function generateResetToken($organization, $username){
+    private function generateResetToken($user){
 
-        $str = $organization . "|" . $username . "|" . $this->generateRandomString(20);
+        if(!isset($user['User']) || !isset($user['User']['name']) ||
+            !isset($user['User']['organization_id'])){
+
+            throw new InvalidArgumentException('User array must contain name and organization_id');
+        }
+
+        $str = $user['User']['organization_id'] . "|" .
+                $user['User']['name'] . "|" .
+                $this->generateRandomString(20);
+
         return sha1($str);
     }
 

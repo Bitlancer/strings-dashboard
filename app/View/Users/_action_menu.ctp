@@ -20,7 +20,6 @@
     if($userEnabled){
         $actionMenu .= $this->Strings->oldModalLink('Edit User',"/Users/edit/$userId",$actionsDisabled);
         $actionMenu .= $this->Strings->link('SSH Keys',"/Users/sshKeys/$userId",$actionsDisabled);
-        $actionMenu .= $this->Strings->oldModalLink('Reset Password',"/Users/changePassword/$userId",$actionsDisabled);
         $actionMenu .= $this->Strings->oldModalLink('Disable User',"/Users/disable/$userId",$actionsDisabled);
     }
     else {
