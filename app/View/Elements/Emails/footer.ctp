@@ -1,3 +1,6 @@
+Bitlancer Support
+support@bitlancer.com
+
 --
 
 Bitlancer Strings is operated by Bitlancer LLC
