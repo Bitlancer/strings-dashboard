@@ -509,7 +509,7 @@ class UsersController extends AppController {
 
     private function resetFailedLoginAttempts($user){
 
-        return $this->User->UserAttribute->saveAttribute($user,'failed_login_attempts',0);
+        return $this->User->UserAttribute->saveAttribute($user,'strings.failed_login_attempts',0);
     }
 
     private function upFailedLoginsMaybeLockAccount($organization, $username){
@@ -528,7 +528,7 @@ class UsersController extends AppController {
                 'Organization',
                 'UserAttribute' => array(
                     'conditions' => array(
-                        'UserAttribute.var' => 'failed_login_attempts'
+                        'UserAttribute.var' => 'strings.failed_login_attempts'
                     )
                 )
             ),
@@ -546,7 +546,7 @@ class UsersController extends AppController {
             $failedLoginAttempts++;
 
             $this->User->UserAttribute->saveAttribute($user,
-                                                    'failed_login_attempts',
+                                                    'strings.failed_login_attempts',
                                                     $failedLoginAttempts);
 
             if(($failedLoginAttempts % MAX_ALLOWED_LOGIN_ATTEMPTS) == 0){
@@ -678,7 +678,7 @@ class UsersController extends AppController {
     private function generateAndSetResetToken($user){
 
         $resetToken = $this->generateResetToken($user);
-        if(!$this->User->UserAttribute->saveAttribute($user, 'reset_token', $resetToken)){
+        if(!$this->User->UserAttribute->saveAttribute($user, 'strings.reset_token', $resetToken)){
             throw new Exception("Failed to set reset token.");
         }
     
@@ -756,7 +756,7 @@ class UsersController extends AppController {
                     'User'
                 ),
                 'conditions' => array(
-                    'UserAttribute.var' => 'reset_token',
+                    'UserAttribute.var' => 'strings.reset_token',
                     'UserAttribute.val' => $token
                 )
             ));
