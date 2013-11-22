@@ -9,4 +9,3 @@ Username: <?php echo $username . "\n"; ?>
 
 
 Learn more about Bitlancer Strings at http://www.bitlancer.com/strings.
-

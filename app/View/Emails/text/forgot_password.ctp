@@ -1,4 +1,4 @@
-We received a request to reset your Bitlancer Strings account password. Please visit the following link to reset your password.
+We received a request to reset your Bitlancer Strings account password. If you made this request, please visit the following link to reset your password.
 
 
 <?php echo $resetLink; ?>
