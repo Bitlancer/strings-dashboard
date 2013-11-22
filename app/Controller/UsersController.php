@@ -97,10 +97,9 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
-			$this->autoRender = false;
-
 			$isError = false;
 			$message = "";
+            $redirectUri = false;
 
             //Set random password initially. User will be sent a reset link.
             $this->request->data['User']['password'] = $this->generateRandomString(20);
@@ -122,13 +121,13 @@ class UsersController extends AppController {
                     $resetToken = $this->generateAndSetResetToken($user);
                 }
                 catch(Exception $e){
-                    throw $e;
                     $isError = true;
                     $message = 'We encountered an unexpected error';
                 }
 
                 if(!$isError){
                     $this->sendSetPasswordEmail($user, $resetToken);
+                    $redirectUri = $this->referer(array('action' => 'index'));
                 }
             }
             else {
@@ -136,19 +135,7 @@ class UsersController extends AppController {
                 $message = $this->User->validationErrorsAsString();
             }
 
-			if($isError){
-				$response = array(
-					'isError' => $isError,
-					'message' => __($message)
-				);
-			}
-			else {
-				$response = array(
-					'redirectUri' => $this->referer(array('action' => 'index'))
-				);
-			}
-
-			echo json_encode($response);
+            $this->outputAjaxFormResponse($message,$isError,$redirectUri);
 		}
 	}
 
@@ -479,67 +466,160 @@ class UsersController extends AppController {
 		$this->layout = 'login';
 		$this->set('title_for_layout', 'Login');
 
+        //Redirect the user if he or she is already logged in
 		$userId = $this->Auth->user('id');
-
 		if(!empty($userId))
 			$this->redirect($this->Auth->redirectUrl());
 
+        $organization = "";
+        $username = "";
+        $rememberMe = false;
+
 		if($this->request->is('post')){
 
-			//Detach OrganizationOwned behavior
-			$this->User->Behaviors->unload('OrganizationOwned');	
+            $rememberMe = $this->request->data('User.remember_me');
+            $username = $this->request->data('User.name');
+            $organization = $this->request->data('Organization.short_name');
 
-			//Add additional conditions to login query
-			$this->Auth->authenticate['Sha1']['scope'] = array(
-				'User.is_disabled' => '0',
-				'Organization.is_disabled' => '0',
-            	'Organization.short_name' => $this->request->data['Organization']['short_name']
-        	);
+            if(empty($username) || empty($organization)){
+                $this->setFlash('The username or password you entered is incorret.');
+            }
+            else {
 
-    		if($this->Auth->login()) {
+                //Detach OrganizationOwned behavior
+                $this->User->Behaviors->unload('OrganizationOwned');
 
-				if($this->request->data['User']['remember_me'] == 'on'){
-					$rememberMeData = array(
-						'organization' => $this->request->data['Organization']['short_name'],
-						'name' => $this->request->data['User']['name'],
-					);
-					$this->Cookie->write('User', $rememberMeData, false, '1 year');
-				}
-				else {
-					$this->Cookie->delete('User');
-				}
+                //Add additional conditions to login query
+                $this->Auth->authenticate['Sha1']['scope'] = array(
+                    'User.is_disabled' => '0',
+                    'Organization.is_disabled' => '0',
+                    'Organization.short_name' => $organization
+                );
 
-        		return $this->redirect($this->Auth->redirectUrl());
-    		}
-			else
-				$this->Session->setFlash(__('Username or password is incorrect'), 'default', array(), 'auth');
+                if($this->Auth->login()) {
+
+                    if($rememberMe == 'on'){
+                        $rememberMeData = array(
+                            'organization' => $organization,
+                            'name' => $username,
+                        );
+                        $this->Cookie->write('User', $rememberMeData, false, '1 year');
+                    }
+                    else {
+                        $this->Cookie->delete('User');
+                    }
+
+                    $this->resetFailedLoginAttempts(array(
+                        'User' => array(
+                            'id' => $this->Auth->User('id'),
+                            'organization_id' => $this->Auth->User('organization_id')
+                        )
+                    ));
+
+                    return $this->redirect($this->Auth->redirectUrl());
+                }
+                else {
+                    $this->upFailedLoginsMaybeLockAccount($organization, $username);
+                    $this->setFlash('The username or password you entered is incorrect.');
+                }
+            }
 		}
 
-		$userName = "";
-		$userRememberMe = false;
-		$organizationShortName = "";
-
 		if($this->Cookie->read('User')){
-            $organizationShortName = $this->Cookie->read('User.organization');
-            $userName = $this->Cookie->read('User.name');
-            $userRememberMe = 'on';
+            $organization = $this->Cookie->read('User.organization');
+            $username = $this->Cookie->read('User.name');
+            $rememberMe = 'on';
         }
 
-		if(isset($this->request->data['User']['name']))
-			$userName = $this->request->data['User']['name'];
-
-		if(isset($this->request->data['User']['remember_me']))
-			$userRememberMe = $this->request->data['User']['remember_me'];
-
-		if(isset($this->request->data['Organization']['short_name']))
-			$organizationShortName = $this->request->data['Organization']['short_name'];
-
 		$this->set(array(
-			'userName' => $userName,
-			'userRememberMe' => $userRememberMe,
-			'organizationShortName' => $organizationShortName
+			'userName' => $username,
+			'userRememberMe' => $rememberMe,
+			'organizationShortName' => $organization
 		)); 
 	}
+
+    private function resetFailedLoginAttempts($user){
+
+        return $this->User->UserAttribute->saveAttribute($user,'failed_login_attempts',0);
+    }
+
+    private function upFailedLoginsMaybeLockAccount($organization, $username){
+
+        if(empty($organization) || empty($username))
+            return;
+
+        if($this->User->Behaviors->loaded('OrganizationOwned'))
+            $this->User->Behaviors->unload('OrganizationOwned');
+
+        if($this->User->UserAttribute->Behaviors->loaded('OrganizationOwned'))
+            $this->User->UserAttribute->Behaviors->unload('OrganizationOwned');
+
+        $user = $this->User->find('first',array(
+            'contain' => array(
+                'Organization',
+                'UserAttribute' => array(
+                    'conditions' => array(
+                        'UserAttribute.var' => 'failed_login_attempts'
+                    )
+                )
+            ),
+            'conditions' => array(
+                'User.name' => $username,
+                'Organization.short_name' => $organization,
+            )
+        ));
+
+        if(!empty($user)){
+
+            $failedLoginAttempts = 0;
+            if(isset($user['UserAttribute']) && !empty($user['UserAttribute']))
+                $failedLoginAttempts = $user['UserAttribute'][0]['val'];
+            $failedLoginAttempts++;
+
+            $this->User->UserAttribute->saveAttribute($user,
+                                                    'failed_login_attempts',
+                                                    $failedLoginAttempts);
+
+            if(($failedLoginAttempts % MAX_ALLOWED_LOGIN_ATTEMPTS) == 0){
+                $this->lockAccount($user);
+            }
+        }
+    }
+
+    private function lockAccount($user){
+
+        if(!isset($user['User']) || !isset($user['User']['id'])){
+            throw InvalidArgumentException();
+        }
+
+        $this->User->id = $user['User']['id'];
+        $this->User->saveField('password',$this->generateRandomString(20));
+        
+        $this->sendLockedAccountEmail($user);
+    }
+
+    private function sendLockedAccountEmail($user) {
+
+        if(!isset($user['User']) || !isset($user['Organization']) ||
+            !isset($user['User']['email']) ||
+            !isset($user['Organization']['short_name'])){
+
+            throw new InvalidArgumentException();
+        }
+
+        $subject = 'Bitlancer Strings - Account locked';
+
+        $mail = new CakeEmail();
+        $mail->config('default');
+        $mail->emailFormat('text');
+        $mail->template('account_locked','default');
+        $mail->to($user['User']['email']);
+        $mail->viewVars(array(
+            'organization' => $user['Organization']['short_name'],
+        ));
+        $mail->subject($subject);
+        $mail->send();
+    }
 
 	public function logout() {
     	$this->redirect($this->Auth->logout());
@@ -733,8 +813,9 @@ class UsersController extends AppController {
 
                     $this->User->id = $user['User']['id'];
                     if($this->User->saveField('password',$this->request->data['password'],array('validate' => true))){
-                        $message = 'Your password has been updated successfully.';
+                        $message = 'Your password has been updated.';
                         $this->User->UserAttribute->delete($user['UserAttribute']['id']);
+                        $this->resetFailedLoginAttempts($user);
                     }
                     else {
                         $isError = true;

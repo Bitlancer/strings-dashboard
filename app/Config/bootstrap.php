@@ -189,6 +189,9 @@ CakeLog::config('error', array(
  * Application Wide Constants
  */
 
+//Max allowed login attempts
+define('MAX_ALLOWED_LOGIN_ATTEMPTS',4);
+
 //Strings API URL
 define('STRINGS_API_URL','http://localhost:8080');
 
