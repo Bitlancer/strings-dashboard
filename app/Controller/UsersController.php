@@ -116,19 +116,9 @@ class UsersController extends AppController {
                     )
                 ));
 
-                $resetToken = false;
-                try {
-                    $resetToken = $this->generateAndSetResetToken($user);
-                }
-                catch(Exception $e){
-                    $isError = true;
-                    $message = 'We encountered an unexpected error';
-                }
-
-                if(!$isError){
-                    $this->sendSetPasswordEmail($user, $resetToken);
-                    $redirectUri = $this->referer(array('action' => 'index'));
-                }
+                $resetToken = $this->generateAndSetResetToken($user);
+                $this->sendSetPasswordEmail($user, $resetToken);
+                $redirectUri = $this->referer(array('action' => 'index'));
             }
             else {
                 $isError = true;
@@ -157,10 +147,9 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
-			$this->autoRender = false;
-
 			$isError = false;
 			$message = "";
+            $redirectUri = false;
 
 			$validFields = array('first_name','last_name','email','is_admin');
 			$this->User->id = $id;
@@ -168,20 +157,12 @@ class UsersController extends AppController {
 				$isError = true;
 				$message = $this->User->validationErrorsAsString();
 			}
+            else {
+                $message = 'User has been updated.';
+                $redirectUri = $this->referer(array('action' => 'index'));
+            }
 
-			if($isError){
-				$response = array(
-					'isError' => $isError,
-					'message' => __($message)
-				);
-			}
-			else {
-				$response = array(
-					'redirectUri' => $this->referer(array('action' => 'index'))
-				);
-			}
-
-			echo json_encode($response);
+            $this->outputAjaxFormResponse($message, $isError, $redirectUri);
 		}
 		else {
 			$this->set(array(
@@ -205,10 +186,9 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
-			$this->autoRender = false;
-
 			$isError = false;
 			$message = "";
+            $redirectUri = false;
 
 			//Verify passwords match
             if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
@@ -222,6 +202,7 @@ class UsersController extends AppController {
 				$this->User->id = $id;
 				if($this->User->save($this->request->data,true,array('password'))){
 					$message = 'User password updated.';
+                    $redirectUri = $this->referer(array('action' => 'index'));
 				}
 				else {
 					$isError = true;
@@ -229,19 +210,7 @@ class UsersController extends AppController {
 				}
 			}
 
-			if($isError){
-                $response = array(
-                    'isError' => $isError,
-                    'message' => __($message)
-                );
-            }
-            else {
-                $this->Session->setFlash(__($message),'default',array(),'success');
-                $response = array(
-                    'redirectUri' => $this->referer(array('action' => 'index'))
-                );
-            }
-            echo json_encode($response);	
+            $this->outputAjaxFormResponse($message, $isError, $redirectUri);
 		}
 	}
 
@@ -263,12 +232,12 @@ class UsersController extends AppController {
 			$this->User->id = $id;
 			$this->User->set('is_disabled',1);
 			if($this->User->save()){
-				$this->Session->setFlash(__('This user has been disabled.'),'default',array(),'success');
+				$this->setFlash('User has been disabled.','success');
 				$this->redirect($this->referer(array('action' => 'index')));
 			}
 			else {
 				$message = $this->User->validationErrorsAsString();
-				$this->Session->setFlash(__($message), 'default', array(), 'error');
+				$this->setFlash($message);
 				$this->redirect($this->referer(array('action' => 'index')));
 			}
 		}
@@ -293,12 +262,12 @@ class UsersController extends AppController {
             $this->User->id = $id;
             $this->User->set('is_disabled',0);
             if($this->User->save()){
-                $this->Session->setFlash(__('User has been re-enabled.'),'default',array(),'success');
+                $this->setFlash('User has been re-enabled.','success');
                 $this->redirect($this->referer(array('action' => 'index')));
             }
             else {
-                $message = __('Failed to re-enable user. ' . $this->User->validationErrorsAsString());
-                $this->Session->setFlash(__($message), 'default', array(), 'error');
+                $message = 'Failed to re-enable user. ' . $this->User->validationErrorsAsString();
+                $this->setFlash($message);
                 $this->redirect($this->referer(array('action' => 'index')));
             }
         }
