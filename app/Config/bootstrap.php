@@ -189,6 +189,9 @@ CakeLog::config('error', array(
  * Application Wide Constants
  */
 
+//Max allowed login attempts
+define('MAX_ALLOWED_LOGIN_ATTEMPTS',4);
+
 //CRM emails are sent to this address
 define('CRM_EMAIL','mjuszczak@bitlancer.com');
 

@@ -155,6 +155,14 @@ class User extends AppModel {
         return true;
     }
 
+    public function afterSave($created, $options=array()){
+
+        if($created){
+            $userId = $this->data['User']['id'];
+            $this->setDefaultPosixAttributes($userId);
+        }
+    }
+
     public function reserveNextPosixUid(){
 
         $config = ClassRegistry::init('Config');

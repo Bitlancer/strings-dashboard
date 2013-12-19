@@ -250,10 +250,8 @@ class ScriptsController extends AppController
             $hasCompleted = true;
             $apiResponse = json_decode($job['QueueJob']['last_response'],true);
             $rawOutput = $apiResponse['data'];
-            if($rawOutput['pre-exec']['status'] != 0){
-                $status = 'The pre-execution script encountered an error.';
-                $output = implode('\n',$rawOutput['pre-exec']['output']);
-            }
+            $status = "The script terminated with an exit code of " . $rawOutput['exitCode'];
+            $output = implode("\n",$rawOutput['output']);
         }
 
         if($this->request->is('ajax')){

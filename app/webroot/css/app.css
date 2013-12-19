@@ -703,6 +703,10 @@ body .strings-modal {
         display: inline-block;
         margin-right: 2%;
         min-width: 30%; }
+body .small {
+  display: block;
+  font-size: 85%;
+  margin: 4px 0px; }
 body .ui-widget-overlay {
   background: rgba(0, 0, 0, 0.1);
   opacity: 1; }

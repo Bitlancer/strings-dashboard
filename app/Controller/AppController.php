@@ -20,6 +20,8 @@ class AppController extends Controller {
 		'Cookie',
 		'Auth' => array(
 			'authError' => 'Please login',
+            'loginRedirect' => '/',
+            'logoutRedirect' => '/login',
 			'authenticate' => array(
 				'Sha1' => array(        //User::login sets scope dynamically - must be updated if this is changed
 					'fields' => array(

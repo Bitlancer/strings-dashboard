@@ -97,45 +97,35 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
-			$this->autoRender = false;
-
 			$isError = false;
 			$message = "";
+            $redirectUri = false;
 
-			//Verify passwords match
-			if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
-				$isError = true;
-				$message = 'Passwords do not match.';
-			}
-			else
-			{
-				unset($this->request->data['User']['confirm_password']);
+            //Set random password initially. User will be sent a reset link.
+            $this->request->data['User']['password'] = $this->generateRandomString(20);
 
-                $validFields = array('name','password','first_name','last_name','email','is_admin');
-				if($this->User->save($this->request->data,true,$validFields)){
+            $validFields = array('name','password','first_name','last_name','email','is_admin');
+            if($this->User->save($this->request->data,true,$validFields)){
 
-                    //Set posix attributes (uid,shell)
-                    $this->User->setDefaultPosixAttributes($this->User->id);
-				}
-				else {
-					$isError = true;
-					$message = $this->User->validationErrorsAsString();
-				}
-			}
+                $user = $this->User->find('first',array(
+                    'contain' => array(
+                        'Organization'
+                    ),
+                    'conditions' => array(
+                        'User.id' => $this->User->id
+                    )
+                ));
 
-			if($isError){
-				$response = array(
-					'isError' => $isError,
-					'message' => __($message)
-				);
-			}
-			else {
-				$response = array(
-					'redirectUri' => $this->referer(array('action' => 'index'))
-				);
-			}
+                $resetToken = $this->generateAndSetResetToken($user);
+                $this->sendSetPasswordEmail($user, $resetToken);
+                $redirectUri = $this->referer(array('action' => 'index'));
+            }
+            else {
+                $isError = true;
+                $message = $this->User->validationErrorsAsString();
+            }
 
-			echo json_encode($response);
+            $this->outputAjaxFormResponse($message,$isError,$redirectUri);
 		}
 	}
 
@@ -157,10 +147,9 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
-			$this->autoRender = false;
-
 			$isError = false;
 			$message = "";
+            $redirectUri = false;
 
 			$validFields = array('first_name','last_name','email','is_admin');
 			$this->User->id = $id;
@@ -168,20 +157,12 @@ class UsersController extends AppController {
 				$isError = true;
 				$message = $this->User->validationErrorsAsString();
 			}
+            else {
+                $message = 'User has been updated.';
+                $redirectUri = $this->referer(array('action' => 'index'));
+            }
 
-			if($isError){
-				$response = array(
-					'isError' => $isError,
-					'message' => __($message)
-				);
-			}
-			else {
-				$response = array(
-					'redirectUri' => $this->referer(array('action' => 'index'))
-				);
-			}
-
-			echo json_encode($response);
+            $this->outputAjaxFormResponse($message, $isError, $redirectUri);
 		}
 		else {
 			$this->set(array(
@@ -205,10 +186,9 @@ class UsersController extends AppController {
 
 		if($this->request->is('post')){
 
-			$this->autoRender = false;
-
 			$isError = false;
 			$message = "";
+            $redirectUri = false;
 
 			//Verify passwords match
             if($this->request->data['User']['password'] != $this->request->data['User']['confirm_password']){
@@ -222,6 +202,7 @@ class UsersController extends AppController {
 				$this->User->id = $id;
 				if($this->User->save($this->request->data,true,array('password'))){
 					$message = 'User password updated.';
+                    $redirectUri = $this->referer(array('action' => 'index'));
 				}
 				else {
 					$isError = true;
@@ -229,19 +210,7 @@ class UsersController extends AppController {
 				}
 			}
 
-			if($isError){
-                $response = array(
-                    'isError' => $isError,
-                    'message' => __($message)
-                );
-            }
-            else {
-                $this->Session->setFlash(__($message),'default',array(),'success');
-                $response = array(
-                    'redirectUri' => $this->referer(array('action' => 'index'))
-                );
-            }
-            echo json_encode($response);	
+            $this->outputAjaxFormResponse($message, $isError, $redirectUri);
 		}
 	}
 
@@ -263,12 +232,12 @@ class UsersController extends AppController {
 			$this->User->id = $id;
 			$this->User->set('is_disabled',1);
 			if($this->User->save()){
-				$this->Session->setFlash(__('This user has been disabled.'),'default',array(),'success');
+				$this->setFlash('User has been disabled.','success');
 				$this->redirect($this->referer(array('action' => 'index')));
 			}
 			else {
 				$message = $this->User->validationErrorsAsString();
-				$this->Session->setFlash(__($message), 'default', array(), 'error');
+				$this->setFlash($message);
 				$this->redirect($this->referer(array('action' => 'index')));
 			}
 		}
@@ -293,12 +262,12 @@ class UsersController extends AppController {
             $this->User->id = $id;
             $this->User->set('is_disabled',0);
             if($this->User->save()){
-                $this->Session->setFlash(__('User has been re-enabled.'),'default',array(),'success');
+                $this->setFlash('User has been re-enabled.','success');
                 $this->redirect($this->referer(array('action' => 'index')));
             }
             else {
-                $message = __('Failed to re-enable user. ' . $this->User->validationErrorsAsString());
-                $this->Session->setFlash(__($message), 'default', array(), 'error');
+                $message = 'Failed to re-enable user. ' . $this->User->validationErrorsAsString();
+                $this->setFlash($message);
                 $this->redirect($this->referer(array('action' => 'index')));
             }
         }
@@ -466,67 +435,160 @@ class UsersController extends AppController {
 		$this->layout = 'login';
 		$this->set('title_for_layout', 'Login');
 
+        //Redirect the user if he or she is already logged in
 		$userId = $this->Auth->user('id');
-
 		if(!empty($userId))
 			$this->redirect($this->Auth->redirectUrl());
 
+        $organization = "";
+        $username = "";
+        $rememberMe = false;
+
 		if($this->request->is('post')){
 
-			//Detach OrganizationOwned behavior
-			$this->User->Behaviors->unload('OrganizationOwned');	
+            $rememberMe = $this->request->data('User.remember_me');
+            $username = $this->request->data('User.name');
+            $organization = $this->request->data('Organization.short_name');
 
-			//Add additional conditions to login query
-			$this->Auth->authenticate['Sha1']['scope'] = array(
-				'User.is_disabled' => '0',
-				'Organization.is_disabled' => '0',
-            	'Organization.short_name' => $this->request->data['Organization']['short_name']
-        	);
+            if(empty($username) || empty($organization)){
+                $this->setFlash('The username or password you entered is incorret.');
+            }
+            else {
 
-    		if($this->Auth->login()) {
+                //Detach OrganizationOwned behavior
+                $this->User->Behaviors->unload('OrganizationOwned');
 
-				if($this->request->data['User']['remember_me'] == 'on'){
-					$rememberMeData = array(
-						'organization' => $this->request->data['Organization']['short_name'],
-						'name' => $this->request->data['User']['name'],
-					);
-					$this->Cookie->write('User', $rememberMeData, false, '1 year');
-				}
-				else {
-					$this->Cookie->delete('User');
-				}
+                //Add additional conditions to login query
+                $this->Auth->authenticate['Sha1']['scope'] = array(
+                    'User.is_disabled' => '0',
+                    'Organization.is_disabled' => '0',
+                    'Organization.short_name' => $organization
+                );
 
-        		return $this->redirect($this->Auth->redirectUrl());
-    		}
-			else
-				$this->Session->setFlash(__('Username or password is incorrect'), 'default', array(), 'auth');
+                if($this->Auth->login()) {
+
+                    if($rememberMe == 'on'){
+                        $rememberMeData = array(
+                            'organization' => $organization,
+                            'name' => $username,
+                        );
+                        $this->Cookie->write('User', $rememberMeData, false, '1 year');
+                    }
+                    else {
+                        $this->Cookie->delete('User');
+                    }
+
+                    $this->resetFailedLoginAttempts(array(
+                        'User' => array(
+                            'id' => $this->Auth->User('id'),
+                            'organization_id' => $this->Auth->User('organization_id')
+                        )
+                    ));
+
+                    return $this->redirect($this->Auth->redirectUrl());
+                }
+                else {
+                    $this->upFailedLoginsMaybeLockAccount($organization, $username);
+                    $this->setFlash('The username or password you entered is incorrect.');
+                }
+            }
 		}
 
-		$userName = "";
-		$userRememberMe = false;
-		$organizationShortName = "";
-
 		if($this->Cookie->read('User')){
-            $organizationShortName = $this->Cookie->read('User.organization');
-            $userName = $this->Cookie->read('User.name');
-            $userRememberMe = 'on';
+            $organization = $this->Cookie->read('User.organization');
+            $username = $this->Cookie->read('User.name');
+            $rememberMe = 'on';
         }
 
-		if(isset($this->request->data['User']['name']))
-			$userName = $this->request->data['User']['name'];
-
-		if(isset($this->request->data['User']['remember_me']))
-			$userRememberMe = $this->request->data['User']['remember_me'];
-
-		if(isset($this->request->data['Organization']['short_name']))
-			$organizationShortName = $this->request->data['Organization']['short_name'];
-
 		$this->set(array(
-			'userName' => $userName,
-			'userRememberMe' => $userRememberMe,
-			'organizationShortName' => $organizationShortName
+			'userName' => $username,
+			'userRememberMe' => $rememberMe,
+			'organizationShortName' => $organization
 		)); 
 	}
+
+    private function resetFailedLoginAttempts($user){
+
+        return $this->User->UserAttribute->saveAttribute($user,'strings.failed_login_attempts',0);
+    }
+
+    private function upFailedLoginsMaybeLockAccount($organization, $username){
+
+        if(empty($organization) || empty($username))
+            return;
+
+        if($this->User->Behaviors->loaded('OrganizationOwned'))
+            $this->User->Behaviors->unload('OrganizationOwned');
+
+        if($this->User->UserAttribute->Behaviors->loaded('OrganizationOwned'))
+            $this->User->UserAttribute->Behaviors->unload('OrganizationOwned');
+
+        $user = $this->User->find('first',array(
+            'contain' => array(
+                'Organization',
+                'UserAttribute' => array(
+                    'conditions' => array(
+                        'UserAttribute.var' => 'strings.failed_login_attempts'
+                    )
+                )
+            ),
+            'conditions' => array(
+                'User.name' => $username,
+                'Organization.short_name' => $organization,
+            )
+        ));
+
+        if(!empty($user)){
+
+            $failedLoginAttempts = 0;
+            if(isset($user['UserAttribute']) && !empty($user['UserAttribute']))
+                $failedLoginAttempts = $user['UserAttribute'][0]['val'];
+            $failedLoginAttempts++;
+
+            $this->User->UserAttribute->saveAttribute($user,
+                                                    'strings.failed_login_attempts',
+                                                    $failedLoginAttempts);
+
+            if(($failedLoginAttempts % MAX_ALLOWED_LOGIN_ATTEMPTS) == 0){
+                $this->lockAccount($user);
+            }
+        }
+    }
+
+    private function lockAccount($user){
+
+        if(!isset($user['User']) || !isset($user['User']['id'])){
+            throw InvalidArgumentException();
+        }
+
+        $this->User->id = $user['User']['id'];
+        $this->User->saveField('password',$this->generateRandomString(20));
+        
+        $this->sendLockedAccountEmail($user);
+    }
+
+    private function sendLockedAccountEmail($user) {
+
+        if(!isset($user['User']) || !isset($user['Organization']) ||
+            !isset($user['User']['email']) ||
+            !isset($user['Organization']['short_name'])){
+
+            throw new InvalidArgumentException();
+        }
+
+        $subject = 'Bitlancer Strings - Account locked';
+
+        $mail = new CakeEmail();
+        $mail->config('default');
+        $mail->emailFormat('text');
+        $mail->template('account_locked','default');
+        $mail->to($user['User']['email']);
+        $mail->viewVars(array(
+            'organization' => $user['Organization']['short_name'],
+        ));
+        $mail->subject($subject);
+        $mail->send();
+    }
 
 	public function logout() {
         $this->Session->destroy();
@@ -562,7 +624,6 @@ class UsersController extends AppController {
                 $user = $this->User->find('first',array(
                     'fields' => array(
                         'User.id','User.organization_id','User.name',
-                        'Organization.short_name'
                     ),
                     'conditions' => array(
                         'or' => array(
@@ -574,34 +635,22 @@ class UsersController extends AppController {
                     )
                 ));
 
-                if(empty($user)){
-                    $isError = true;
-                    $message = 'The supplied organization and email address combination is not recognized.';
-                }
-                else {
+                $isError = false;
+                $message = "If your account exists, a link to reset your " .
+                            "password has been emailed to $email.";
 
-                    $userId = $user['User']['id'];
-                    $userName = $user['User']['name'];
-                    $organization = $user['Organization']['short_name'];
-
-                    $resetToken = $this->generateResetToken($organization, $userName);
-                    
-                    if(!$this->User->UserAttribute->saveAttribute($user,'reset_token',$resetToken)){
-                        $isError = true;
-                        $message = 'We encountered an unexpected error. ' . $this->User->UserAttribute->validationErrorsAsString();
+                if(!empty($user)){
+                    $resetToken = false;
+                    try {
+                        $resetToken = $this->generateAndSetResetToken($user);
                     }
-                    else {
+                    catch(Exception $e){
+                        $isError = true;
+                        $message = 'We encountered an unexpected error.';
+                    }
 
-                        $message = "A link to reset your password has been emailed to $email.";
-
-                        $emailMessage = "Please visit the following link to reset your password.\r\n\r\n" .
-                            'https://' . $_SERVER['HTTP_HOST'] . "/Users/resetPassword?token=" . $resetToken;
-       
-                        $mail = new CakeEmail();
-                        $mail->config('default');
-                        $mail->to($email);
-                        $mail->subject('Password Reset Request');
-                        $mail->send($emailMessage);
+                    if(!$isError){
+                        $this->sendForgotPasswordEmail($email, $resetToken);
                     }
                 }
             }
@@ -613,6 +662,7 @@ class UsersController extends AppController {
                 );
             }
             else {
+
                 $this->Session->setFlash(__($message),'default',array(),'success');
                 $response = array(
                     'redirectUri' => '/login'
@@ -624,6 +674,65 @@ class UsersController extends AppController {
         else {
             $this->redirect(array('action' => 'login'));
         }
+    }
+
+    private function generateAndSetResetToken($user){
+
+        $resetToken = $this->generateResetToken($user);
+        if(!$this->User->UserAttribute->saveAttribute($user, 'strings.reset_token', $resetToken)){
+            throw new Exception("Failed to set reset token.");
+        }
+    
+        return $resetToken;
+    }
+
+    private function sendSetPasswordEmail($user, $resetToken){
+
+        if(!isset($user['User']) || !isset($user['Organization']) ||
+            !isset($user['User']['email']) || !isset($user['User']['name']) ||
+            !isset($user['Organization']['short_name'])){
+
+            throw new InvalidArgumentException('User email, name and Organziation short_name are required');
+        }
+
+        $subject = 'Bitlancer Strings - Set your password';
+        $resetLink = $this->getResetLink($resetToken);
+
+        $mail = new CakeEmail();
+        $mail->config('default');
+        $mail->emailFormat('text');
+        $mail->template('welcome','default');
+        $mail->to($user['User']['email']);
+        $mail->viewVars(array(
+            'name' => $user['User']['first_name'],
+            'organization' => $user['Organization']['short_name'],
+            'username' => $user['User']['name'],
+            'setPasswordLink' => $resetLink
+        ));
+        $mail->subject($subject);
+        $mail->send();
+    }
+
+    private function sendForgotPasswordEmail($recipient, $resetToken){
+
+        $subject = 'Bitlancer Strings - Password reset request';
+        $resetLink = $this->getResetLink($resetToken);
+
+        $mail = new CakeEmail();
+        $mail->config('default');
+        $mail->emailFormat('text');
+        $mail->template('forgot_password','default');
+        $mail->to($recipient);
+        $mail->viewVars(array(
+            'resetLink' => $resetLink
+        ));
+        $mail->subject($subject);
+        $mail->send();
+    }
+
+    private function getResetLink($token){
+
+        return 'https://' . $_SERVER['HTTP_HOST'] . "/Users/resetPassword?token=$token";
     }
 
     public function resetPassword(){
@@ -648,7 +757,7 @@ class UsersController extends AppController {
                     'User'
                 ),
                 'conditions' => array(
-                    'UserAttribute.var' => 'reset_token',
+                    'UserAttribute.var' => 'strings.reset_token',
                     'UserAttribute.val' => $token
                 )
             ));
@@ -674,8 +783,9 @@ class UsersController extends AppController {
 
                     $this->User->id = $user['User']['id'];
                     if($this->User->saveField('password',$this->request->data['password'],array('validate' => true))){
-                        $message = 'Your password has been updated successfully.';
+                        $message = 'Your password has been updated.';
                         $this->User->UserAttribute->delete($user['UserAttribute']['id']);
+                        $this->resetFailedLoginAttempts($user);
                     }
                     else {
                         $isError = true;
@@ -705,13 +815,21 @@ class UsersController extends AppController {
         ));
     }
     
-
     /**
      * Generate a reset token
      */
-    private function generateResetToken($organization, $username){
+    private function generateResetToken($user){
 
-        $str = $organization . "|" . $username . "|" . $this->generateRandomString(20);
+        if(!isset($user['User']) || !isset($user['User']['name']) ||
+            !isset($user['User']['organization_id'])){
+
+            throw new InvalidArgumentException('User array must contain name and organization_id');
+        }
+
+        $str = $user['User']['organization_id'] . "|" .
+                $user['User']['name'] . "|" .
+                $this->generateRandomString(20);
+
         return sha1($str);
     }
 

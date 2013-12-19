@@ -44,7 +44,7 @@ class EmailConfig {
 
 	public $default = array(
 		'transport' => 'Mail',
-		'from' => array('strings@bitlancer.com' => 'Bitlancer Strings'),
+		'from' => array('donotreply@bitlancerstrings.com' => 'Bitlancer Strings'),
 		//'charset' => 'utf-8',
 		//'headerCharset' => 'utf-8',
 	);
