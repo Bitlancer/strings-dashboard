@@ -498,7 +498,7 @@ class DevicesController extends AppController
                     }
                 }
 
-                if(!$isError){
+                if(!empty($updatedAttrs) && !$isError){
 
                     //Updating the session persistence requires a
                     //seperate API call
@@ -533,15 +533,14 @@ class DevicesController extends AppController
                         }
                     }
 
+                    if(!$isError){
+                        $this->Device->id = $deviceId;
+                        $result = $this->Device->saveField('status','building',true);
+                    }
                 }
             }
 
             if(!$isError) {
-                $this->setFlash(
-                    'Load-balancer updated successfully. It may take a few ' .
-                    'minutes for the changes to be reflected in production.',
-                    'success'
-                );
                 $redirectUri = "/Devices/view/$deviceId";
             }
 
@@ -627,13 +626,13 @@ class DevicesController extends AppController
                     $message = 'Failed to update node list for this load-balancer.';
                 }
                 else {
-
-                    $apiEndpoint = '/LoadBalancers/updateNodes/' . $deviceId;
-                    $apiUrl = $this->StringsApiServiceCatelog->getUrl('load-balancers',
-                                                                    $apiEndpoint);
-
+                    $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                        'load-balancer',
+                        "/LoadBalancers/updateNodes/$deviceId"
+                    );
                     if($this->QueueJob->addJob($apiUrl)){
-                        $this->setFlash('Nodes will be updated shortly.','success');
+                        $this->Device->id = $deviceId;
+                        $this->Device->saveField('status','building',true);
                         $redirectUri = '/Devices/view/' . $deviceId;
                     }
                     else {
