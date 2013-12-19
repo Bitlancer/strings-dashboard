@@ -3,7 +3,8 @@
 class FormationsController extends AppController
 {
     public $components = array(
-        'FormationsAndDevices'
+        'FormationsAndDevices',
+        'StringsApiServiceCatelog'
     );
 
     /**
@@ -152,7 +153,13 @@ class FormationsController extends AppController
                 );
 
                 if($this->Formation->saveAll($formationAndDevices)){
-                    $this->QueueJob->addJob(STRINGS_API_URL . '/Formations/delete/' . $id);
+
+                    $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                        'infrastructure',
+                        "/Formations/delete/$id"
+                    );
+
+                    $this->QueueJob->addJob($apiUrl);
                     $message = "Formation $formationName has been scheduled for deletion.";
                     $redirectUri = '/Formations';
                 }
@@ -347,8 +354,12 @@ class FormationsController extends AppController
                 else {
                     $this->Formation->Device->id = $deviceId;
                     if($this->Formation->Device->saveField('status','deleting')){
-                        $this->QueueJob->addJob(STRINGS_API_URL . '/Instances/delete/' . $deviceId);
-                        $message = "Device $deviceName has been scheduled for deletion.";
+                        $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                            'infrastructure',
+                            "/Instances/delete/$deviceId"
+                        );
+                        $this->QueueJob->addJob($apiUrl);
+                        $message = "$deviceName has been scheduled for deletion.";
                         $redirectUri = '/Devices';
                     }
                     else {
@@ -454,7 +465,7 @@ class FormationsController extends AppController
             '{n}.Device.blueprint_part_id',
             '{n}.{n}.count(blueprint_part_id)');
 
-        //Get list of blueprints
+        //Get list of blueprint parts
         $formation = $this->Formation->find('first',array(
             'contain' => array(
                 'Blueprint' => array(
@@ -562,8 +573,8 @@ class FormationsController extends AppController
         $formationId = $this->Wizard->read('_formation.Formation.id');
         $implementationId = $this->Wizard->read('_formation.Formation.implementation_id');
 
-        list($devices,$hieraVariables,$errors) =
-            $this->_parseAndValidateDevices($devices,$implementationId,$instanceVarDefs);
+        list($errors, $devices) =
+            $this->_parseAndValidateDevices($devices);
 
         $devicesInErrorState = array_keys($errors);
 
@@ -572,69 +583,52 @@ class FormationsController extends AppController
             'errors' => $errors
         ));
 
-        if(empty($devicesInErrorState)){
+        if(!empty($devicesInErrorState))
+            return false;
 
-            //Add formation id to devices
-            foreach($devices as $key => $device)
-                $devices[$key]['Device']['formation_id'] = $formationId;
+        //Add formation id to devices
+        foreach($devices as $key => $device)
+            $devices[$key]['Device']['formation_id'] = $formationId;
 
-            //Validate data (best effort) before any saves begin
-            if(!empty($hieraVariables) && !$this->HieraVariable->saveAll($hieraVariables,array('validate' => 'only'))){
-                $this->setFlash('We encountered an error while saving the device variables.');
-                $this->sLog('Error ecountered while validating the device variables. ' . 
-                    $this->HieraVariable->validationErrorsAsString(true));
-            }
-            else {
+        //Save the devices
+        //Not sure why saveMany with deep = true doesn't work
+        //Turn validation b/c the device attributes need a device_id to validate
+        //but it will not get an id until the device is created
+        if(!$this->Device->saveMany($devices,array('validate' => 'false','deep' => true))){
+            $this->setFlash('We encountered an error while saving the new devices.');
+            $this->sLog('Error encountered while saving the new devices. ' .
+                $this->Device->validationErrorsAsString(true));
 
-                //Save the devices
-                //Not sure why saveMany with deep = true doesn't work
-                //Turn validation b/c the device attributes need a device_id to validate
-                //but it will not get an id until the device is created
-                if(!$this->Device->saveMany($devices,array('validate' => 'false','deep' => true))){
-                    $this->setFlash('We encountered an error while saving the new devices.');
-                    $this->sLog('Error encountered while saving the new devices. ' .
-                        $this->Device->validationErrorsAsString(true));
+            return false;
+        }
 
-                    return false;
-                }
+        //Mark dictionary words as used
+        $this->DictionaryWord->markAsUsed($dictionaryWordIds);
 
-                //Mark dictionary words as used
-                $this->DictionaryWord->markAsUsed($dictionaryWordIds);
+        //Add the Q jobs
+        $newDeviceIds = $this->Device->getInsertIds();
+        $apiUrl = $this->StringsApiServiceCatelog->getUrl('infrastructure');
+        $qJobs = array();
+        $templateQJob = array(
+            'body' => '',
+            'http_method' => 'post',
+            'timeout_secs' => 60,
+            'remaining_retries' => 20,
+            'retry_delay_secs' => 60 
+        );
+        foreach($newDeviceIds as $newDeviceId){
+            $templateQJob['url'] = $apiUrl . "/Instances/create/$newDeviceId";
+            $qJobs[] = $templateQJob;
+        }
 
-                //Save the device variables
-                if(!empty($hieraVariables) && !$this->HieraVariable->saveAll($hieraVariables)){
-                    $this->setFlash('We encountered an error while saving the device variables.');
-                    $this->sLog('Error encountered while saving the device variables. ' .
-                        $this->HieraVariable->validationErrorsAsString(true));
-                }
+        if(!$this->QueueJob->saveAll($qJobs)){
+            $this->setFlash('We encountered an error while creating jobs to create your devices.');
+            $this->sLog('Error encountered while saving new device QueueJobs. ' .
+                $this->QueueJob->validationErrorsAsString(true));
 
-                //Add the Q jobs
-                $newDeviceIds = $this->Device->getInsertIds();
-                $qJobs = array();
-                $templateQJob = array(
-                    'body' => '',
-                    'http_method' => 'post',
-                    'timeout_secs' => 60,
-                    'remaining_retries' => 20,
-                    'retry_delay_secs' => 60 
-                );
-                foreach($newDeviceIds as $newDeviceId){
-                    $templateQJob['url'] = STRINGS_API_URL . "/Instances/create/$newDeviceId";
-                    $qJobs[] = $templateQJob;
-                }
+        }
 
-                if(!$this->QueueJob->saveAll($qJobs)){
-                    $this->setFlash('We encountered an error while creating jobs to create your devices.');
-                    $this->sLog('Error encountered while saving new device QueueJobs. ' .
-                        $this->QueueJob->validationErrorsAsString(true));
-
-                }
-
-                return true;
-            }
-        } 
-
-        return false;
+        return true;
     }
 
 /**
@@ -873,7 +867,9 @@ class FormationsController extends AppController
         $blueprintId = $this->Wizard->read('selectBlueprint.Blueprint.id');
         $formationName = $this->Wizard->read('formationSettings.Formation.name');
 
-        list($devices,$hieraVariables,$errors) = $this->_parseAndValidateDevices($devices,$implementationId,$instancesVarDefs);
+        list($errors, $devices) = $this->_parseAndValidateDevices($devices,
+                                                                $implementationId,
+                                                                $instancesVarDefs);
 
         $devicesInErrorState = array_keys($errors);
 
@@ -882,91 +878,61 @@ class FormationsController extends AppController
             'errors' => $errors
         ));
 
-        if(empty($devicesInErrorState)){
+        if(!empty($devicesInErrorState))
+            return false;
 
-            $formation = array(
-                'Formation' => array(
-                    'implementation_id' => $implementationId,
-                    'blueprint_id' => $blueprintId,
-                    'dictionary_id' => $dictionaryId,
-                    'name' => $formationName
-                ),
-                'Device' => $devices
-            );
+        $formation = array(
+            'Formation' => array(
+                'implementation_id' => $implementationId,
+                'blueprint_id' => $blueprintId,
+                'dictionary_id' => $dictionaryId,
+                'name' => $formationName
+            ),
+            'Device' => $devices
+        );
 
-            $qJob = array(
-                'QueueJob' => array(
-                    'url' => STRINGS_API_URL . '/Formations/create/',
-                    'body' => '',
-                    'http_method' => 'post',
-                    'timeout_secs' => 60,
-                    'remaining_retries' => 10,
-                    'retry_delay_secs' => 60
-                )
-            ); 
-
-            //Do our best to verify all of the data is valid
-            //before we start saving
-            $this->Formation->set($formation);
-            $this->QueueJob->set($qJob);
-            if(!$this->Formation->validates()){ //This only validates the formation
-                $this->setFlash('We encountered an error while saving this formation.');
-                $this->sLog("Error encountered while validating formation. " .
+        //Do our best to verify all of the data is valid
+        //before we start saving
+        $this->Formation->set($formation);
+        if(!$this->Formation->validates()){ //This only validates the formation
+            $this->setFlash('We encountered an error while saving this formation.');
+            $this->sLog("Error encountered while validating formation. " .
+                $this->Formation->validationErrorsAsString(true));
+        }
+        else {
+         
+            //Must turn off validation b/c device validation will fail until
+            //they have not been assigned valid formation_ids, which won't
+            //occur until the formation has been saved.
+            $this->Formation->create();
+            $result = $this->Formation->saveAll($formation, array(
+                'validate' => false,
+                'deep' => true,
+            ));
+            if(!$result){
+                $this->setFlash('We encountered an error while " .
+                    "creating your formation.');
+                $this->log("Error encountered while saving formation. " .
                     $this->Formation->validationErrorsAsString(true));
+                return false;
             }
-            elseif(!$this->QueueJob->validates()){
-                $this->setFlash('We encountered an error while scheduling this formation to be created.');
-                $this->sLog("Error encountered while validating QueueJob. "  .
+
+            //Mark dictionary words as used
+            $this->DictionaryWord->markAsUsed($dictionaryWordIds);
+
+            //Add create formation Q job
+            $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                'infrastructure',
+                "/Formations/create/" . $this->Formation->id
+            );
+            $result = $this->QueueJob->addJob($apiUrl,"","post",60,10,60);
+            if(!$result){
+                $this->setFlash('We encountered an error while creating a job to build this formation.');
+                $this->log("Error encountered while saving QueueJob." . 
                     $this->QueueJob->validationErrorsAsString());
             }
-            elseif(!empty($hieraVariables) && !$this->HieraVariable->saveAll($hieraVariables,array('validate' => 'only'))){
-                $this->setFlash('We encountered an error while saving your device variables.');
-                $this->sLog("Error encountered while validating hiera variables. " .
-                    $this->HieraVariable->validationErrorsAsString(true));
-            }
-            else {
-             
-                //Must turn off validation b/c device validation will fail until
-                //they have not been assigned valid formation_ids, which won't
-                //occur until the formation has been saved.
-                $this->Formation->create();
-                $result = $this->Formation->saveAll($formation,array(
-                    'validate' => false,
-                    'deep' => true,
-                ));
-                if(!$result){
-                    $this->setFlash('We encountered an error while " .
-                        "creating your formation.');
-                    $this->log("Error encountered while saving formation. " .
-                        $this->Formation->validationErrorsAsString(true));
-                    return false;
-                }
 
-                //Mark dictionary words as used
-                $this->DictionaryWord->markAsUsed($dictionaryWordIds);
-
-                //Add create formation Q job
-                $qJob['QueueJob']['url'] .= $this->Formation->id;
-                $this->QueueJob->create();
-                if(!$this->QueueJob->save($qJob)){
-                    $this->setFlash('We encountered an error while creating a job to build this formation.');
-                    $this->log("Error encountered while saving QueueJob." . 
-                        $this->QueueJob->validationErrorsAsString());
-                }
-
-                //Create variables
-                if(!empty($hieraVariables) && !$this->HieraVariable->saveMany($hieraVariables)){
-                    $msg = "Your formation has been scheduled for creation however we " .
-                        "encountered an error while setting one or more device " .
-                        "configuration variables. ";
-                    $this->setFlash($msg);
-
-                    $this->log("Error encountered while saving hiera variables. " .
-                        $this->HieraVariable->validationErrorsAsString(true));
-                }
-
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -976,46 +942,34 @@ class FormationsController extends AppController
 
         $this->loadModel('Role');
 
-        $data = array(); //View data
-
         //Get list of blueprint parts and associated data
         $blueprintPartIds = array_keys($blueprintPartCounts);
         $blueprintParts = $this->_getBlueprintPartData($blueprintPartIds);
 
-        //Generate list of device types
-        $deviceTypes = array();
-        foreach($blueprintParts as $part)
-            $deviceTypes[] = $part['DeviceType']['name'];
-        $deviceTypes = array_unique($deviceTypes);
-
-        //Get data required for populating the form
-        $data['regions'] = $this->FormationsAndDevices->_getProviderRegions($implementationId); 
-
-        //Data per device type
-        if(in_array('instance',$deviceTypes)){
-            $formData = $this->FormationsAndDevices->_getInstanceFormData($implementationId,$blueprintParts);
-            $data = array_merge($data,$formData);
-        }
-        if(in_array('load-balancer',$deviceTypes)){
-            $formData = $this->FormationsAndDevices->_getLoadBalancerFormData($implementationId); 
-            $data = array_merge($data,$formData);
-        }
-        
         //Reserve dictionary words
         $deviceCount = 0;
         foreach($blueprintPartCounts as $id => $count)
             $deviceCount += $count;
         $dictionaryWords = $this->_reserveXWords($dictionaryId,$deviceCount);
         $dictionaryWordIds = Hash::extract($dictionaryWords,'{n}.DictionaryWord.id');
-        $data['dictionaryWordIds'] = $dictionaryWordIds;
-        
 
         //Create devices psuedo structure
-        $data['devices'] = $this->_createPsuedoDevicesStructure($blueprintPartCounts,
-                                            $blueprintParts,
-                                            $dictionaryWords);
+        $devices = $this->_createPsuedoDevicesStructure($implementationId,
+                                                        $blueprintPartCounts,
+                                                        $blueprintParts,
+                                                        $dictionaryWords);
 
-        return $data;
+        //Get form data foreach individual device
+        foreach($devices as $key => $device){
+            $formData = $this->FormationsAndDevices->getDeviceFormData($device);
+            $device['formData'] = $formData;
+            $devices[$key] = $device;
+        }
+
+        return array(
+            'dictonaryWordIds' => $dictionaryWordIds,
+            'devices' => $devices,
+        );
     }
 
     private function _getBlueprintPartData($blueprintPartIds){
@@ -1052,7 +1006,7 @@ class FormationsController extends AppController
         return $dictionaryWords;
     }
 
-    private function _createPsuedoDevicesStructure($blueprintPartCounts,$blueprintParts,$dictionaryWords){
+    private function _createPsuedoDevicesStructure($implementationId,$blueprintPartCounts,$blueprintParts,$dictionaryWords){
 
         $devices = array();
         $nextDevicePsuedoId = 0;
@@ -1065,113 +1019,61 @@ class FormationsController extends AppController
                 $blueprintPart = $blueprintParts[$blueprintPartId];
                 
                 $devices[] = array(
-                    'psuedoId' => $nextDevicePsuedoId++,
-                    'deviceTypeId' => $blueprintPart['DeviceType']['id'],
-                    'blueprintPartId' => $blueprintPart['BlueprintPart']['id'],
-                    'roleId' => $blueprintPart['Role']['id'],
-                    'name' => $name,
-                    'blueprintPartName' => $blueprintPart['BlueprintPart']['name']
+                    'Device' => array(
+                        'psuedo' => true,
+                        'id' => $nextDevicePsuedoId++,
+                        'organization_id' => $this->Auth->User('organization_id'), 
+                        'device_type_id' => $blueprintPart['DeviceType']['id'],
+                        'implementation_id' => $implementationId,
+                        'blueprint_part_id' => $blueprintPartId,
+                        'role_id' => $blueprintPart['Role']['id'],
+                        'name' => $name,
+                    ),
+                    'DeviceType' => array(
+                        'name' => $blueprintPart['DeviceType']['name']
+                    ),
+                    'BlueprintPart' => array(
+                        'name' => $blueprintPart['BlueprintPart']['name']
+                    )
                 );
-                
             }
         }
         
         return $devices;
     }
 
-    private function _parseAndValidateDevices($devices,$implementationId,$instancesVarDefs){
+    private function _parseAndValidateDevices($devices) {
 
-        $this->loadModel('Implementation');
-        $this->loadModel('Config');
-   
-        $models = array();
-        $instanceVariables = array();
         $errors = array();
+        $models = array();
     
-        list($intDnsSuffix,$extDnsSuffix) = $this->Config->getDnsSuffixes();
-        $regions = $this->FormationsAndDevices->_getProviderRegions($implementationId);
-        $regionIds = array_keys($regions);
-        
         foreach($devices as $device){
-            
+
             $deviceErrors = array();
-            
-            $psuedoId = $device['psuedoId'];
-            $name = $device['name'];
-            $blueprintPartId = $device['blueprintPartId'];
-            $roleId = $device['roleId'];
-            $deviceTypeId = $device['deviceTypeId'];
-            
-            $deviceModel = array(
-                'Device' => array(
-                    'implementation_id' => $implementationId,
-                    'blueprint_part_id' => $blueprintPartId,
-                    'role_id' => $roleId,
-                    'device_type_id' => $deviceTypeId,
-                    'name' => $name
-                ),
-                'DeviceAttribute' => array()
-            );
-            
+            $deviceModels = array();
+
+            $psuedoId = $device['Device']['id'];
             
             //Verify input exists for this device
             if(!isset($this->request->data['Device'][$psuedoId])){
-                $deviceErrors['general'][] = 'Input missing.';
+                $deviceErrors['general'][] = "Input missing.";
             }
             else {
-
                 $deviceInput = $this->request->data['Device'][$psuedoId];
-
-                //Region & DNS
-                if(!isset($deviceInput['region']) || empty($deviceInput['region']))
-                    $deviceErrors['infrastructure'][] = 'Region is required.';
-                elseif(!in_array($deviceInput['region'],$regionIds)){
-                    $deviceErrors['infrastructure'][] = 'Invalid region.';
-                }
-                else {
-                    $regionId = $deviceInput['region'];
-                                
-                    $deviceModel['DeviceAttribute'][] = array(
-                        'var' => 'implementation.region_id',
-                        'val' => $regionId
-                    );
-                    
-                    $regionName = $regions[$regionId];
-                    
-                    $deviceModel['DeviceAttribute'][] = array(
-                        'var' => 'dns.internal.fqdn',
-                        'val' => strtolower("$name.$regionName.$intDnsSuffix")
-                    );
-                    
-                    $deviceModel['DeviceAttribute'][] = array(
-                        'var' => 'dns.external.fqdn',
-                        'val' => strtolower("$name.$regionName.$extDnsSuffix")
-                    );
-                }
-
-                if($deviceTypeId == 1){ //Instance
-                    $instanceVarDefs = isset($instancesVarefs[$blueprintPartId]) ?
-                        $instanceVarDefs[$blueprintPartId] : array();
-                    list($deviceModel,$hieraVariables,$instanceErrors) =
-                        $this->FormationsAndDevices->_parseAndValidateInstance($deviceModel,$deviceInput,$instanceVarDefs);
-                    $hieraVariables[] = $hieraVariables;
-                    $deviceErrors = array_merge_recursive($deviceErrors,$instanceErrors);
-                }
-                elseif($deviceTypeId == 2){ //Load-balancer
-                    list($deviceModel,$lbErrors) = $this->FormationsAndDevices->_parseAndValidateLoadBalancer($deviceModel,$deviceInput,$implementationId);
-                    $deviceErrors['load-balancer'] = $lbErrors;
-                }
-                else {
-                    throw InternalErrorException('Unexpected device type');
-                }
+                list($deviceErrors,$deviceModels) = $this->FormationsAndDevices->parseAndValidateDevice($device, $deviceInput);
             }
+
+            //Some devices, load-balancers for example, can return more
+            //than one device
+            if(isset($deviceModels['Device']))
+                $models[] = $deviceModels;
+            else
+                $models = array_merge($models, $deviceModels);
 
             if(!empty($deviceErrors))
                 $errors[$psuedoId] = $deviceErrors;
-            
-            $models[$psuedoId] = $deviceModel;
         }
-        
-        return array($models,$instanceVariables,$errors);
+
+        return array($errors, $models);
     }
 }

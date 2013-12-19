@@ -4,7 +4,8 @@ class DevicesController extends AppController
 {
 
     public $components = array(
-        'FormationsAndDevices'
+        'FormationsAndDevices',
+        'StringsApiServiceCatelog'
     );
 
     /**
@@ -237,7 +238,11 @@ class DevicesController extends AppController
                 else {
 
                     //Add Q job to resize instance
-                    if(!$this->QueueJob->addjob(STRINGS_API_URL . "/Instances/resize/$deviceId/$flavorId")){
+                    $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                        'infrastructure',
+                        "/Instances/resize/$deviceId/$flavorId"
+                    );
+                    if(!$this->QueueJob->addjob($apiUrl)){
                         $isError = true;
                         $message = 'Failed to create a job to resize instance.';
                     }
@@ -277,11 +282,7 @@ class DevicesController extends AppController
         $device = $this->Device->find('first',array(
             'contain' => array(
                 'DeviceType',
-                'DeviceAttribute' => array(
-                    'conditions' => array(
-                        'var' => 'dns.external.fqdn'
-                    )
-                ),
+                'DeviceAttribute',
                 'Implementation' => array(
                     'Provider'
                 ),
@@ -311,9 +312,12 @@ class DevicesController extends AppController
 
         $this->loadModel('HieraVariable');
 
+        //Index attributes
+        $deviceAttrs = Hash::combine($device['DeviceAttribute'],'{n}.var','{n}');
+
         $deviceId = $device['Device']['id'];
         $roleId = $device['Device']['role_id'];
-        $deviceFqdn = $device['DeviceAttribute'][0]['val'];
+        $deviceFqdn = $deviceAttrs['dns.external.fqdn']['val'];
         $hieraKey = "fqdn/$deviceFqdn";
 
         //Get role variables
@@ -346,8 +350,8 @@ class DevicesController extends AppController
 
             //Validate new variable values
             $input = $this->request->data['variables'];
-            list($newVariables,$errors) = 
-                $this->HieraVariable->parseAndValidateDeviceVariables($variables,$input,$hieraKey);
+            list($errors, $newVariables) = 
+                $this->FormationsAndDevices->parseAndValidateInstanceVariables($device,$input);
 
             if(!empty($errors))
                 $this->setFlash('One or more variables is invalid or missing.');
@@ -402,118 +406,253 @@ class DevicesController extends AppController
             'errors' => $errors
         ));
 
-        $this->render('configure_instannce');
+        $this->render('configure_instance');
     }
 
     private function _configureLoadBalancer($device){
 
+        $providerName = $device['Implementation']['Provider']['name'];
+
+        if($providerName == 'Rackspace'){
+            $this->_configureRackspaceLoadBalancer($device);        
+        }
+        else {
+            throw new Exception('Unexpected provider');
+        }
+    }
+
+    private function _configureRackspaceLoadBalancer($device){
+
         $this->loadModel('QueueJob');
 
-        $formData = array();
+        $viewData = array(
+            'device' => $device
+        );
 
         $deviceId = $device['Device']['id'];
         $implementationId = $device['Implementation']['id'];
+        $providerId = $device['Implementation']['provider_id'];
 
-        $formData['errors'] = array();
-        $formData['device'] = $device;
+         //Editable attributes
+        $editableAttrs = array(
+            'protocol' => 'implementation.protocol',
+            'port' => 'implementation.port',
+            'algorithm' => 'implementation.algorithm',
+            'sessionPersistence' => 'implementation.session_persistence' 
+        );
+
+        //Reindex attributes by var
+        $deviceAttrs = Hash::combine($device['DeviceAttribute'],'{n}.var','{n}');
+
+        foreach($editableAttrs as $attrName => $attrVar){
+            $viewData[$attrName] = $deviceAttrs[$attrVar]['val'];
+        }
 
         //Get load-balancer form data
-        $formData = array_merge(
-            $formData,
-            $this->FormationsAndDevices->_getLoadBalancerFormData($implementationId)
-        );
+        $viewData = array_merge($viewData, $this->FormationsAndDevices->getLoadBalancerFormData($implementationId));
 
-        //Get load-balancer attributes
-        list($virtualIpType,$protocolName,$port,$algorithmName) =
-            $this->_getLoadBalancerAttributes($device['Device']['id']);
+        $this->set($viewData);
 
-        
         if($this->request->is('post')){
 
-            list($newAttrs,$errors) = $this->FormationsAndDevices->_parseAndValidateLoadBalancer(
-                array(),
-                $this->request->data['Device'],
-                $implementationId
-            );
-            $newAttrs = $newAttrs['DeviceAttribute'];
+            $this->autoRender = false;
 
-            if(!empty($errors)){
-                $formData['errors'] = $errors;
+            $isError = false;
+            $message = "";
+            $redirectUri = null;
+
+            //Validate input
+            foreach($editableAttrs as $attrName => $attrVar){
+                $attrVal = $this->request->data($attrName);
+                list($valid,
+                    $errMsg) = $this->FormationsAndDevices->validateRackspaceLoadBalancerAttribute($providerId, $attrName, $attrVal);
+                if(!$valid) {
+                    $isError = true;
+                    $message = $errMsg;
+                }
             }
-            else {
-                foreach($newAttrs as $attr){
-                    $result = $this->Device->DeviceAttribute->updateAll(
-                        array(
-                            'DeviceAttribute.val' => $this->Device->escapeValue($attr['val']),
-                        ),
-                        array(
-                            'DeviceAttribute.var' => $attr['var'],
-                            'DeviceAttribute.device_id' => $deviceId,
-                            'DeviceAttribute.organization_id' => $this->Auth->User('organization_id')
-                        )
+
+            //Update attributes and create q job
+            if(!$isError){
+
+                $updatedAttrs = array();
+
+                //Update attributes
+                foreach($editableAttrs as $attrName => $attrVar){
+                    $currentAttr = $deviceAttrs[$attrVar];
+                    $inputAttrVal = $this->request->data($attrName);
+                    if($currentAttr['val'] != $inputAttrVal){
+                        $result = $this->Device->DeviceAttribute->save(array(
+                            'DeviceAttribute' => array(
+                                'id' => $currentAttr['id'],
+                                'val' => $inputAttrVal
+                            )
+                        ));
+                        if($result === false) {
+                            $isError = true;
+                            $message = "Failed to update load-balancer attribute $attrName";
+                            break;
+                        }
+                        else
+                            $updatedAttrs[] = $attrName;
+                    }
+                }
+
+                if(!$isError){
+
+                    //Updating the session persistence requires a
+                    //seperate API call
+                    if(in_array('sessionPersistence',$updatedAttrs)){
+                        $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                            'load-balancer',
+                            "/LoadBalancer/updateSessionPersistence/$deviceId"
+                        );
+                        if(!$this->QueueJob->addJob($apiUrl)){
+                            $isError = true;
+                            $message = "Failed to schedule job to update session persistence.";
+                        }
+                    }
+
+                    $basicAttrs = array(
+                        'protocol',
+                        'port',
+                        'algorithm'
                     );
-                    if($result == false){
-                        $formData['errors'][] = $this->Device->DeviceAttribute->validationErrorsAsString();
-                    }
-                }
-                if(empty($formData['errors'])) {
 
-                    if($this->QueueJob->addJob(STRINGS_API_URL . "/LoadBalancers/update/$deviceId")){
-                        $this->Device->id = $deviceId;
-                        $this->Device->saveField('status','building');
-                        $this->redirect("/Devices/view/$deviceId");
+                    foreach($updatedAttrs as $attrName){
+                        if(in_array($attrName, $basicAttrs)){
+                            $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                                'load-balancer',
+                                "/LoadBalancer/update/$deviceId"
+                            );
+                            if(!$this->QueueJob->addJob($apiUrl)){
+                                $isError = true;
+                                $message = "Failed to schedule job to update attributes.";
+                            }
+                            break;
+                        }
                     }
-                    else {
-                        $formData['errors'][] = 'Error encountered while scheduling a job to update this load-balancer.'; 
-                    }
+
                 }
             }
-        }
-        else {
-            $this->request->data = array(
-                'Device' => array(
-                    'virtualIpType' => $virtualIpType,
-                    'protocol' => $protocolName,
-                    'port' => $port,
-                    'algorithm' => $algorithmName
-                )
-            );
-        }
 
-        $this->set($formData);
+            if(!$isError) {
+                $this->setFlash(
+                    'Load-balancer updated successfully. It may take a few ' .
+                    'minutes for the changes to be reflected in production.',
+                    'success'
+                );
+                $redirectUri = "/Devices/view/$deviceId";
+            }
 
-        $this->render('configure_loadbalancer');
+            $this->outputAjaxFormResponse($message, $isError, $redirectUri);
+        }
+        else
+            $this->render('configure_loadbalancer');
     }
 
-    private function _getLoadBalancerAttributes($deviceId){
+    public function manageNodes($deviceId){
 
-        $attrVars = array(
-            'implementation.virtual_ip_type',
-            'implementation.protocol',
-            'implementation.port',
-            'implementation.algorithm'
-        );
+        $this->loadModel('QueueJob');
 
-        $attrs = $this->Device->DeviceAttribute->find('all',array(
-            'contain' => array(),
+        $device = $this->Device->find('first',array(
+            'contain' => array(
+                'DeviceAttribute' => array(
+                    'conditions' => array(
+                        'DeviceAttribute.var' => 'implementation.nodes'
+                    )
+                )
+            ),
             'conditions' => array(
-                'DeviceAttribute.var' => $attrVars,
-                'DeviceAttribute.device_id' => $deviceId
+                'Device.id' => $deviceId
             )
         ));
 
-        $attrs = Hash::combine($attrs,'{n}.DeviceAttribute.var','{n}.DeviceAttribute.val');
+        if(empty($device)){
+            $this->setFlash('Device does not exist.');
+            $this->redirect(array('action' => 'index'));
+        }
 
-        foreach($attrVars as $var)
-            if(!isset($attrs[$var]))
-                throw new InternalErrorException("Load-balancer attribute $var is not defined for device $deviceId");
+        $this->redirectIfNotActive($device);
 
-        return array(
-            $attrs['implementation.virtual_ip_type'],
-            $attrs['implementation.protocol'],
-            $attrs['implementation.port'],
-            $attrs['implementation.algorithm']
-        );
+        //Extract the nodes
+        $existingNodeAttrId = false;
+        $nodes = array();
+        if(!empty($device['DeviceAttribute'])) {
+            $nodesAttr = $device['DeviceAttribute'][0];
+            $existingNodeAttrId = $nodesAttr['id'];
+            $nodes = json_decode($nodesAttr['val'], true);
+        }
+
+        if($this->request->is('post')){
+
+            $this->autoRender = false;
+
+            $isError = false;
+            $message = "";
+            $redirectUri = null;
+
+            $newNodes = $this->request->data('nodes');
+            if(empty($newNodes))
+                $newNodes = array();
+
+            //Validate nodes (best effort)
+            $validInput = true;
+            $ipPattern = '/([0-9]{1,3}\.){3,}[0-9]{1,3}/';
+            foreach($newNodes as $node){
+                if(!preg_match($ipPattern,$node)){
+                    $isError = true;
+                    $message = "$node is not a valid ip address.";
+                    $validInput = false;
+                    break;
+                }
+            }
+
+            if($validInput){
+
+                $newNodesJson = json_encode($newNodes);
+                $nodeAttr = array(
+                    'DeviceAttribute' => array(
+                        'device_id' => $deviceId,
+                        'var' => 'implementation.nodes',
+                        'val' => $newNodesJson
+                    )
+                );
+
+                if($existingNodeAttrId !== false)
+                    $nodeAttr['DeviceAttribute']['id'] = $existingNodeAttrId;
+
+                if(!$this->Device->DeviceAttribute->save($nodeAttr)){
+                    $isError = true;
+                    $message = 'Failed to update node list for this load-balancer.';
+                }
+                else {
+
+                    $apiEndpoint = '/LoadBalancers/updateNodes/' . $deviceId;
+                    $apiUrl = $this->StringsApiServiceCatelog->getUrl('load-balancers',
+                                                                    $apiEndpoint);
+
+                    if($this->QueueJob->addJob($apiUrl)){
+                        $this->setFlash('Nodes will be updated shortly.','success');
+                        $redirectUri = '/Devices/view/' . $deviceId;
+                    }
+                    else {
+                        $isError = true;
+                        $message = 'Failed to schedule job to update nodes.';
+                    }
+                }
+            }
+
+            $this->outputAjaxFormResponse($message,$isError,$redirectUri);
+        }
+
+        if(!empty($nodes))
+            $nodes = Hash::combine($nodes,'{n}','{n}');
+
+        $this->set(array(
+            'device' => $device,
+            'nodes' => $nodes
+        )); 
     }
 
     protected function redirectIfNotActive($device){

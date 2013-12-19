@@ -23,7 +23,7 @@ $this->end();
       <?php }
       else {
         echo $this->element('../Devices/elements/configure_instance',array(
-          'variables' => $variables,
+          'variableDefs' => $variables,
           'variableErrors' => $errors
         ));
       }

@@ -8,9 +8,9 @@ $this->assign('forwardButtonText','Complete');
 <div id="configure-devices" class="vtab">
   <nav>
     <?php foreach($devices as $device){
-      $id = $device['psuedoId'];
-      $name = $device['name'];
-      $partName = $device['blueprintPartName'];
+      $id = $device['Device']['id'];
+      $name = $device['Device']['name'];
+      $partName = $device['BlueprintPart']['name'];
       $inErrorState = isset($devicesInErrorState) && in_array($id,$devicesInErrorState);
       ?>
       <a class="<?php echo $inErrorState ? "error" : ""; ?>" data-tab="device-<?php echo $id; ?>">
@@ -22,11 +22,12 @@ $this->assign('forwardButtonText','Complete');
   </nav>
   <div class="tabs">
   <?php foreach($devices as $device){
-    $id = $device['psuedoId'];
-    $name = $device['name'];
-    $deviceTypeId = $device['deviceTypeId'];
-    $roleId = $device['roleId'];
-    $blueprintPartName = $device['blueprintPartName'];
+    $id = $device['Device']['id'];
+    $name = $device['Device']['name'];
+    $deviceTypeName = $device['DeviceType']['name'];
+    $roleId = $device['Device']['role_id'];
+    $blueprintPartName = $device['BlueprintPart']['name'];
+    $formData = $device['formData'];
     $inErrorState = isset($devicesInErrorState) && in_array($id,$devicesInErrorState);
     $deviceErrors = $inErrorState ? $errors[$id] : array();
     $hasGeneralError = isset($deviceErrors['general']);
@@ -34,7 +35,7 @@ $this->assign('forwardButtonText','Complete');
     ?>
     <div class="tab <?php echo $inErrorState ? 'error' : ''; ?>" data-tab="device-<?php echo $id; ?>">
       <?php if($hasGeneralError) {
-        echo $this-elements('notice-list',array(
+        echo $this->element('notice-list',array(
           'type' => 'error',
           'errors' => $deviceErrors['general']
         ));
@@ -42,30 +43,29 @@ $this->assign('forwardButtonText','Complete');
       <fieldset class="infrastructure-configuration">
         <legend>Infrastructure Configuration</legend>
         <?php if($hasInfraError) {
-          echo $this-elements('notice-list',array(
+          echo $this->element('notice-list',array(
             'type' => 'error',
             'errors' => $deviceErrors['infrastructure']
           ));
         } ?>
         <?php
-        if($deviceTypeId == 1){ //Flavor is only applicable for instances
+        if($deviceTypeName == "instance"){ //Flavor is only applicable for instances
           echo $this->Form->input("Device.$id.flavor",array(
             'label' => 'Flavor',
             'error' => false,
-            'options' => $instanceFlavors
+            'options' => $formData['flavors']
           ));
         }
         echo $this->Form->input("Device.$id.region",array(
           'label' => 'Target',
           'error' => false,
-          'options' => $regions
+          'options' => $formData['regions']
         ));
         ?>
       </fieldset> <!-- /.infrastructure-configuration -->
       <?php
-        if($deviceTypeId == 1){
-            $varDefs = isset($instanceVarDefs[$roleId]) ?
-                $instanceVarDefs[$roleId] : array();
+        if($deviceTypeName == "instance"){
+            $varDefs = $formData['varDefs'];
             $variableErrors = isset($deviceErrors['system']) ?
                 $deviceErrors['system'] : array();
           ?>
@@ -86,22 +86,27 @@ $this->assign('forwardButtonText','Complete');
           </fieldset>
         <?php
         }
-        elseif($deviceTypeId == 2){ ?>
+        elseif($deviceTypeName == "load-balancer"){
+          $loadBalancerPeerList = array();
+        ?>
           <fieldset class="load-balancer-configuration">
             <legend>Load-balancer Configuration</legend>
-            <?php if(isset($deviceErrors['load-balancer'])) {
+            <?php
+              if(isset($deviceErrors['load-balancer'])) {
               echo $this->element('notice-list',array(
                 'type' => 'error',
                 'errors' => $deviceErrors['load-balancer']
               ));
-            } ?> 
+            }
+            ?> 
             <?php
               echo $this->element('../Devices/elements/configure_loadbalancer',array(
                 'inputPrefix' => "Device.$id",
-                'virtualIpTypes' => $loadBalancerVirtualIpTypes,
-                'protocols' => $loadBalancerProtocols,
-                'protocolPortMap' => $loadBalancerProtocolPortMap,
-                'algorithms' => $loadBalancerAlgorithms
+                'virtualIpTypes' => $formData['virtualIpTypes'],
+                'protocols' => $formData['protocols'],
+                'protocolPortMap' => $formData['protocolPortMap'],
+                'algorithms' => $formData['algorithms'],
+                'sessionPersistenceOptions' => $formData['sessionPersistenceOptions'],
               ));
             ?>
           </fieldset>

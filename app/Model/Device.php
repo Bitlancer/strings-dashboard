@@ -18,9 +18,18 @@ class Device extends AppModel {
 	);
 
 	public $hasMany = array(
-		'DeviceAttribute',
-		'TeamDevice',
-        'DeviceDns'
+		'DeviceAttribute' => array(
+            'dependent' => true
+        ),
+        'HieraVariable' => array(
+            'dependent' => true
+        ),
+		'TeamDevice' => array(
+            'dependent' => true
+        ),
+        'DeviceDns' => array(
+            'dependent' => true
+        )
 	);
 	
 	public $validate = array(

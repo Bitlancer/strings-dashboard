@@ -15,11 +15,19 @@
 	if(!isset($emptyTableMessage))
 		$emptyTableMessage = 'Add a member above';
 
+    if(!isset($inputPlaceholder))
+        $inputPlaceholder = 'name';
+
 	$tableValues = array();
 	foreach($memberData as $member){
+        $displayName = false;
+        if(is_array($member))
+            $displayName = $member['name'];
+        else
+            $displayName = $member;
 		$tableRow = array();
-		$tableRow[0] = $member['name'];
-        $tableRow[0] .= "<input type=\"hidden\" name=\"" . $memberFieldName . "\" value=\"" . $member['name'] . "\" />";
+		$tableRow[0] = $displayName;
+        $tableRow[0] .= "<input type=\"hidden\" name=\"" . $memberFieldName . "\" value=\"" . $displayName . "\" />";
 		$tableRow[0] .= "<a class=\"action remove\">Remove</a>";
 		$tableValues[] = $tableRow;
 	}
@@ -39,7 +47,7 @@ fieldset.association-old table {
 <fieldset id="<?php echo $fieldsetId; ?>" class="association-old" data-field-name="<?php echo $memberFieldName; ?>" data-empty-table-msg="<?php echo $emptyTableMessage; ?>">
   <legend><?php echo $fieldsetTitle; ?></legend>
   <div id="add">
-    <input class="autocomplete disable-autosubmit" type="text" placeholder="name" data-src="<?php echo $memberAutocompleteSrc; ?>" />
+    <input class="autocomplete disable-autosubmit" type="text" placeholder="<?php echo $inputPlaceholder; ?>" data-src="<?php echo $memberAutocompleteSrc; ?>" />
     <a class="cta primary small add">Add</a>
   </div>
   <?php echo $this->StringsTable->cleanTable(array('Name'),$tableValues,$emptyTableMessage); ?>
@@ -47,6 +55,7 @@ fieldset.association-old table {
 <script>
   $("fieldset.association-old input[type='text']").keypress(function(e){
     if(e.which == 13){
+      e.preventDefault();
       $(this).closest("fieldset").find(".cta.add").click();
     }
   });

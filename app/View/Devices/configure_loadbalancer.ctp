@@ -3,40 +3,66 @@
 $deviceId = $device['Device']['id'];
 $deviceName = $device['Device']['name'];
 
-$this->extend('/Common/standard');
-
-$this->assign('title', $deviceName);
-
-//Set sidebar content
-$this->start('sidebar');
-echo $this->element('../Devices/elements/activity_log');
-$this->end();
 ?>
 
-<section id="configure-device" class="configure-load-balancer">
-  <h2>Load-balancer Configuration</h2>
-  <?php echo $this->Form->create('Device',array(
-    'url' => $this->here,
-    'class' => 'vertical-labels'
-  ));
-  ?>
-  <?php if(!empty($errors)) {
-    echo $this->element('notice-list',array(
-      'type' => 'error',
-      'errors' => $errors
-    ));
-  } ?>
-  <?php
-    echo $this->element('../Devices/elements/configure_loadbalancer',array(
-      'virtualIpTypes' => $loadBalancerVirtualIpTypes,
-      'protocols' => $loadBalancerProtocols,
-      'protocolPortMap' => $loadBalancerProtocolPortMap,
-      'algorithms' => $loadBalancerAlgorithms
-    ));
-  ?>
-  <div class="submit">
-    <a class="cta primary submit">Save</a>
-    <a class="cta" href="/Devices/view/<?php echo $deviceId; ?>">Cancel</a>
-  </div>
-  <?php echo $this->Form->end(); ?>
-</section>
+<div id="reconfigure-loadbalancer">
+  <ul id="notice"></ul>
+  <form class="ajax" method="POST" action="<?php echo $this->here; ?>.json">
+    <fieldset>
+      <legend>Algorithm</legend>
+      <?php
+      echo $this->Form->input('algorithm', array(
+        'div' => false,
+        'label' => false,
+        'default' => $algorithm,
+        'options' => $algorithms
+      ));
+      ?>
+    </fieldset>
+    <fieldset>
+      <legend>Protocol/Port</legend>
+      <?php
+      echo $this->Form->input('protocol', array(
+        'div' => false,
+        'label' => false,
+        'class' => 'protocol',
+        'default' => $protocol,
+        'options' => $protocols
+      ));
+      ?>
+      <span>/</span>
+      <?php
+      echo $this->Form->input('port', array(
+        'div' => false,
+        'label' => false,
+        'class' => 'port',
+        'default' => $port
+      ));
+      ?>
+    </fieldset>
+    <fieldset>
+      <legend>Session Persistence</legend>
+      <?php
+      echo $this->Form->input('sessionPersistence', array(
+        'div' => false,
+        'label' => false,
+        'default' => $sessionPersistence,
+        'options' => $sessionPersistenceOptions,
+        'empty' => 'None'
+      ));
+      ?>
+    </fieldset>
+    <div class="submit">
+      <a class="cta primary submit">Save</a>
+      <a class="cta">Cancel</a>
+    </div>
+  </form>
+<script>
+  $('.protocol').change(function() {
+    var protocolPortMap = <?php echo json_encode($protocolPortMap); ?>;
+    var protocol = $(this).val();
+    var port = protocolPortMap[protocol];
+    $(this).parent().find('.port').val(port);
+  });
+</script>
+</div>

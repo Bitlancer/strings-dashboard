@@ -67,7 +67,8 @@ class Provider extends AppModel {
         $lbAttrVars = array(
             'load_balancers.virtual_ip_types',
             'load_balancers.protocols',
-            'load_balancers.algorithms'
+            'load_balancers.algorithms',
+            'load_balancers.session_persistence_options'
         );
 
         $lbAttrs = $this->ProviderAttribute->find('all',array(

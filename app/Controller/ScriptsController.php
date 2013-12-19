@@ -2,6 +2,11 @@
 
 class ScriptsController extends AppController
 {
+
+    public $components = array(
+        'StringsApiServiceCatelog'
+    );
+
     /*
      * The models specified below are the only ones which may be associated
      * with a script.
@@ -190,10 +195,15 @@ class ScriptsController extends AppController
         if(empty($script))
             throw new NotFoundException('Script does not exist.');
 
+        $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+            'remote_execution',
+            "/RemoteExecution/run/$scriptId"
+        );
+
         $qJob = array(
             'QueueJob' => array(
                 'http_method' => 'post',
-                'url' => STRINGS_API_URL . '/RemoteExecution/run/' . $scriptId,
+                'url' => $apiUrl,
                 'timeout_secs' => 60 * 15,
                 'remaining_retries' => 1,
                 'retry_delay_secs' => 0

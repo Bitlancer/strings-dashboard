@@ -720,7 +720,7 @@ form fieldset {
   position: relative; }
   form fieldset legend {
     font-weight: 600;
-    background: #fff; }
+    /* background: #fff; */ }
   form fieldset.info {
     margin-bottom: 20px; }
   form fieldset span.with-input {
@@ -1480,11 +1480,18 @@ body .association.disabled {
   background-color: #fcfcfc;
   border: 1px dashed #ccc; }
 
-#configure-loadbalancer #protocol-port select {
+#configure-loadbalancer .virtualIpPeer {
+  display: none;
+  min-width: 30%; }
+#configure-loadbalancer .protocol-port select {
   min-width: 50%; }
-#configure-loadbalancer #protocol-port input {
+#configure-loadbalancer .protocol-port input {
   min-width: 50px !important;
   width: 10%; }
+
+#reconfigure-loadbalancer #port {
+  min-width: 20%;
+  width: 20%; }
 
 #manage-dns-records #select-device {
   margin-bottom: 10px; }
