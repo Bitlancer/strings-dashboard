@@ -1,16 +1,5 @@
-<?php
-$this->extend('/Common/standard');
-
-$this->assign('title','Status');
-
-//Set sidebar content
-$this->start('sidebar');
-echo $this->element('../Scripts/elements/activity_log');
-$this->end();
-?>
-
-<!-- Main content -->
-<section id="script-status">
+<h1>Status</h1>
+<div id="script-status">
 <ul id="notice"></ul>
 <form>
   <img class="loading" src="/img/loading.gif" />
@@ -18,7 +7,7 @@ $this->end();
   <hr />
   <pre id="output"><?php echo $output; ?></pre>
 </form>
-</section>
+</div>
 <script>
   var refreshStatus = function(){
     $.ajax({
