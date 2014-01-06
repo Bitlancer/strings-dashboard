@@ -67,7 +67,7 @@ class Script extends AppModel {
                 'message' => '%%f cannot be empty'
             ),
             'checkMultiKeyUniqueness' => array(
-                'rule' => array('checkMultiKeyUniqueness',array('name','organization_id')),
+                'rule' => array('checkMultiKeyUniqueness',array('name','model','foreign_key_id')),
                 'message' => 'This %%f is already taken'
             )
         ),
