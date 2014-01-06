@@ -125,7 +125,17 @@ class ScriptsController extends AppController
             $message = null;
             $redirectUri = null;
 
-            $validFields = array('name','type','url','path','parameters');
+            $validFields = array(
+                'model','foreign_key_id','name','type',
+                'url','path','parameters'
+            );
+
+            /*
+             * Name is uniq'ed against model and foreign_key_id so both must
+             * be present on save.
+             */
+            $this->request->data['Script']['model'] = $script['Script']['model'];
+            $this->request->data['Script']['foreign_key_id'] = $script['Script']['foreign_key_id'];
 
             $this->Script->id = $scriptId;
             if($this->Script->save($this->request->data,true,$validFields)){
