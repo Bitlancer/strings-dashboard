@@ -18,16 +18,20 @@ class SudoRole extends AppModel {
 			'dependent' => true
 		),
         'TeamApplicationSudo' => array(
-            'foreignKey' => 'sudo_id'
+            'foreignKey' => 'sudo_id',
+            'dependent' => true
         ),
         'TeamRoleSudo' => array(
-            'foreignKey' => 'sudo_id'
+            'foreignKey' => 'sudo_id',
+            'dependent' => true
         ),
         'TeamFormationSudo' => array(
-            'foreignKey' => 'sudo_id'
+            'foreignKey' => 'sudo_id',
+            'dependent' => true
         ),
         'TeamDeviceSudo' => array(
-            'foreignKey' => 'sudo_id'
+            'foreignKey' => 'sudo_id',
+            'dependent' => true
         )
 	);
 
