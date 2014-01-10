@@ -71,7 +71,12 @@ table {
         background-color: $green;
       }
     }
-    tr.status-building,tr.status-resizing,tr.status-deleting {
+    tr.status-verify_resize {
+      td:first-of-type:before {
+        background-color: orange;
+      }
+    }
+    tr.status-building,tr.status-resizing,tr.status-deleting,tr.status-revert_resize {
       td:first-of-type:before {
         background-color: orange;
         background-image: url('/img/status.png');
