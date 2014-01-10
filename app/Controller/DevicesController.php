@@ -114,11 +114,25 @@ class DevicesController extends AppController
 
     private function _viewInstance($device){
 
+        //If device is in the verify_resize state, prompt the user
+        //with a confirmation dialog
+        if($device['Device']['status'] == 'verify_resize')
+            $this->promptUserForResizeConfirmation($device);
+
         //Build re-indexed attributes arrays
         $deviceAttributes = Hash::combine($device['DeviceAttribute'],'{n}.var','{n}.val');
         $implementationAttributes  = Hash::combine($device['Implementation']['ImplementationAttribute'],'{n}.var','{n}.val');
 
         $implementationId = $device['Implementation']['id'];
+
+        //Device info
+        $deviceInfo = array(
+            'name' => $device['Device']['name'],
+            'status' => $this->userFriendlyDeviceStatus($device['Device']['status']),
+            'role' => $device['Role']['name'],
+            'formation' => $device['Formation']['name'],
+            'created' => $device['Device']['created']
+        );
 
         //Provider info
         $providerInfo = array(
@@ -144,9 +158,30 @@ class DevicesController extends AppController
 
         $this->set(array(
             'device' => $device,
+            'deviceInfo' => $deviceInfo,
             'providerInfo' => $providerInfo,
             'deviceAddresses' => $deviceAddresses
         ));
+    }
+
+    private function userFriendlyDeviceStatus($status){
+
+        return Inflector::humanize($status);    
+    } 
+
+    private function promptUserForResizeConfirmation($device){
+
+        $deviceId = $device['Device']['id'];
+
+        $confirmLink = "<a href=\"/Devices/confirmResize/$deviceId\">confirm</a>";
+        $revertLink = "<a href=\"/Devices/revertResize/$deviceId\">revert</a>";
+
+        $msg = "This device has recently undergone a resize operation. " .
+            "If the device is in working order please click $confirmLink, " .
+            "to complete the resize operation. Click $revertLink to restore " .
+            "the device to its previous size.";
+
+        $this->setFlash($msg, 'warning');
     }
 
     private function _viewLoadBalancer($device){
@@ -275,6 +310,79 @@ class DevicesController extends AppController
                 'flavors' => $flavors
             ));
         }
+    }
+
+    public function confirmResize($deviceId){
+
+        $this->loadModel('QueueJob');
+
+        $device = $this->Device->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'Device.id' => $deviceId,
+            )
+        ));
+
+        if(empty($device)){
+            $this->setFlash('Device does not exist.');
+        }
+        elseif($device['Device']['status'] != 'verify_resize'){
+            $this->setFlash('This operation is not valid for this device at this time.');
+        }
+        else {
+            $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                'infrastructure',
+                "/Instances/confirmResize/$deviceId"
+            );
+            $result = $this->QueueJob->addJob($apiUrl);
+            if(!$result){
+                $this->setFlash('Failed to initiate a resize confirmation.');
+            }
+            else {
+                $this->Device->id = $deviceId;
+                $this->Device->saveField('status','resizing',true);
+                $this->setFlash('Initiating completion of the resize operation.', 'success');
+            }
+        }
+
+        $this->redirect($this->referer(array('action' => 'index')));
+    }
+
+    public function revertResize($deviceId){
+
+        $this->loadModel('QueueJob');
+
+        $device = $this->Device->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'Device.id' => $deviceId,
+            )
+        ));
+
+        if(empty($device)){
+            $this->setFlash('Device does not exist.');
+        }
+        elseif($device['Device']['status'] != 'verify_resize'){
+            $this->setFlash('This operation is not valid for this device at this time.');
+        }
+        else {
+            $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                'infrastructure',
+                "/Instances/revertResize/$deviceId"
+            );
+            $result = $this->QueueJob->addJob($apiUrl);
+            if(!$result){
+                $this->setFlash('Failed to initiate the revert opreation.');
+            }
+            else {
+                $this->Device->id = $deviceId;
+                $this->Device->saveField('status','revert_resize',true);
+                $this->setFlash('Initiating the revert operation.', 'success');
+            }
+        }
+
+        $this->redirect($this->referer(array('action' => 'index')));
+
     }
 
     public function configure($deviceId){
@@ -482,56 +590,22 @@ class DevicesController extends AppController
                     $currentAttr = $deviceAttrs[$attrVar];
                     $inputAttrVal = $this->request->data($attrName);
                     if($currentAttr['val'] != $inputAttrVal){
-                        $result = $this->Device->DeviceAttribute->save(array(
-                            'DeviceAttribute' => array(
-                                'id' => $currentAttr['id'],
-                                'val' => $inputAttrVal
-                            )
-                        ));
-                        if($result === false) {
-                            $isError = true;
-                            $message = "Failed to update load-balancer attribute $attrName";
-                            break;
-                        }
-                        else
-                            $updatedAttrs[] = $attrName;
+                        $updatedAttrs[$attrName] = $inputAttrVal;
                     }
                 }
 
                 if(!empty($updatedAttrs) && !$isError){
 
-                    //Updating the session persistence requires a
-                    //seperate API call
-                    if(in_array('sessionPersistence',$updatedAttrs)){
-                        $apiUrl = $this->StringsApiServiceCatelog->getUrl(
-                            'load-balancer',
-                            "/LoadBalancer/updateSessionPersistence/$deviceId"
-                        );
-                        if(!$this->QueueJob->addJob($apiUrl)){
-                            $isError = true;
-                            $message = "Failed to schedule job to update session persistence.";
-                        }
-                    }
-
-                    $basicAttrs = array(
-                        'protocol',
-                        'port',
-                        'algorithm'
+                    $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                        'load-balancer',
+                        "/LoadBalancer/update/$deviceId"
                     );
-
-                    foreach($updatedAttrs as $attrName){
-                        if(in_array($attrName, $basicAttrs)){
-                            $apiUrl = $this->StringsApiServiceCatelog->getUrl(
-                                'load-balancer',
-                                "/LoadBalancer/update/$deviceId"
-                            );
-                            if(!$this->QueueJob->addJob($apiUrl)){
-                                $isError = true;
-                                $message = "Failed to schedule job to update attributes.";
-                            }
-                            break;
-                        }
+                    $body = json_encode($updatedAttrs);
+                    if(!$this->QueueJob->addJob($apiUrl,$body)){
+                        $isError = true;
+                        $message = "Failed to schedule job to update attributes.";
                     }
+                    break;
 
                     if(!$isError){
                         $this->Device->id = $deviceId;
@@ -575,12 +649,11 @@ class DevicesController extends AppController
         $this->redirectIfNotActive($device);
 
         //Extract the nodes
-        $existingNodeAttrId = false;
         $nodes = array();
         if(!empty($device['DeviceAttribute'])) {
             $nodesAttr = $device['DeviceAttribute'][0];
-            $existingNodeAttrId = $nodesAttr['id'];
-            $nodes = json_decode($nodesAttr['val'], true);
+            $nodesDetails = json_decode($nodesAttr['val'], true);
+            $nodes = Hash::extract($nodes,'{n}.address');
         }
 
         if($this->request->is('post')){
@@ -591,54 +664,70 @@ class DevicesController extends AppController
             $message = "";
             $redirectUri = null;
 
-            $newNodes = $this->request->data('nodes');
-            if(empty($newNodes))
-                $newNodes = array();
-
-            //Validate nodes (best effort)
+            //Validate input (best effort)
             $validInput = true;
-            $ipPattern = '/([0-9]{1,3}\.){3,}[0-9]{1,3}/';
-            foreach($newNodes as $node){
-                if(!preg_match($ipPattern,$node)){
-                    $isError = true;
-                    $message = "$node is not a valid ip address.";
-                    $validInput = false;
-                    break;
+            $newNodes = $this->request->data('nodes');
+            if(empty($newNodes)) {
+                $newNodes = array();
+            }
+            else {
+                $ipPattern = '/([0-9]{1,3}\.){3,}[0-9]{1,3}/';
+                foreach($newNodes as $node){
+                    if(!preg_match($ipPattern,$node)){
+                        $isError = true;
+                        $message = "$node is not a valid ip address.";
+                        break;
+                    }
                 }
             }
 
-            if($validInput){
+            if(!$isError){
 
-                $newNodesJson = json_encode($newNodes);
-                $nodeAttr = array(
-                    'DeviceAttribute' => array(
-                        'device_id' => $deviceId,
-                        'var' => 'implementation.nodes',
-                        'val' => $newNodesJson
-                    )
-                );
+                $changedNodes = false;
 
-                if($existingNodeAttrId !== false)
-                    $nodeAttr['DeviceAttribute']['id'] = $existingNodeAttrId;
+                //Diff newNodes to determine which nodes
+                //need to be added and which need to be
+                //removed
+                $removeNodes = array_diff($nodes, $newNodes);
+                $addNodes = array_diff($newNodes, $nodes);
 
-                if(!$this->Device->DeviceAttribute->save($nodeAttr)){
-                    $isError = true;
-                    $message = 'Failed to update node list for this load-balancer.';
-                }
-                else {
+                if(!empty($addNodes)){
                     $apiUrl = $this->StringsApiServiceCatelog->getUrl(
                         'load-balancer',
-                        "/LoadBalancers/updateNodes/$deviceId"
+                        "/LoadBalancers/addNodes/$deviceId"
                     );
-                    if($this->QueueJob->addJob($apiUrl)){
-                        $this->Device->id = $deviceId;
-                        $this->Device->saveField('status','building',true);
-                        $redirectUri = '/Devices/view/' . $deviceId;
-                    }
-                    else {
+                    $body = json_encode($addNodes);
+                    $result = $this->QueueJob->addJob($apiUrl, $body);
+                    if(!$result){
                         $isError = true;
-                        $message = 'Failed to schedule job to update nodes.';
+                        $message = 'Failed to schedule job to add new nodes.';
                     }
+                    else
+                        $changedNodes = true;
+                }
+
+                if(!$isError && !empty($removeNodes)){
+                    $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                        'load-balancer',
+                        "/LoadBalancers/removeNodes/$deviceId"
+                    );
+                    $body = json_encode($removeNodes);
+                    $result = $this->QueueJob->addJob($apiUrl, $body);
+                    if(!$result){
+                        $isError = true;
+                        $message = 'Failed to schedule job to remove nodes.';
+                    }
+                    else
+                        $changedNodes = true;
+                }
+
+                if($changedNodes){
+                    $this->Device->id = $deviceId;
+                    $this->Device->saveField('status','building',true);
+                }
+
+                if(!$isError) { 
+                    $redirectUri = $this->referer();
                 }
             }
 

@@ -136,23 +136,14 @@ class FormationsController extends AppController
             }
             else {
 
-                $devices = array();
-                foreach($formation['Device'] as $device){
-                    $devices[] = array(
-                        'id' => $device['id'],
-                        'status' => 'deleting'
+                $this->Formation->id = $id;
+                if($this->Formation->saveField('status','deleting',true)){
+
+                    $deviceIds = Hash::extract($formation['Device'],'{n}.id');
+                    $this->Formation->Device->updateAll(
+                        array('Device.status' => "'deleting'"),
+                        array('Device.id' => $deviceIds)
                     );
-                }
-
-                $formationAndDevices = array(
-                    'Formation' => array(
-                        'id' => $id,
-                        'status' => 'deleting'
-                    ),
-                    'Device' => $devices
-                );
-
-                if($this->Formation->saveAll($formationAndDevices)){
 
                     $apiUrl = $this->StringsApiServiceCatelog->getUrl(
                         'infrastructure',

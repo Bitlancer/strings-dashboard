@@ -159,7 +159,7 @@ class Device extends AppModel {
                 'message' => '%%f cannot be empty'
             ), 
             'validStatus' => array(
-                'rule' => array('inList',array('building','resizing','active','deleting','error')),
+                'rule' => array('inList',array('building','resizing','verify_resize','revert_resize','active','deleting','error')),
                 'message' => '%%f is an invalid status'
             )
         )

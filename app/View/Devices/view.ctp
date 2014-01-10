@@ -30,11 +30,11 @@ $this->end();
   <?php
   echo $this->element('Tables/info',array(
     'info' => array(
-      'Name' => $device['Device']['name'],
-      'Status' => $device['Device']['status'],
-      'Role' => $device['Role']['name'],
-      'Parent Formation' => $device['Formation']['name'],
-      'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$device['Device']['created'])
+      'Name' => $deviceInfo['name'],
+      'Status' => $deviceInfo['status'],
+      'Role' => $deviceInfo['role'],
+      'Formation' => $deviceInfo['formation'],
+      'Created' => $this->Time->format(DEFAULT_DATE_FORMAT,$deviceInfo['created'])
     )
   ));
   ?>
