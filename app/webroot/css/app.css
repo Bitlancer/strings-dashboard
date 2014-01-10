@@ -401,7 +401,9 @@ table {
       background-color: #d94141; }
     table tbody tr.status-active td:first-of-type:before {
       background-color: #59b036; }
-    table tbody tr.status-building td:first-of-type:before, table tbody tr.status-resizing td:first-of-type:before, table tbody tr.status-deleting td:first-of-type:before {
+    table tbody tr.status-verify_resize td:first-of-type:before {
+      background-color: orange; }
+    table tbody tr.status-building td:first-of-type:before, table tbody tr.status-resizing td:first-of-type:before, table tbody tr.status-deleting td:first-of-type:before, table tbody tr.status-revert_resize td:first-of-type:before {
       background-color: orange;
       background-image: url("/img/status.png");
       background-size: 7px auto;
