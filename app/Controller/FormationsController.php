@@ -916,7 +916,7 @@ class FormationsController extends AppController
                 'infrastructure',
                 "/Formations/create/" . $this->Formation->id
             );
-            $result = $this->QueueJob->addJob($apiUrl,"","post",60,10,60);
+            $result = $this->QueueJob->addJob($apiUrl,"","post",60,10,10);
             if(!$result){
                 $this->setFlash('We encountered an error while creating a job to build this formation.');
                 $this->log("Error encountered while saving QueueJob." . 
