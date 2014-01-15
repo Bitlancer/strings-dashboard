@@ -20,9 +20,17 @@ body > header {
       text-shadow: 1px 2px 0 #000;
     }
   }
-  #menu {
-    color: #fff;
+  #user-info {
+    display: inline;
     float: right;
-    margin-top: 10px;
+    color: #fff;
+    .organization {
+      display: block;
+      margin-bottom: 5px;
+      text-align: center;
+      &:before {
+        content: "@";
+      }
+    }
   }
 }

@@ -190,10 +190,16 @@ body > header {
       font-weight: 300;
       line-height: 40px;
       text-shadow: 1px 2px 0 #000; }
-  body > header #menu {
-    color: #fff;
+  body > header #user-info {
+    display: inline;
     float: right;
-    margin-top: 10px; }
+    color: #fff; }
+    body > header #user-info .organization {
+      display: block;
+      margin-bottom: 5px;
+      text-align: center; }
+      body > header #user-info .organization:before {
+        content: "@"; }
 
 body > nav {
   background: #f0f0f0 url("/img/stripe.png") center -5px no-repeat;
