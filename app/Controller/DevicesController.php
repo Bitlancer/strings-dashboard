@@ -31,9 +31,12 @@ class DevicesController extends AppController
     public function index() {
 
 		//Verify this organization has setup one or more infrastructure providers
-		$isInfraProviderConfigured = $this->Device->Implementation->hasOrganizationConfiguredServiceProvider($this->Auth->user('organization_id'),'infrastructure');
-		if(!$isInfraProviderConfigured){
-			$this->setFlash('Please setup an infrastructure provider <a href="#">here</a>.');
+		$hasInfraProvider = $this->Device->Implementation->hasServiceProvider(
+            $this->Auth->user('organization_id'),
+            'infrastructure'
+        );
+		if(!$hasInfraProvider){
+			$this->setFlash('Please setup an infrastructure provider.');
 		}
 
         $this->DataTables->setColumns(array(
@@ -74,7 +77,7 @@ class DevicesController extends AppController
         }
         else {
             $this->set(array(
-                'createCTADisabled' => !$isInfraProviderConfigured || !$this->Auth->User('is_admin'),
+                'createCTADisabled' => !$hasInfraProvider || !$this->Auth->User('is_admin'),
             ));
         }
     }

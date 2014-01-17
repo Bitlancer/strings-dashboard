@@ -62,7 +62,7 @@ class Implementation extends AppModel {
         )
     );
 	
-	public function hasOrganizationConfiguredServiceProvider($organizationId,$service){
+	public function hasServiceProvider($organizationId,$service){
 
 		$count = $this->find('count',array(
             'recursive' => -1,
@@ -99,22 +99,6 @@ class Implementation extends AppModel {
 		else
 			return false;
 	}
-
-    public function getDefaultImageId($implementationId){
-
-        $attr = $this->ImplementationAttribute->find('first',array(
-            'contain' => array(),
-            'conditions' => array(
-                'ImplementationAttribute.var' => 'default_image',
-                'ImplementationAttribute.implementation_id' => $implementationId
-            )
-        ));
-
-        if(empty($attr))
-            return false;
-
-        return $attr['ImplementationAttribute']['val'];
-    }
 
     public function getFlavorDescription($implementationId,$flavorId){
 
@@ -167,6 +151,18 @@ class Implementation extends AppModel {
         $regions = json_decode($regions,true);
 
         return $regions;
+    }
+
+    public function getImages($implementationId){
+
+        $imageAttribute = $this->getOverridableAttribute($implementationId,'images');
+        if($imageAttribute === false)
+            return false;
+
+        $images = $imageAttribute['val'];
+        $images = json_decode($images,true);
+
+        return $images;
     }
 
     /**

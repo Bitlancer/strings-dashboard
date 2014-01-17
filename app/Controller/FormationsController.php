@@ -32,11 +32,11 @@ class FormationsController extends AppController
         $this->loadModel('Implementation');
 
 		//Verify this organization has setup one or more infrastructure providers
-        $isInfraProviderConfigured = $this->Implementation->
-            hasOrganizationConfiguredServiceProvider(
-                $this->Auth->user('organization_id'),'infrastructure');
-
-        if(!$isInfraProviderConfigured){
+        $hasInfraProvider = $this->Implementation->hasServiceProvider(
+            $this->Auth->user('organization_id'),
+            'infrastructure'
+        );
+        if(!$hasInfraProvider){
             $this->setFlash('Please setup an infrastructure provider.');
         }
 
@@ -64,7 +64,7 @@ class FormationsController extends AppController
         }
         else {
             $this->set(array(
-                'createCTADisabled' => !$isInfraProviderConfigured || !$this->Auth->User('is_admin'),
+                'createCTADisabled' => !$hasInfraProvider || !$this->Auth->User('is_admin'),
             ));
         }
     }

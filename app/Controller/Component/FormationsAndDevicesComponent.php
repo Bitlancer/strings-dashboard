@@ -90,14 +90,17 @@ class FormationsAndDevicesComponent extends Component {
         );
 
         //Image id
-        static $defaultImageId = false;
-        if(empty($deviceImageId))
-            $defaultImageId = $this->controller->Implementation->getDefaultImageId($implementationId);
-
-        $device['DeviceAttribute'][] = array(
-            'var' => 'implementation.image_id',
-            'val' => $defaultImageId
-        );
+        $imageId = $this->getImage($device, $regionId);
+        if(empty($imageId)){
+            $errors['infrastructure'][] = "Could not find an image for $regionName.";
+            return array($errors, $device);
+        }
+        else {
+            $device['DeviceAttribute'][] = array(
+                'var' => 'implementation.image_id',
+                'val' => $imageId
+            );
+        }
 
         //Flavor
         static $flavorIds = array();
@@ -157,6 +160,26 @@ class FormationsAndDevicesComponent extends Component {
         }
 
         return array($error, $regionId, $regionName);
+    }
+
+    public function getImage($device, $regionId){
+
+        $imageId = false;
+
+        $implementationId = $device['Device']['implementation_id'];
+        static $images = array();
+        if(empty($images)){
+            $images = $this->getProviderImages($implementationId);
+        }
+
+        $regionImages = Hash::combine($images[$regionId],'{n}.name','{n}.image_id');
+
+        if(!isset($regionImages['default'])){
+            return false;
+        }
+        else {
+            return $regionImages['default'];
+        }
     }
 
     public function parseAndValidateInstanceVariables($device, $input){
@@ -669,5 +692,21 @@ class FormationsAndDevicesComponent extends Component {
         $flavors = Hash::combine($flavors,'{n}.id','{n}.description');
 
         return $flavors;
+    }
+
+    public function getProviderImages($implementationId){
+
+        static $images = array();
+
+        if(!empty($images))
+            return $images;
+
+        $this->_loadModel('Implementation');
+
+        $images = $this->controller->Implementation->getImages($implementationId);
+        if(empty($images))
+            throw new InternalErrorException('Images have not been defined for this provider');
+
+        return $images;
     }
 }
