@@ -105,7 +105,7 @@ class QueueJob extends AppModel
 		),
 	);
 
-    public function addJob($url,$body="",$httpMethod='post',$timeoutSecs=60,$retries=10,$retryDelaySecs=30){
+    public function addJob($url,$body="",$httpMethod='post',$timeoutSecs=90,$retries=40,$retryDelaySecs=30){
 
         $job = array(
             'QueueJob' => array(

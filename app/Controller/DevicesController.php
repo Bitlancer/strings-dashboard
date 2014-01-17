@@ -280,7 +280,7 @@ class DevicesController extends AppController
                         'infrastructure',
                         "/Instances/resize/$deviceId/$flavorId"
                     );
-                    if(!$this->QueueJob->addjob($apiUrl)){
+                    if(!$this->QueueJob->addjob($apiUrl,"",'post',60,120,30)){
                         $isError = true;
                         $message = 'Failed to create a job to resize instance.';
                     }
