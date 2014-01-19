@@ -388,6 +388,43 @@ class DevicesController extends AppController
 
     }
 
+    public function reboot($deviceId){
+
+        $this->loadModel('QueueJob');
+
+        $device = $this->Device->find('first',array(
+            'contain' => array(),
+            'conditions' => array(
+                'Device.id' => $deviceId,
+            )
+        ));
+
+        if(empty($device)){
+            $this->setFlash('Device does not exist.');
+            $this->redirect($this->referer(array('action' => 'index')));
+        }
+
+        $this->redirectIfNotActive($device);
+
+        $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+            'infrastructure',
+            "/Instances/reboot/$deviceId"
+        );
+
+        $result = $this->QueueJob->addJob($apiUrl); 
+        if(!$result){
+            $this->setFlash("Failed to initiate a reboot.");
+        }
+        else {
+            $this->Device->id = $deviceId;
+            $this->Device->saveField('status','rebooting',true);
+            $deviceName = $device['Device']['name'];
+            $this->setFlash("Initiating reboot of $deviceName.", 'success');
+        }
+
+        $this->redirect($this->referer(array('action' => 'index'))); 
+    }
+
     public function configure($deviceId){
 
         $device = $this->Device->find('first',array(
