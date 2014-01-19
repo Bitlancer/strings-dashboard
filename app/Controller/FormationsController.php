@@ -604,8 +604,8 @@ class FormationsController extends AppController
             'body' => '',
             'http_method' => 'post',
             'timeout_secs' => 60,
-            'remaining_retries' => 20,
-            'retry_delay_secs' => 60 
+            'remaining_retries' => 40,
+            'retry_delay_secs' => 30 
         );
         foreach($newDeviceIds as $newDeviceId){
             $templateQJob['url'] = $apiUrl . "/Instances/create/$newDeviceId";
@@ -916,7 +916,7 @@ class FormationsController extends AppController
                 'infrastructure',
                 "/Formations/create/" . $this->Formation->id
             );
-            $result = $this->QueueJob->addJob($apiUrl,"","post",60,10,10);
+            $result = $this->QueueJob->addJob($apiUrl,"","post",60,60,30);
             if(!$result){
                 $this->setFlash('We encountered an error while creating a job to build this formation.');
                 $this->log("Error encountered while saving QueueJob." . 
