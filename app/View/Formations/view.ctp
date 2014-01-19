@@ -44,6 +44,7 @@ echo $this->element('Datatables/default',array(
     'ctaSrc' => '/Formations/addDevice/' . $formation['Formation']['id'],
     'ctaModal' => false,
     'pageLength' => 5,
+    'refresh' => 20000
 ));
 ?>
 </section>

@@ -15,6 +15,7 @@ echo $this->element('Datatables/default',array(
     'columnHeadings' => $this->DataTables->getColumnHeadings(),
     'ctaSrc' => '/Formations/create',
     'ctaModal' => false,
-    'ctaDisabled' => $createCTADisabled
+    'ctaDisabled' => $createCTADisabled,
+    'refresh' => 20000
 ));
 

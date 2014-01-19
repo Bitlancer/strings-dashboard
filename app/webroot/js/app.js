@@ -146,7 +146,12 @@ var strings = {
               if($(this).attr('data-search') === undefined || $(this).attr('data-search') == 'true'){ 
                 parent.find('.dataTables_filter input').attr('placeholder','Search');
               }
-              var parent = $(this).parents('.dataTables_wrapper');
+              if($(this).attr('data-refresh')){
+                var tbl = $(this).dataTable();
+                setInterval(function(){
+                  tbl.fnReloadAjax();
+                }, parseInt($(this).attr('data-refresh')));
+              }
             }
           });
           $(this).addClass('loaded');

@@ -117,6 +117,7 @@ class StringsTableHelper extends StringsAppHelper {
             'data-raw-title' => 'false',
             'data-search' => 'false',
             'data-processing' => 'false',
+            'data-refresh' => 'false'
         );
 
         $tableAttributes = array_merge($tableAttributes,$dataTableOptions);

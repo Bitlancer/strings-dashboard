@@ -21,6 +21,9 @@
     if(!isset($paginate))
         $paginate = true;
 
+    if(!isset($refresh))
+        $refresh = false;
+
     echo $this->StringsTable->datatable(
         $tableId,
         $columnHeadings,
@@ -31,6 +34,7 @@
             'data-empty-table' => $emptyTableMsg,
             'data-search' => ($search ? 'true' : 'false'),
             'data-processing' => ($processing ? 'true' : 'false'),
-            'data-paginate' => ($paginate ? 'true' : 'false')
+            'data-paginate' => ($paginate ? 'true' : 'false'),
+            'data-refresh' => $refresh
         )
     );   

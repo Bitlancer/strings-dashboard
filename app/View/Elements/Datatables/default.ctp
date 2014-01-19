@@ -30,12 +30,16 @@
     if(!isset($paginate))
         $paginate = true;
 
+    if(!isset($refresh))
+        $refresh = false;
+
     $dataTableOptions = array(
         'data-length' => $pageLength,
         'data-empty-table' => $emptyTableMsg,
         'data-search' => ($search ? 'true' : 'false'),
         'data-processing' => ($processing ? 'true' : 'false'),
-        'data-paginate' => ($paginate ? 'true' : 'false') 
+        'data-paginate' => ($paginate ? 'true' : 'false'),
+        'data-refresh' => $refresh
     );
 
     if(isset($title))
