@@ -346,7 +346,6 @@ class FormationsAndDevicesComponent extends Component {
         $lbAttrs = array(
             'virtualIpType' => 'implementation.virtual_ip_type',
             'algorithm' => 'implementation.algorithm',
-            'sessionPersistence' => 'implementation.session_persistence'
         );
 
         foreach($lbAttrs as $attrName => $attrVar){
@@ -425,12 +424,31 @@ class FormationsAndDevicesComponent extends Component {
                         'val' => $port
                     );
 
+                    //If session persistence is enabled, set appropriately for this protocol
+                    if(isset($input['sessionPersistence']) && $input['sessionPersistence']){
+                        $sessionPersistenceType = $this->rackspaceLBProtocolToSessionPersistenceType($protocol);
+                        $deviceClone['DeviceAttribute'][] = array(
+                            'var' => 'implementation.session_persistence',
+                            'val' => $sessionPersistenceType
+                        );
+                    }
+
                     $devices[] = $deviceClone;
                 }
             }
         }
 
         return array($errors, $devices);
+    }
+
+    private function rackspaceLBProtocolToSessionPersistenceType($protocol){
+
+        if($protocol == "HTTP"){
+            return "HTTP_COOKIE";
+        }
+        else {
+            return "SOURCE_IP";
+        }
     }
 
     public function validateRackspaceLoadBalancerAttribute($providerId, $attribute, $value){
@@ -441,7 +459,6 @@ class FormationsAndDevicesComponent extends Component {
         static $validVirtualIpTypes = array();
         static $validAlgorithms = array();
         static $validProtocols = array();
-        static $validSessionPersistenceOptions = array(); 
         if(!$cachedValidAttrs){
             $validAttrs = $this->controller->Provider->getLoadbalancerAttributes($providerId);
 
@@ -464,12 +481,6 @@ class FormationsAndDevicesComponent extends Component {
                 true
             );
             $validProtocols = Hash::extract($validProtocols,'{n}.name');
-
-            //Session persistence options
-            $validSessionPersistenceOptions = json_decode(
-                $validAttrs['load_balancers.session_persistence_options'],
-                true
-            );
 
             $cachedValidAttrs = true;
         }
@@ -527,14 +538,6 @@ class FormationsAndDevicesComponent extends Component {
                 return array(
                     false,
                     "Invalid port supplied. Port should be an integer between 1 and 65535."
-                );
-            }
-        }
-        elseif($attribute == 'sessionPersistence'){
-            if(!empty($value) && !in_array($value, $validSessionPersistenceOptions)){
-                return array(
-                    false,
-                    "Invalid session persistence value supplied."
                 );
             }
         }
@@ -631,13 +634,6 @@ class FormationsAndDevicesComponent extends Component {
         $formData['algorithms'] = Hash::combine($algorithms,'{n}.name','{n}.name');
         array_walk($formData['algorithms'],function(&$name){
             $name = Inflector::humanize(strtolower($name));
-        });
-
-        //session persistence options
-        $sessionPersistenceOptions = json_decode($attrs['load_balancers.session_persistence_options']);
-        $formData['sessionPersistenceOptions'] = Hash::combine($sessionPersistenceOptions,'{n}','{n}');
-        array_walk($formData['sessionPersistenceOptions'],function(&$name){
-            $name = ucfirst(strtolower(Inflector::humanize($name)));
         });
 
         return $formData;

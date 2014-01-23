@@ -37,8 +37,7 @@
       'title' => 'Forces multiple requests, of the same protocol, from ' .
                 'clients to be directed to the same node.',
     ),
-    'options' => $sessionPersistenceOptions,
-    'empty' => 'None'
+    'options' => array(0 => 'Disabled', 1 => 'Enabled'),
   ));
   ?>
   <div class="protocols-ports">
