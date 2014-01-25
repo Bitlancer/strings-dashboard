@@ -15,10 +15,9 @@ $this->end();
 <h2 class="float-left">Device Details</h2>
 <h2 class="float-right">
   <?php
-    $actionMenuElement = $device['DeviceType']['name'] == 'load-balancer' ? 
-      '../Devices/elements/loadbalancer_action_menu' :
-      '../Devices/elements/instance_action_menu';
-    echo $this->element($actionMenuElement,array(
+    echo $this->element(
+      '../Devices/elements/loadbalancer_action_menu',
+      array(
         'deviceId' => $device['Device']['id'],
         'formationId' => $device['Device']['formation_id'],
         'actionsDisabled' => (!$isAdmin || $device['Device']['status'] !== 'active')
@@ -60,6 +59,16 @@ $this->end();
   echo $this->element('Tables/default',array(
     'columnHeadings' => array('Network','Address'),
     'data' => $deviceAddresses
+  ));
+  ?>
+</section>
+
+<section>
+<h2>Nodes</h2>
+  <?php
+  echo $this->element('Tables/default', array(
+    'columnHeadings' => array('Address', 'Port'),
+    'data' => $nodes
   ));
   ?>
 </section>

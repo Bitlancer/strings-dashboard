@@ -365,17 +365,43 @@ class FormationsAndDevicesComponent extends Component {
         }
 
         //Validate Protocol/port pairs
-        $protocolPortPairs = array_combine($input['protocol'],$input['port']);
-        if($protocolPortPairs == false)
-            $errors['load-balancer'][] = 'One or more protocol/port pairs is missing a protocol or port';
+        $protocolPortPairs = array();
+        if(count($input['protocol']) < 1 || count($input['port']) < 1){
+            $errors['load-balancer'][] = 'At least one protocol/port pair is required.'; 
+        }
         else {
-            //Remove empty protocol port pairs
-            unset($protocolPortPairs[""]);
+
+            //Build a list of protocol/port pairs
+            for($x = 0; $x < count($input['protocol']); $x++){
+                $protocol = $input['protocol'][$x];
+                $port = $input['port'][$x];
+
+                //Protocol would be empty if the user selected 'none'
+                //for the additional protocol/port pair
+                if(empty($protocol))
+                    continue;
+
+                if(empty($port)){
+                    $errors['load-balancer'][] = "A port is required for protocol $protocol.";
+                    continue;
+                }
+
+                $ppKey = "$protocol|$port";
+                if(isset($protocolPortPairs[$ppKey])){
+                    $errors['load-balancer'][] = "Each protocol/port pair must be unqiue.";
+                }
+
+                $protocolPortPairs[$ppKey] = array($protocol, $port);
+            }
+        }
+        if(empty($errors)){
 
             $moreThanOneLB = count($protocolPortPairs) > 1;
             $nameIncr = 1;
 
-            foreach($protocolPortPairs as $protocol => $port){
+            foreach($protocolPortPairs as $pair){
+
+                list($protocol, $port) = $pair;
 
                 list($validProtocol,
                      $protoErrMsg) = $this->validateRackspaceLoadBalancerAttribute($providerId,

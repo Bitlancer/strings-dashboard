@@ -106,7 +106,6 @@ $this->assign('forwardButtonText','Complete');
                 'protocols' => $formData['protocols'],
                 'protocolPortMap' => $formData['protocolPortMap'],
                 'algorithms' => $formData['algorithms'],
-                'sessionPersistenceOptions' => $formData['sessionPersistenceOptions'],
               ));
             ?>
           </fieldset>

@@ -165,6 +165,8 @@ class DevicesController extends AppController
             'providerInfo' => $providerInfo,
             'deviceAddresses' => $deviceAddresses
         ));
+
+        $this->render('instance_view');
     }
 
     private function userFriendlyDeviceStatus($status){
@@ -195,6 +197,15 @@ class DevicesController extends AppController
 
         $implementationId = $device['Implementation']['id'];
 
+         //Device info
+        $deviceInfo = array(
+            'name' => $device['Device']['name'],
+            'status' => $this->userFriendlyDeviceStatus($device['Device']['status']),
+            'role' => $device['Role']['name'],
+            'formation' => $device['Formation']['name'],
+            'created' => $device['Device']['created']
+        );
+
         //Provider info
         $providerInfo = array(
             'Provider' => $device['Implementation']['name'],
@@ -202,16 +213,36 @@ class DevicesController extends AppController
             'Protocol' => Inflector::humanize(strtolower($deviceAttributes['implementation.protocol'])),
             'Port' => $deviceAttributes['implementation.port'],
             'Algorithm' => Inflector::humanize(strtolower($deviceAttributes['implementation.algorithm'])),
+            'Session Persistence' => (isset($deviceAttributes['implementation.session_persistence']) ? "Enabled" : "Disabled")
         );
 
-        //Device addresses
+        //Addresses
         $deviceAddresses = array();
+        $virtualIps = json_decode($deviceAttributes['implementation.virtual_ips'], true);
+        foreach($virtualIps as $ip){
+            $descr = ucfirst(strtolower($ip['type']));
+            $descr .= " " . ($ip['ipVersion'] == 'IPV4' ? 'IPv4' : 'IPv6');
+            $deviceAddresses[] = array($descr, $ip['address']);
+        }
+
+        //Nodes
+        $nodes = array();
+        if(isset($deviceAttributes['implementation.nodes'])){
+            $providerNodes = json_decode($deviceAttributes['implementation.nodes'], true);
+            foreach($providerNodes as $node){
+                $nodes[] = array($node['address'], $node['port']);
+            }
+        }
 
         $this->set(array(
             'device' => $device,
+            'deviceInfo' => $deviceInfo,
             'providerInfo' => $providerInfo,
-            'deviceAddresses' => $deviceAddresses
+            'deviceAddresses' => $deviceAddresses,
+            'nodes' => $nodes
         ));
+
+        $this->render('loadbalancer_view');
     }
 
     public function create($id=null){
@@ -586,7 +617,6 @@ class DevicesController extends AppController
             'protocol' => 'implementation.protocol',
             'port' => 'implementation.port',
             'algorithm' => 'implementation.algorithm',
-            'sessionPersistence' => 'implementation.session_persistence' 
         );
 
         //Reindex attributes by var
@@ -693,7 +723,7 @@ class DevicesController extends AppController
         if(!empty($device['DeviceAttribute'])) {
             $nodesAttr = $device['DeviceAttribute'][0];
             $nodesDetails = json_decode($nodesAttr['val'], true);
-            $nodes = Hash::extract($nodes,'{n}.address');
+            $nodes = Hash::extract($nodesDetails,'{n}.address');
         }
 
         if($this->request->is('post')){
@@ -723,45 +753,37 @@ class DevicesController extends AppController
 
             if(!$isError){
 
-                $changedNodes = false;
-
                 //Diff newNodes to determine which nodes
                 //need to be added and which need to be
                 //removed
                 $removeNodes = array_diff($nodes, $newNodes);
                 $addNodes = array_diff($newNodes, $nodes);
 
-                if(!empty($addNodes)){
-                    $apiUrl = $this->StringsApiServiceCatelog->getUrl(
-                        'load-balancer',
-                        "/LoadBalancers/addNodes/$deviceId"
-                    );
-                    $body = json_encode($addNodes);
-                    $result = $this->QueueJob->addJob($apiUrl, $body);
-                    if(!$result){
-                        $isError = true;
-                        $message = 'Failed to schedule job to add new nodes.';
-                    }
-                    else
-                        $changedNodes = true;
+                $nodeChanges = array();
+
+                if(!empty($addNodes)) {
+                    $nodeChanges['add'] = $addNodes;
                 }
 
-                if(!$isError && !empty($removeNodes)){
+                if(!empty($removeNodes)) {
+                    $nodeChanges['remove'] = $removeNodes;
+                }
+
+                if(!empty($nodeChanges)){
+
                     $apiUrl = $this->StringsApiServiceCatelog->getUrl(
                         'load-balancer',
-                        "/LoadBalancers/removeNodes/$deviceId"
+                        "/LoadBalancers/manageNodes/$deviceId"
                     );
-                    $body = json_encode($removeNodes);
+                    $body = json_encode($nodeChanges);
                     $result = $this->QueueJob->addJob($apiUrl, $body);
                     if(!$result){
                         $isError = true;
                         $message = 'Failed to schedule job to remove nodes.';
                     }
-                    else
-                        $changedNodes = true;
                 }
 
-                if($changedNodes){
+                if(!empty($nodeChanges) && !$isError){
                     $this->Device->id = $deviceId;
                     $this->Device->saveField('status','building',true);
                 }

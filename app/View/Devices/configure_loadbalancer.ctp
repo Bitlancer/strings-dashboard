@@ -40,18 +40,6 @@ $deviceName = $device['Device']['name'];
       ));
       ?>
     </fieldset>
-    <fieldset>
-      <legend>Session Persistence</legend>
-      <?php
-      echo $this->Form->input('sessionPersistence', array(
-        'div' => false,
-        'label' => false,
-        'default' => $sessionPersistence,
-        'options' => $sessionPersistenceOptions,
-        'empty' => 'None'
-      ));
-      ?>
-    </fieldset>
     <div class="submit">
       <a class="cta primary submit">Save</a>
       <a class="cta">Cancel</a>
