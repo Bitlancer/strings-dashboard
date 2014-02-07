@@ -76,6 +76,8 @@ class UserAttribute extends AppModel {
 
         if(empty($attr)){
 
+            $this->create();
+
             $userAttr = array(
                 'UserAttribute' => array(
                     'organization_id' => $user['User']['organization_id'],
