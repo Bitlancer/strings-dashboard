@@ -398,7 +398,7 @@ table {
       table tbody tr.status td:first-of-type:before {
         content: '';
         display: table-cell;
-        height: 26px;
+        height: 100%;
         left: 0;
         position: absolute;
         width: 7px;
