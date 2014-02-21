@@ -55,6 +55,9 @@ class Application extends AppModel {
 
     public function beforeSave($options = array()){
 
+        if(!parent::beforeSave($options))
+            return false;
+
         $data = $this->data[$this->alias];
 
         if(isset($data['name'])){

@@ -72,6 +72,9 @@ class SudoAttribute extends AppModel {
 
 	public function beforeSave($options=array()){
 
+        if(!parent::beforeSave($options))
+            return false;
+
 		if(isset($this->data['value'])){
 			$this->data['value'] = trim($this->data['value']);
 		}

@@ -137,6 +137,9 @@ class User extends AppModel {
 
     public function beforeSave($options = array()) {
 
+        if(!parent::beforeSave($options))
+            return false;
+
         if(isset($this->data['User']['password']))
             $this->data['User']['password'] = SecurityEnhanced::hash($this->data['User']['password'],'sha1',false,'base64');
 
@@ -156,6 +159,8 @@ class User extends AppModel {
     }
 
     public function afterSave($created, $options=array()){
+
+        parent::afterSave($created, $options);
 
         if($created){
             $userId = $this->data['User']['id'];

@@ -33,9 +33,44 @@ class AppModel extends Model {
  */
 
     /**
+     * Before save callback
+     */
+    public function beforeSave($options=array()){
+
+        $this->overrideBadTimestamps();
+        return true;
+    }
+
+    /**
+     * Override any bad datetime columns
+     *
+     * Why do I exist? When create() is called on a model, CakePHP will
+     * grab the default value for each column from the schema. Anywhere
+     * a datetime column has been defined with a default value of 
+     * CURRENT_TIMESTAMP, Cake will pull that in however it will treat
+     * it like a string and escape it with quotes on insertion. This
+     * function exists to replace the string CURRENT_TIMESTAMP with
+     * an actual time string.
+     *
+     */
+    protected function overrideBadTimestamps(){
+
+        $columns = $this->schema();
+        foreach($columns as $columnName => $column){
+            if($column['type'] == 'datetime' &&
+                $column['default'] == 'CURRENT_TIMESTAMP' &&
+                isset($this->data[$this->alias][$columnName]) &&
+                $this->data[$this->alias][$columnName] == 'CURRENT_TIMESTAMP'
+            ){
+                $this->data[$this->alias][$columnName] = date('Y-m-d H:i:s');   
+            }
+        }
+    }
+
+    /**
      * After save callback
      */
-    public function afterSave($created){
+    public function afterSave($created, $options=array()){
 
         if($created) {
             $this->addInsertId($this->getInsertID());
