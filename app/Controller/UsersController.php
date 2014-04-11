@@ -869,7 +869,7 @@ class UsersController extends AppController {
                 $mail->subject('Customer Interest in Strings');
                 $mail->send("The customer below has expressed interest in Strings.\r\n\r\n Email: $email\r\n");
 
-                $message = "You're registered!";
+                $message = "Success! You'll hear from us shortly.";
             }
 
             $response = array(

@@ -14,7 +14,7 @@
       </form>
     </div> <!-- /login -->
     <div data-id="register">
-      <p>Strings is in private beta. Enter your email &amp; we'll shoot you a message when we're live.</p>
+      <p>Enter your email address below and we'll contact you shortly about setting up an account.</p>
       <form class="ajax" method="post" action="/Users/register">
         <input type="email" name="email" placeholder="email address" />
         <span class="buttons">
