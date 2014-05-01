@@ -766,7 +766,7 @@ class UsersController extends AppController {
                 $isError = true;
                 $message = 'Invalid token.';
             }
-            elseif(strtotime($user['UserAttribute']['updated']) <= strtotime('-4 hours')){
+            elseif(strtotime($user['UserAttribute']['updated']) <= strtotime('-48 hours')){
 
                 $this->User->UserAttribute->delete($user['UserAttribute']['id']);
 
