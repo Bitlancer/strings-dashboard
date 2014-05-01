@@ -9,7 +9,7 @@ class Dictionary extends AppModel
     );
 
     public $belongsTo = array(
-        'Organization'
+        'Organization',
     );
 
     public $hasMany = array(

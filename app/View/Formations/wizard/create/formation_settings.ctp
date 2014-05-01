@@ -15,10 +15,10 @@ $this->assign('stepTitle','Formation Options');
       'error' => false,
       'options' => $implementations
     ));
-    echo $this->Form->input('Dictionary.id',array(
-      'label' => 'Device Name Dictionary',
+    echo $this->Form->input('Environment.id',array(
+      'label' => 'Environment',
       'error' => false,
-      'options' => $dictionaries
+      'options' => $environments
     ));
   ?>
 </div> <!-- /#formation-settings -->

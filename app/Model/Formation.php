@@ -12,7 +12,7 @@ class Formation extends AppModel {
 		'Organization',
         'Implementation',
         'Blueprint',
-        'Dictionary',
+        'Environment',
 	);
 
 	public $hasMany = array(
@@ -75,7 +75,7 @@ class Formation extends AppModel {
                 'message' => '%%f does not exist'
             )
         ),
-        'dictionary_id' => array(
+        'environment_id' => array(
             'requiredOnCreate' => array(
                 'rule' => 'notEmpty',
                 'on' => 'create',

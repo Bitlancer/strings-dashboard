@@ -49,6 +49,7 @@ class FormationsAndDevicesComponent extends Component {
                 'implementation_id' => $device['Device']['implementation_id'],
                 'blueprint_part_id' => $device['Device']['blueprint_part_id'],
                 'role_id' => $device['Device']['role_id'],
+                'environment_id' => $device['Device']['environment_id'],
                 'name' => $device['Device']['name']
         ));
     }

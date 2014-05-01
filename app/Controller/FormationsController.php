@@ -410,7 +410,9 @@ class FormationsController extends AppController
             $formationId = $step;
 
             $formation = $this->Formation->find('first',array(
-                'contain' => array(),
+                'contain' => array(
+                    'Environment'
+                ),
                 'conditions' => array(
                     'Formation.id' => $formationId
                 )
@@ -538,11 +540,11 @@ class FormationsController extends AppController
             
             $implementationId = $this->Wizard->read('_formation.Formation.implementation_id');
             $blueprintPartCounts = $this->Wizard->read('deviceCounts.blueprintPartCounts');
-            $dictionaryId = $this->Wizard->read('_formation.Formation.dictionary_id');
+            $environmentId = $this->Wizard->read('_formation.Formation.environment_id');
 
             $data = $this->_prepareGenericConfigureDevices($implementationId,
-                                                          $blueprintPartCounts,
-                                                          $dictionaryId);
+                                                          $environmentId,
+                                                          $blueprintPartCounts);
 
             $this->Wizard->save(null,$data,true);
         }
@@ -559,7 +561,6 @@ class FormationsController extends AppController
 
         $devices = $this->Wizard->read('_configureDevices.devices');
         $instanceVarDefs = $this->Wizard->read('_configureDevices.instanceVarDefs');
-        $dictionaryId = $this->Wizard->read('_formation.Formation.dictionary_id');
         $dictionaryWordIds = $this->Wizard->read('_configureDevices.dictionaryWordIds');
         $formationId = $this->Wizard->read('_formation.Formation.id');
         $implementationId = $this->Wizard->read('_formation.Formation.implementation_id');
@@ -578,8 +579,9 @@ class FormationsController extends AppController
             return false;
 
         //Add formation id to devices
-        foreach($devices as $key => $device)
+        foreach($devices as $key => $device){
             $devices[$key]['Device']['formation_id'] = $formationId;
+        }
 
         //Save the devices
         //Not sure why saveMany with deep = true doesn't work
@@ -650,7 +652,7 @@ class FormationsController extends AppController
     public function _prepareCreateFormationSettings(){
 
         $this->loadModel('Implementation');
-        $this->loadModel('Dictionary');
+        $this->loadModel('Environment');
 
         //Get a list of infrastructure providers
         $implementations = $this->Implementation->Provider->find('all',array(
@@ -668,29 +670,30 @@ class FormationsController extends AppController
         ));
         $implementations = Hash::combine($implementations,'{n}.Implementation.id','{n}.Implementation.name');
 
-        //Get a list of dictionaries
-        $dictionaries = $this->Dictionary->find('all',array('contain' => array()));
-        $dictionaries = Hash::combine($dictionaries,'{n}.Dictionary.id','{n}.Dictionary.name');
+        //Get a list of environments
+        $environments = $this->Environment->find('all',array('contain' => array()));
+        $environments = Hash::combine($environments,'{n}.Environment.id','{n}.Environment.name');
 
         $this->set(array(
             'implementations' => $implementations,
-            'dictionaries' => $dictionaries,
+            'environments' => $environments
         ));
     }
     
     public function _processCreateFormationSettings(){
 
         $this->loadModel('Implementation');
-        $this->loadModel('Dictionary');
+        $this->loadModel('Environment');
 
         //Validate name
-        if(!isset($this->request->data['Formation']['name']) || empty($this->request->data['Formation']['name'])){
+        $formationName = $this->request->data('Formation.name');
+        if(empty($formationName)){
             $this->setFlash('A formation name is required','error');
             return false;
         }
         $this->Formation->set(array(
             'Formation' => array(
-                'name' => $this->request->data['Formation']['name']
+                'name' => $formationName
             )
         ));
         $result = $this->Formation->validates(array(
@@ -704,11 +707,11 @@ class FormationsController extends AppController
         }
 
         //Validate implementation
-        if(!isset($this->request->data['Implementation']['id']) || empty($this->request->data['Implementation']['id'])){
+        $implementationId = $this->request->data('Implementation.id');
+        if(empty($implementationId)){
             $this->setFlash('An infrastructure provider required','error');
             return false;
         }
-        $implementationId = $this->request->data['Implementation']['id'];
         $implementation = $this->Implementation->Provider->find('first',array(
             'link' => array(
                 'Implementation',
@@ -724,14 +727,20 @@ class FormationsController extends AppController
             return false;
         }
 
-        //Validate dictionary
-        if(!isset($this->request->data['Dictionary']['id']) || empty($this->request->data['Dictionary']['id'])){
-            $this->Session->setFlash(__('Infrastructure provider required'),'default',array(),'error');
+        //Validate environment
+        $environmentId = $this->request->data('Environment.id');
+        if(empty($environmentId)){
+            $this->setFlash('An environment is required');
             return false;
         }
-        $dictionaryId = $this->request->data['Dictionary']['id'];
-        if(!$this->Dictionary->exists($dictionaryId)){
-            $this->Session->setFlash(__('Invalid dictionary supplied'),'default',array(),'error');
+        $environment = $this->Environment->find('first', array(
+            'contain' => array(),
+            'conditions' => array(
+                'Environment.id' => $environmentId
+            )
+        ));
+        if(empty($environment)){
+            $this->setFlash('Invalid environment supplied');
             return false;
         }
 
@@ -832,11 +841,11 @@ class FormationsController extends AppController
             //Get session data needed for processing during this step;
             $implementationId = $this->Wizard->read('formationSettings.Implementation.id');
             $blueprintPartCounts = $this->Wizard->read('deviceCounts.blueprintPartCounts');
-            $dictionaryId = $this->Wizard->read('formationSettings.Dictionary.id');
+            $environmentId = $this->Wizard->read('formationSettings.Environment.id');
 
             $data = $this->_prepareGenericConfigureDevices($implementationId,
-                                                          $blueprintPartCounts,
-                                                          $dictionaryId);
+                                                          $environmentId,
+                                                          $blueprintPartCounts);
 
             $this->Wizard->save(null,$data,true);
         }
@@ -852,7 +861,7 @@ class FormationsController extends AppController
 
         $devices = $this->Wizard->read('_configureDevices.devices');
         $instancesVarDefs = $this->Wizard->read('_configureDevices.instanceVarDefs');
-        $dictionaryId = $this->Wizard->read('formationSettings.Dictionary.id');
+        $environmentId = $this->Wizard->read('formationSettings.Environment.id');
         $dictionaryWordIds = $this->Wizard->read('_configureDevices.dictionaryWordIds');
         $implementationId = $this->Wizard->read('formationSettings.Implementation.id');
         $blueprintId = $this->Wizard->read('selectBlueprint.Blueprint.id');
@@ -876,7 +885,7 @@ class FormationsController extends AppController
             'Formation' => array(
                 'implementation_id' => $implementationId,
                 'blueprint_id' => $blueprintId,
-                'dictionary_id' => $dictionaryId,
+                'environment_id' => $environmentId,
                 'name' => $formationName
             ),
             'Device' => $devices
@@ -929,13 +938,23 @@ class FormationsController extends AppController
         return false;
     }
 
-    private function _prepareGenericConfigureDevices($implementationId,$blueprintPartCounts,$dictionaryId){
+    private function _prepareGenericConfigureDevices($implementationId,$environmentId,$blueprintPartCounts){
 
         $this->loadModel('Role');
+        $this->loadModel('Environment');
 
         //Get list of blueprint parts and associated data
         $blueprintPartIds = array_keys($blueprintPartCounts);
         $blueprintParts = $this->_getBlueprintPartData($blueprintPartIds);
+
+        //Get the dictionary id
+        $environment = $this->Environment->find('first', array(
+            'contain' => array(),
+            'conditions' => array(
+                'Environment.id' => $environmentId
+            )
+        ));
+        $dictionaryId = $environment['Environment']['dictionary_id'];
 
         //Reserve dictionary words
         $deviceCount = 0;
@@ -946,6 +965,7 @@ class FormationsController extends AppController
 
         //Create devices psuedo structure
         $devices = $this->_createPsuedoDevicesStructure($implementationId,
+                                                        $environmentId,
                                                         $blueprintPartCounts,
                                                         $blueprintParts,
                                                         $dictionaryWords);
@@ -997,7 +1017,7 @@ class FormationsController extends AppController
         return $dictionaryWords;
     }
 
-    private function _createPsuedoDevicesStructure($implementationId,$blueprintPartCounts,$blueprintParts,$dictionaryWords){
+    private function _createPsuedoDevicesStructure($implementationId,$environmentId,$blueprintPartCounts,$blueprintParts,$dictionaryWords){
 
         $devices = array();
         $nextDevicePsuedoId = 0;
@@ -1018,6 +1038,7 @@ class FormationsController extends AppController
                         'implementation_id' => $implementationId,
                         'blueprint_part_id' => $blueprintPartId,
                         'role_id' => $blueprintPart['Role']['id'],
+                        'environment_id' => $environmentId,
                         'name' => $name,
                     ),
                     'DeviceType' => array(
