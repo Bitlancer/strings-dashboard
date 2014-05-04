@@ -224,7 +224,7 @@ class Device extends AppModel {
         return true;
     }
 
-    public function afterFind($results,$primary = false){
+    public function afterFind($results, $primary = false){
 
         //ucwords(name)
         if(isset($results['name'])){

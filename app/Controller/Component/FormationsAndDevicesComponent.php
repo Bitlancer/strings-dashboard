@@ -57,6 +57,7 @@ class FormationsAndDevicesComponent extends Component {
     public function parseAndValidateInstance($device, $input){
 
         $this->_loadModel('Implementation');
+        $this->_loadModel('Role');
 
         $errors = array();
 
@@ -80,14 +81,16 @@ class FormationsAndDevicesComponent extends Component {
         //Dns
         $deviceName = $device['Device']['name'];
         list($intDnsSuffix,$extDnsSuffix) = $this->getDnsSuffixes();
+        $deviceInternalFqdn = strtolower("$deviceName.$regionName.$intDnsSuffix");
+        $deviceExternalFqdn = strtolower("$deviceName.$regionName.$extDnsSuffix");
         $device['DeviceAttribute'][] = array(
             'var' => 'dns.internal.fqdn',
-            'val' => strtolower("$deviceName.$regionName.$intDnsSuffix")
+            'val' => $deviceInternalFqdn
         );
 
         $device['DeviceAttribute'][] = array(
             'var' => 'dns.external.fqdn',
-            'val' => strtolower("$deviceName.$regionName.$extDnsSuffix")
+            'val' => $deviceExternalFqdn
         );
 
         //Image id
@@ -124,10 +127,40 @@ class FormationsAndDevicesComponent extends Component {
         $variablesInput = isset($input['variables']) ? $input['variables'] : array();
         list($systemErrors, $hieraVariables) = $this->parseAndValidateInstanceVariables($device,
                                                                                         $variablesInput);
+        //Set standard hiera variables
+        $roleId = $device['Device']['role_id'];
+        $role = $this->controller->Role->find('first', array(
+            'contain' => array(
+                'RoleProfile' => array(
+                    'Profile'
+                )
+            ),
+            'conditions' => array(
+                'Role.id' => $roleId
+            )
+        ));
+
+        $roleHieraVal = $role['Role']['name'];
+        $profilesHieraVal = "[\"" . implode('","', Hash::extract($role['RoleProfile'], '{n}.Profile.name')) . "\"]";
+
+        $hieraVariables = array_merge($hieraVariables, array(
+            array(
+                'hiera_key' => "fqdn/$deviceInternalFqdn",
+                'var' => 'stringed::role',
+                'val' => $roleHieraVal
+            ),
+            array(
+                'hiera_key' => "fqdn/$deviceInternalFqdn",
+                'var' => 'stringed::profiles',
+                'val' => $profilesHieraVal
+            )
+        ));
+
+        $device['HieraVariable'] = $hieraVariables;
+
+        //Set system errors
         if(!empty($systemErrors))
             $errors['system'] = $systemErrors;
-        if(!empty($hieraVariables))
-            $device['HieraVariable'] = $hieraVariables;
 
         return array(
             $errors,
