@@ -762,16 +762,17 @@ class UsersController extends AppController {
                 )
             ));
 
-            if(empty($user)){
-                $isError = true;
-                $message = 'Invalid token.';
-            }
-            elseif(strtotime($user['UserAttribute']['updated']) <= strtotime('-48 hours')){
+            if(
+                empty($user) ||
+                strtotime($user['UserAttribute']['updated']) <= strtotime('-48 hours')
+            ) {
 
-                $this->User->UserAttribute->delete($user['UserAttribute']['id']);
+                if(!empty($user))
+                    $this->User->UserAttribute->delete($user['UserAttribute']['id']);
 
                 $isError = true;
-                $message = 'Your token has expired.';
+                $message = 'Your token is invalid or has expired. To re-initiate the password reset process, ' .
+                    'please click "Forgot Password" on the <a href="/login">login page</a>.';
             }
             else {
 
@@ -784,12 +785,13 @@ class UsersController extends AppController {
                     $this->User->id = $user['User']['id'];
                     if($this->User->saveField('password',$this->request->data['password'],array('validate' => true))){
                         $message = 'Your password has been updated.';
+
                         $this->User->UserAttribute->delete($user['UserAttribute']['id']);
                         $this->resetFailedLoginAttempts($user);
                     }
                     else {
                         $isError = true;
-                        $message = "Failed to update your password. " . $this->User->validationErrorsAsString();
+                        $message = "Failed to update your password.";
                     }
                 }
             }
