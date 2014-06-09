@@ -125,38 +125,13 @@ class FormationsAndDevicesComponent extends Component {
 
         //Validate instance variables
         $variablesInput = isset($input['variables']) ? $input['variables'] : array();
-        list($systemErrors, $hieraVariables) = $this->parseAndValidateInstanceVariables($device,
-                                                                                        $variablesInput);
-        //Set standard hiera variables
-        $roleId = $device['Device']['role_id'];
-        $role = $this->controller->Role->find('first', array(
-            'contain' => array(
-                'RoleProfile' => array(
-                    'Profile'
-                )
-            ),
-            'conditions' => array(
-                'Role.id' => $roleId
-            )
-        ));
+        list($systemErrors, $hieraVariables) = $this->parseAndValidateInstanceVariables(
+            $device,
+            $variablesInput
+        );
 
-        $roleHieraVal = $role['Role']['name'];
-        $profilesHieraVal = "[\"" . implode('","', Hash::extract($role['RoleProfile'], '{n}.Profile.name')) . "\"]";
-
-        $hieraVariables = array_merge($hieraVariables, array(
-            array(
-                'hiera_key' => "fqdn/$deviceInternalFqdn",
-                'var' => 'stringed::role',
-                'val' => $roleHieraVal
-            ),
-            array(
-                'hiera_key' => "fqdn/$deviceInternalFqdn",
-                'var' => 'stringed::profiles',
-                'val' => $profilesHieraVal
-            )
-        ));
-
-        $device['HieraVariable'] = $hieraVariables;
+        if(!empty($hieraVariables))
+            $device['HieraVariable'] = $hieraVariables;
 
         //Set system errors
         if(!empty($systemErrors))
