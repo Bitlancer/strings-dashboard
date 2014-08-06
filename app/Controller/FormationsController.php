@@ -293,6 +293,7 @@ class FormationsController extends AppController
 
         $device = $this->Formation->Device->find('first',array(
             'contain' => array(
+                'DeviceType',
                 'BlueprintPart'
             ),
             'conditions' => array(
@@ -349,6 +350,12 @@ class FormationsController extends AppController
                             'infrastructure',
                             "/Instances/delete/$deviceId"
                         );
+                        if($device['DeviceType']['name'] == 'load-balancer'){
+                            $apiUrl = $this->StringsApiServiceCatelog->getUrl(
+                                'infrastructure',
+                                "/LoadBalancers/delete/$deviceId"
+                            );
+                        }
                         $this->QueueJob->addJob($apiUrl);
                         $message = "$deviceName has been scheduled for deletion.";
                         $redirectUri = '/Devices';
@@ -600,6 +607,14 @@ class FormationsController extends AppController
 
         //Add the Q jobs
         $newDeviceIds = $this->Device->getInsertIds();
+        $newDevices = $this->Device->find('all', array(
+            'contain' => array(
+                'DeviceType'
+            ),
+            'conditions' => array(
+                'Device.id' => $newDeviceIds
+            )
+        ));
         $apiUrl = $this->StringsApiServiceCatelog->getUrl('infrastructure');
         $qJobs = array();
         $templateQJob = array(
@@ -609,8 +624,13 @@ class FormationsController extends AppController
             'remaining_retries' => 40,
             'retry_delay_secs' => 30 
         );
-        foreach($newDeviceIds as $newDeviceId){
+        foreach($newDevices as $newDevice){
+            $newDeviceId = $newDevice['Device']['id'];
+            $newDeviceType = $newDevice['DeviceType']['name'];
+
             $templateQJob['url'] = $apiUrl . "/Instances/create/$newDeviceId";
+            if($newDeviceType == 'load-balancer')
+                $templateQJob['url'] = $apiUrl . "/LoadBalancers/create/$newDeviceId";
             $qJobs[] = $templateQJob;
         }
 
