@@ -1,6 +1,6 @@
 body {
   background: #f8f8f8;
-  @include filter(blur(0));  
+  //@include filter(blur(0));  
   > nav { left: 0 }
   > header { top: 0 }
   &.loading {
